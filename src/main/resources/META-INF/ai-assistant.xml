@@ -1,0 +1,12 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="dev.boyko.aiagentswitcher.compat.InstalledLaunchStartup" />
+        <postStartupActivity implementation="dev.boyko.aiagentswitcher.compat.UnsentPromptGuardStartup" />
+        <postStartupActivity implementation="dev.boyko.aiagentswitcher.compat.ProfileToolbarStartup" />
+        <frontend.splitComponentProvider order="first" implementation="dev.boyko.aiagentswitcher.compat.ProfileResponseHeaderProvider" />
+        <ml.llm.agents.acp.chatAgentExtension implementation="dev.boyko.aiagentswitcher.compat.AiMultiAgentPresentation" />
+        <ml.llm.core.agentAuthorizationRowProvider implementation="dev.boyko.aiagentswitcher.compat.ProfileAuthorizationRowProvider" />
+        <aiChatToggleProvider implementation="dev.boyko.aiagentswitcher.compat.AiProfileToggleProvider" />
+        <ml.llm.chatPanelComponentProvider implementation="dev.boyko.aiagentswitcher.compat.AiProfileSetupPanelProvider" />
+    </extensions>
+</idea-plugin>

@@ -1,0 +1,23 @@
+# Automatic first-use profile defaults — dev.67
+
+Historical behavior, superseded by [current decisions](decisions.md): absent defaults now use native client preferences without automatic profile capture.
+
+This supersedes dev.66's requirement to open Settings merely because a profile has no saved defaults.
+
+For a new provider session or profile segment, missing defaults trigger the existing isolated Refresh procedure automatically. It discovers both native client catalogs, captures their defaults, saves them in the affected profile, publishes routing configuration, and continues the original session creation. Explicit profile choices remain intact. No prompt, history, project Default Profile change, or interactive Settings visit is involved in successful discovery. Restoring a saved session bypasses this procedure entirely.
+
+A matching saved snapshot has no time-based expiry. Creation sends configured values to the agent even if its current catalog does not list them; an authoritative accepted value is retained. A setter rejection preserves the provider's error code, message and data and opens AI Multi Profiles Settings at the affected profile with the reason. Rejection does not trigger another Refresh or an internal session-creation retry. The native client can still issue its own subsequent requests. Discovery failures also open the affected profile for resolution instead of pretending that defaults were obtained.
+
+All creation paths share the router boundary, including ordinary New Chat in AI Assistant/Air, explicit chat-local profiles, fresh profile switches and consented recovery. IDE-generated routes enable automatic discovery; the existing standalone router settings behavior remains available without that IDE integration flag. Neither load/resume nor provider capabilities are rewritten.
+
+The router uses a metadata-only rendezvous with the running IDE, which owns discovery and persistent profile settings. Same-router capture requests coalesce; the IDE serializes capture for each profile and skips work once a matching snapshot is committed. The save compares the complete source profile before committing, retries discovery against changed profile settings at most twice, and never overwrites concurrent edits or another profile. The router also refuses an agent/launch change during discovery, preserving the original chat rather than transferring it to a changed target. Rendezvous request/response files are removed after completion. No captured history or credentials are put in those files.
+
+Automatic capture deliberately calls the same prepare/discoverClients operations as the existing Settings Refresh action. It retains that action's credential-format, clean-home catalog and capability validation; it does not substitute mutable live-session preferences for confirmed defaults when discovery fails.
+
+## Verification
+
+`router/test-automatic-defaults.js` exercises real router subprocesses: concurrent first creation with one capture request, explicit settings and project-route preservation, accepted values absent from the advertised catalog, unchanged raw provider rejection, target-specific Settings requests, no age expiry and restoration with no capture or setters. It is included in both check and buildPlugin.
+
+`tools/AutomaticDefaultsProbe.java` uses an isolated runIde with synthetic authorization and a local agent. It verifies actual native New Chat, two clean-home client discoveries, persistence of defaults to the profile XML, preserved explicit settings and project Default Profile, successful prompting, snapshot reuse for another chat and target-profile Settings only after an actual setter rejection. The probe sources use the existing SettingsRefreshProbe, ChatStartupSupport and ChatStartupProbe reflection helpers. No production account, prompt, primary IDE attachment or restart is used. Final runtime evidence: `build/defaults67/native-final.log`, `result.txt`, `trace.txt`.
+
+Final `check buildPlugin --offline --max-workers=1` passed (`build/defaults67/build-release.log`). Native installer queue checks passed; all six packaged router modules match source and test copies, bootstrap code is included, and probe classes are excluded. Dev.67 superseded only the verified queued dev.66. Backup: `deployment-backups/20261016-113726-0.2.0-dev.67/AIMulti-before-update.zip`. Built, staged and recorded SHA-256 match: `C7EC15428A5218E7D4510A05A27E75F1B405D23592B5B6C09080A3FCB605F56F`. Unrelated updates were preserved. Activation awaits the user's next primary IDEA restart; the IDE and active chats were not restarted or interrupted.

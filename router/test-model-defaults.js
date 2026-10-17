@@ -1,0 +1,33 @@
+﻿'use strict';
+const assert=require('assert/strict'),settings=require('./profile-settings'),fs=require('fs'),path=require('path');
+const option=(id,category,currentValue,values,recommended)=>({id,name:id,type:'select',category,currentValue,options:values.map(value=>({value,name:value})),...(recommended===undefined?{}:{_meta:{jetbrains:{air:{version:1,recommendedValue:recommended}}}})});
+const state=(model,current='high',recommendation='medium')=>({sessionId:'metadata-only',configOptions:[option('model','model',model,['a','b','unknown']),option('reasoning_effort','thought_level',current,['low','medium','high'],recommendation)]});
+(async()=>{
+ const base=state('a','high','medium');
+ const original=JSON.stringify(base);
+ assert.equal(settings.modelDefaults(base)[1].currentValue,'high');
+ assert.equal(settings.modelDefaults(base)[1].modelDefault,'medium');
+ assert.equal(JSON.stringify(base),original,'Metadata collection mutated session values');
+ assert.equal(settings.modelDefaults(state('a','low','medium'))[1].modelDefault,'medium');
+ const missing=state('a');delete missing.configOptions[1]._meta;
+ assert.equal(settings.modelDefaults(missing)[1].modelDefault,null,'Missing recommendation fell back to currentValue');
+ assert.equal(settings.modelDefaults(state('a','high','invalid'))[1].modelDefault,null);
+ const calls=[],diagnostics=[];
+ const models=await settings.discoverModels({sessionSettings:[{id:'reasoning_effort',value:'low'}]},base,async(method,p)=>{
+   calls.push({method,p});assert.equal(method,'session/set_config_option');assert.equal(p.configId,'model');
+   const r=state(p.value,'high',p.value==='b'?'low':'medium');
+   if(p.value==='unknown')delete r.configOptions[1]._meta;
+   return {result:r};
+ },value=>diagnostics.push(value));
+ assert.deepEqual(models.map(x=>x.options[1].modelDefault),['medium','low',null]);
+ assert.deepEqual(models.map(x=>x.options[1].currentValue),['high','high','high']);
+ assert.deepEqual(calls.map(x=>x.p.value),['b','unknown']);
+ assert.equal(diagnostics[0].currentValue,'high');assert.equal(diagnostics[0].recommendedValue,'medium');
+ assert.equal(models[2].warnings.length,1);
+ const repeated=await settings.discoverModels({},state('a','low','medium'),async(method,p)=>({result:state(p.value,'low',p.value==='b'?'low':'medium')}));
+ assert.equal(repeated[0].options[1].modelDefault,'medium');assert.equal(repeated[1].options[1].modelDefault,'low');
+ const mismatched=await settings.discoverModels({},base,async()=>({result:state('a','high','medium')}));
+ assert.equal(mismatched[1].options.length,0,'Metadata was assigned to the wrong model');
+ assert.deepEqual(fs.readFileSync(path.join(__dirname,'profile-settings.js')),fs.readFileSync(path.join(__dirname,'../src/main/resources/profile-settings.js')));
+ console.log('PASS: recommendation independent of currentValue/profile choices, per-model map including initial model, unknown and invalid recommendation without fallback, diagnostic source, repeat stability, model acknowledgement and unchanged input');
+})().catch(e=>{console.error(e);process.exitCode=1;});

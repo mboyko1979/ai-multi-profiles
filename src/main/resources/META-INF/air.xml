@@ -1,0 +1,17 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceInterface="com.intellij.air.frontend.launch.AgentLaunchTargetPresentationService"
+                            serviceImplementation="dev.boyko.aiagentswitcher.air.AirAgentPresentationService" overrides="true"/>
+        <air.agentCatalogContributor implementation="dev.boyko.aiagentswitcher.air.AirLegacyProfilePresentation"/>
+        <postStartupActivity implementation="dev.boyko.aiagentswitcher.air.AirSessionRowIconActivity"/>
+    </extensions>
+    <projectListeners>
+        <listener class="dev.boyko.aiagentswitcher.air.AirSessionRowIconListener" topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
+    </projectListeners>
+    <actions>
+        <group id="Air.Prompt.Preferences" class="dev.boyko.aiagentswitcher.air.AirProfilePreferencesGroup" overrides="true"/>
+        <action id="dev.boyko.aiagentswitcher.AirProfileSelector" class="dev.boyko.aiagentswitcher.AirProfileSelector" text="AI Multi Profile">
+            <add-to-group group-id="Air.Prompt.Preferences" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>

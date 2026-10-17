@@ -1,0 +1,31 @@
+<idea-plugin>
+    <id>dev.boyko.ai-multi-profiles</id>
+    <name>AI Multi Profiles</name>
+    <vendor url="https://boyko.dev">boyko.dev</vendor>
+    <description><![CDATA[
+        Use multiple AI profiles for different accounts and agents. Switch profiles in the same AI Chat window
+        and carry selected conversation history forward, so you can continue working with another profile.
+        Each project has its own Default Profile; switching a chat's profile leaves that default unchanged.
+        Profiles keep separate authentication directories. Select AI Multi in AI Chat to use your profiles.
+    ]]></description>
+    <depends>com.intellij.modules.platform</depends>
+    <depends optional="true" config-file="ai-assistant.xml">com.intellij.ml.llm</depends>
+    <!-- Host adapters are loaded only with their matching optional dependency.
+         Resolve the Assistant SDK first when both hosts bundle com.agentclientprotocol. -->
+    <depends optional="true" config-file="air.xml">com.intellij.air</depends>
+    <extensions defaultExtensionNs="com.intellij">
+        <projectConfigurable parentId="tools" instance="dev.boyko.aiagentswitcher.SwitcherConfigurable" id="dev.boyko.aiagentswitcher.settings" displayName="AI Multi Profiles" nonDefaultProject="true" />
+        <postStartupActivity implementation="dev.boyko.aiagentswitcher.ProjectGuardActivity" />
+        <notificationGroup id="AI Agent Project Switcher" displayName="AI Multi" displayType="BALLOON" />
+    </extensions>
+    <applicationListeners>
+        <listener class="dev.boyko.aiagentswitcher.RegistrationLifecycleBootstrap" topic="com.intellij.ide.AppLifecycleListener" />
+    </applicationListeners>
+    <actions>
+        <group id="dev.boyko.aiagentswitcher.ChatProfileAction" text="AI Multi: Select Project Profile"
+               class="dev.boyko.aiagentswitcher.ChatProfileAction" popup="true">
+            <add-to-group group-id="ToolsMenu" anchor="last" />
+        </group>
+    </actions>
+
+</idea-plugin>

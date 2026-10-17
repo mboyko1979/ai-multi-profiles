@@ -1,0 +1,15 @@
+# Installed agent launch refresh — dev.87
+
+The primary IDEA log at 17:02:04 launched Grok directly using `@xai-official/grok@1.0.63`. AI Multi subsequently failed at 17:02:32 and 17:02:52 because its saved profile launch still requested `@xai-official/grok@1.0.62`; npm reported that package missing with no YES option. The user-visible error was `ACP profile 51d830e5-c1c7-4086-868c-507e403fd34a exited (1)`.
+
+Route publication now resolves installed non-advanced profiles through the native launch resolver. Native installation metadata takes precedence over a previously created dynamic chat-agent configuration. Stored profile settings, home, identity, defaults and project assignments remain unchanged. Advanced overrides retain their configured launch. This does not acquire sessions or copy provider catalogs.
+
+The Assistant adapter follows native `AcpAgentsCatalog.agentsFlow` to refresh routes after catalog changes. Explicit Assistant chat staging refreshes before calculating its launch-spec hash; the scoped Air launch adapter refreshes before native start configuration resolution. These bindings reuse shared route publication. An absent local `acp.json` is allowed on first registration.
+
+Pinned host dependencies remain `AcpAgentInstallationState`, Settings row discovery, `AcpAgentFactory.createAgentConfig` and the existing scoped Air runtime adapter. Native installation/runtime preparation owns package resolution. No application factory/provider is replaced. Existing backends are not restarted by publication.
+
+`tools/VerifyClientPreferences.ps1 -OutputDirectory build/preferences87-native-final` passed in isolated IDEA with both native clients. `installed-launch-result.txt` checks fresh launch command/arguments/environment, unchanged stored settings and manual overrides without launching the synthetic executable. The native Assistant suite passed staged launch/profile isolation, cancellation and preference checks; Air passed admission, profile defaults, native preferences and switching with unchanged project default. These fixtures do not establish production Grok account login or a model response. The existing routed/direct native steering limitation remains outside this fix.
+
+The initial isolated run exposed the absent-local-config startup case and failed; the corrected rerun above passed. Initial build runs failed on a 200 ms lifecycle fixture timeout and JDK 25 discovery. The lifecycle test's request timeout is raised to 1500 ms to allow Windows process startup under IDE/build load; production timeouts are unchanged. The full build explicitly uses IDEA's JDK 25 toolchain.
+
+`check buildPlugin --offline --max-workers=1` passed (33 actionable tasks; `build/build87-verified.log`). Dev.87 is queued for the primary IDEA's next restart. The native installer queue checks passed and unrelated updates were preserved. The verified backup and deployment record are under `deployment-backups/20261017-171335-0.2.0-dev.87`. The primary IDE was not restarted and active chats were not interrupted.

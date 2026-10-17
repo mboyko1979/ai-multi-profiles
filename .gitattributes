@@ -1,0 +1,7 @@
+* text=auto
+# Preserve the user-provided instruction file byte for byte.
+AGENTS.md -text
+gradlew text eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.jar binary

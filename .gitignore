@@ -1,0 +1,50 @@
+# Generated build and IDE state
+.gradle/
+.intellijPlatform/
+.kotlin/
+build/
+out/
+.idea/
+*.iml
+deployment-backups/
+# Local configuration, credentials and authorization
+.env
+.env.*
+!.env.example
+local.properties
+gradle-local.properties
+auth.json
+acp.json
+routes.json
+registration.json
+profiles/
+.codex/
+.agents/
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.key
+# Temporary and diagnostic output
+*.log
+*.dmp
+*.hprof
+*.heapdump
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+.DS_Store
+Thumbs.db
+# Local screenshots and archived previews require privacy review
+docs/*.png
+docs/branding/*.png
+docs/mockups/*.zip
+
+# Documentation images: allow only privacy-reviewed captures.
+docs/screenshots/*
+!docs/screenshots/profile-settings.png
+!docs/screenshots/chat-profile.png
+!docs/screenshots/README.md
