@@ -8,6 +8,7 @@ Use personal and work AI profiles in IntelliJ IDEA's **AI Assistant** and **Air*
 - A **Default Profile** for each project.
 - Profile switching inside a chat, or a new chat with another profile.
 - Optional model and reasoning defaults for each profile.
+- Your own model list: hide old or unused models and set a custom order, with your most-used model first.
 
 ## Quick start
 

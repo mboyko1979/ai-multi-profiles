@@ -1,5 +1,10 @@
 # Product decisions
 
+## 2026-10-18 - Describe personal model-list management
+
+The public description must explain that users can hide old or unused models and set a custom order, including placing their most-used model first. This documents existing profile model inclusion/order controls; configured filters and ordering remain policy over the bound agent's own catalog. No runtime or lifecycle behavior changes.
+
+
 ## 2026-10-18 - Recreate the public repository from a clean snapshot
 
 The user will delete the original GitHub repository and requests recreation under the same personal owner/name. Prepare a fresh single-root Git history from the audited current sources; never push the previous history into the replacement repository. Preserve previous local Git metadata only in a private backup outside the working tree. Recreate the public repository only after its prior instance has been deleted. Existing IDE/profile/session data remains untouched.
