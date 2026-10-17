@@ -45,6 +45,6 @@ docs/mockups/*.zip
 
 # Documentation images: allow only privacy-reviewed captures.
 docs/screenshots/*
-!docs/screenshots/profile-settings.png
-!docs/screenshots/chat-profile.png
+!docs/screenshots/profile-settings-personal-work.png
+!docs/screenshots/chat-work-account.png
 !docs/screenshots/README.md

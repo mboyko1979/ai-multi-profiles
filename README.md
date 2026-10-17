@@ -18,11 +18,11 @@ Requires **IntelliJ IDEA 2026.2 build 262.10968 or newer**, AI Assistant or Air,
 1. **Install the plugin ZIP:** Settings > Plugins > gear menu > Install Plugin from Disk.
 2. **Create a profile:** open Settings, search **AI Multi Profiles**, click **+**, name the profile and choose an installed agent. Click **Authorize…** to sign in. Optionally check **Default Profile**, then **Apply**. Repeat for another account.
 
-![Personal and Work profiles in AI Multi Profiles settings](docs/screenshots/profile-settings.png)
+![Personal and Work profiles in AI Multi Profiles settings](docs/screenshots/profile-settings-personal-work.png)
 
 3. **Start chatting:** open AI Chat, select **AI Multi**, then choose your profile beside it.
 
-![Work profile and its account information in Air's native composer](docs/screenshots/chat-profile.png)
+![Work profile and its account information in Air's native composer](docs/screenshots/chat-work-account.png)
 
 4. **Switch when needed:** select another profile. In an existing chat, choose **Continue Current Chat** and how much context to share, or **Start a New Chat**. Switching a chat's profile keeps the project's Default Profile unchanged.
 
