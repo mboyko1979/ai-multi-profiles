@@ -16,7 +16,7 @@ Refresh starts a separate ACP connection in a temporary clean home with account 
 
 Optional instructions can be entered as text or loaded from Markdown for the new session's first prompt. Codex profiles also offer an editor link to their native `AGENTS.override.md` / `AGENTS.md`. Codex account identity is discovered from the profile's actual `CODEX_HOME` and explicitly distinguished from verified login. See [implementation and verification](profile-presets.md).
 
-Independent IntelliJ Platform plugin for project defaults and switching ACP profiles within an AI Multi conversation.
+Independent IntelliJ Platform plugin for project defaults and switching ACP profiles within an AI Multi conversation. Air also shows account information for the selected profile, so you can check which account its agent is using.
 
 Development build **0.2.0-dev.12** preserves the original chat title during profile continuation and repairs old `AI_MULTI_HANDOFF:` titles when those chats open. Conversation saves retry transient Windows sharing violations; a persistent write failure preserves the committed history and the latest pending snapshot and reports the error without crashing the router.
 

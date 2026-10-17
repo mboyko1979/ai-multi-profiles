@@ -2,7 +2,7 @@
 
 ## 2026-10-18 - Describe personal model-list management
 
-The public description must explain that users can hide old or unused models and set a custom order, including placing their most-used model first. This documents existing profile model inclusion/order controls; configured filters and ordering remain policy over the bound agent's own catalog. No runtime or lifecycle behavior changes.
+The public description must explain that users can hide old or unused models and set a custom order, including placing their most-used model first. It must also mention Air's account information identifying the account used by the selected profile's agent. This documents existing profile model inclusion/order controls; configured filters and ordering remain policy over the bound agent's own catalog. No runtime or lifecycle behavior changes.
 
 
 ## 2026-10-18 - Recreate the public repository from a clean snapshot
@@ -19,7 +19,7 @@ The unused pre-profile home service and its unused mismatch helper had no caller
 
 ## 2026-10-18 - Short public README and illustrated quick start
 
-The user requests a brief, plain-language explanation of the plugin and a very short illustrated manual. Keep README focused on separate AI profiles/accounts, project Default Profile and switching chats. Preserve the previous extensive description in [the detailed guide](detailed-guide.md), including developer notes and compatibility limitations. Publish only visually reviewed native UI screenshots with synthetic data; unreviewed local screenshots remain excluded. This is a documentation change only: no runtime behavior, Marketplace metadata or deployment changes.
+The user requests a brief, plain-language explanation of the plugin and a very short illustrated manual. Keep README focused on separate AI profiles/accounts, project Default Profile and switching chats. Preserve the previous extensive description in [the detailed guide](detailed-guide.md), including developer notes and compatibility limitations. Publish only visually reviewed native UI screenshots with synthetic data; unreviewed local screenshots remain excluded. The user requests both Personal and Work in the settings illustration and Work selected in the chat illustration. This is a documentation change only: no runtime behavior, Marketplace metadata or deployment changes.
 
 
 ## 2026-10-18 ? Public repository and Marketplace identity
