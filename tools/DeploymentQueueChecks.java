@@ -24,6 +24,16 @@ public class DeploymentQueueChecks {
     save.invoke(null,List.of(other),queue);
     PreparePluginDeployment.main(new String[]{queue.toString(),draft.toString(),archive.toString(),plugins.toString()});
     if(((List<?>)load.invoke(null,draft)).size()!=3)throw new AssertionError("Ordinary installation must preserve unrelated commands");
-    System.out.println("PASS: latest development update replaces only its verified queued pair, preserves unrelated commands and original queue, rejects incomplete pairs, ordinary deployment works; no installer action executed");
+    PreparePluginDeployment.main(new String[]{queue.toString(),draft.toString(),archive.toString(),plugins.toString(),"--migrate-legacy"});
+    List<?> migration=(List<?>)load.invoke(null,draft);
+    if(migration.size()!=4 || !migration.get(0).toString().equals(other.toString()) ||
+        !migration.get(1).toString().contains(plugins.resolve("AIMulti").toString()) ||
+        !migration.get(3).toString().contains(archive.toString()))throw new AssertionError("Migration must remove the old identity before installing the new one");
+    Object legacyRemove=delete.getConstructor(Path.class).newInstance(plugins.resolve("AIMulti"));
+    save.invoke(null,List.of(other,legacyRemove),queue);
+    byte[] legacyBefore=Files.readAllBytes(queue);
+    try{PreparePluginDeployment.main(new String[]{queue.toString(),draft.toString(),archive.toString(),plugins.toString(),"--migrate-legacy"});throw new AssertionError("A queued legacy update must be rejected");}catch(IllegalStateException expected){}
+    if(!Arrays.equals(legacyBefore,Files.readAllBytes(queue)))throw new AssertionError("Rejected migration must preserve the original queue");
+    System.out.println("PASS: update replacement, unrelated commands, incomplete-pair rejection, ordinary installation and explicit legacy migration; no installer action executed");
   }
 }

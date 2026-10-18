@@ -18,9 +18,10 @@ class RegistrationLifecycle : Disposable, PluginStateListener, DynamicPluginList
     private val ownId = PluginId.getId("dev.boyko.ai-multi-profiles")
     private val legacyId = PluginId.getId("dev.boyko.codex-project-switcher")
     private val disabledListener = Runnable {
-        val disabled = DisabledPluginsState.getDisabledIds()
-        cleanup(current = ownId in disabled, legacy = legacyId in disabled)
-        if (ownId !in disabled && !removed) {
+        val details = PluginDetailsService.getInstance()
+        val currentDisabled = details.isDisabled(ownId)
+        cleanup(current = currentDisabled, legacy = details.isDisabled(legacyId))
+        if (!currentDisabled && !removed) {
             GenericAutoRegistration.resumeRegistration()
             ProjectManager.getInstance().openProjects.forEach { GenericAutoRegistration.ensureAsync(it) }
         }
@@ -34,7 +35,8 @@ class RegistrationLifecycle : Disposable, PluginStateListener, DynamicPluginList
     }
 
     fun reconcileLegacy() {
-        if (!PluginManagerCore.isLoaded(legacyId) || legacyId in DisabledPluginsState.getDisabledIds())
+        val details = PluginDetailsService.getInstance()
+        if (!details.isLoaded(legacyId) || details.isDisabled(legacyId))
             cleanup(current = false, legacy = true)
     }
 

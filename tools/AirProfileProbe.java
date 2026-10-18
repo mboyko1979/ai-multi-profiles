@@ -171,6 +171,7 @@ public class AirProfileProbe {
     Files.writeString(dir.resolve("catalog-diagnostic.txt"),"path="+configPath+"\nloaded="+call(configLoader,"loadFromPath",configPath)+"\nservice="+call(call(configService,"getLocalAgentConfigsFlow"),"getValue")+"\ncatalog="+call(call(catalog,"getAgentsFlow"),"getValue"));
     captureAir(dir.resolve("new-session.png"));
     ModelDefaultsProbe.check(launchContext!=null,"No actual New Session toolbar context");
+    verifyVisibleModelSettings();
     verifyVisibleAccount("personal@example.test");
     Object actions=call(SettingsRefreshProbe.type("com.intellij.openapi.actionSystem.ActionManager"),"getInstance");
     Object selector=call(actions,"getAction","dev.boyko.aiagentswitcher.AirProfileSelector");
@@ -366,6 +367,24 @@ public class AirProfileProbe {
     Object manager=call(binding,"getManager"),ref=call(binding,"getRef");
     Object identity=call(manager,"agentAuthIdentity",ref);
     ModelDefaultsProbe.check(identity!=null&&email.equals(identity.getClass().getField("email").get(identity)),"Native Air account identity missing or belongs to another profile: "+identity+"; expected "+email);
+  }
+  static void verifyVisibleModelSettings()throws Exception {
+    Set<String> visible=new HashSet<>();
+    for(int i=0;i<150;i++){
+      visible.clear();SettingsRefreshProbe.edt(()->{
+        for(java.awt.Window w:java.awt.Window.getWindows())if(w.isShowing())collectVisibleModelSettings(w,visible);
+      });
+      if(visible.contains("AirPromptModelAction")&&visible.contains("AirPromptEffortAction"))break;
+      Thread.sleep(100);
+    }
+    Files.writeString(ClientPreferencesProbe.dir.resolve("visible-model-settings.txt"),visible.toString());
+    ModelDefaultsProbe.check(visible.contains("AirPromptModelAction")&&visible.contains("AirPromptEffortAction"),
+      "New Session lost visible native model/reasoning controls: "+visible);
+  }
+  static void collectVisibleModelSettings(java.awt.Component c,Set<String> visible)throws Exception {
+    if(c.isShowing()&&c.getWidth()>0&&SettingsRefreshProbe.type("com.intellij.openapi.actionSystem.impl.ActionButton").isInstance(c))
+      visible.add(call(c,"getAction").getClass().getSimpleName());
+    if(c instanceof java.awt.Container parent)for(java.awt.Component child:parent.getComponents())collectVisibleModelSettings(child,visible);
   }
   static void verifyVisibleAccount(String email)throws Exception {
     final boolean[] found={false};StringBuilder report=new StringBuilder();

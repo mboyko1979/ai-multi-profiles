@@ -27,9 +27,10 @@ class AirProfilePreferencesGroup : DefaultActionGroup(), DumbAware {
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
         val manager = ActionManager.getInstance()
         val profile = manager.getAction("dev.boyko.aiagentswitcher.AirProfileSelector")
-        // getChildren(AnActionEvent) is override-only. DefaultActionGroup's event overload
-        // forwards to getChildren(ActionManager); call that instead.
-        val children = (native.getChildren(manager).toList() + getChildren(manager)).distinct().filter { it != profile }
+        // Air supplies dynamic roots from the event's view model. The ActionManager
+        // overload reads only static children and discards all native selectors.
+        // Let the public update session expand the group with its native context.
+        val children = (expand(native, e) + getChildren(manager)).distinct().filter { it != profile }
         if (profile == null) return children.toTypedArray()
         val composer = e?.let { AirComposerProfiles.composer(it.dataContext) }
         var inserted = false
@@ -70,10 +71,10 @@ class AirProfilePreferencesGroup : DefaultActionGroup(), DumbAware {
     }
 
     private fun expand(group: ActionGroup, event: AnActionEvent?): List<AnAction> {
-        if (group is DefaultActionGroup) return group.getChildren(ActionManager.getInstance()).toList()
-        val method = ActionGroup::class.java.getMethod("getChildren", AnActionEvent::class.java)
-        @Suppress("UNCHECKED_CAST")
-        return (method.invoke(group, event) as Array<AnAction>).toList()
+        val session = event?.updateSession
+        if (session != null && session !== UpdateSession.EMPTY) return session.children(group)
+        // Outside a native update session only static children can be enumerated.
+        return if (group is DefaultActionGroup) group.getChildren(ActionManager.getInstance()).toList() else emptyList()
     }
 }
 

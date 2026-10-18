@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "dev.boyko.aiagentswitcher"
-version = "0.2.2"
+version = "0.2.3-dev.2"
 
 repositories {
     mavenCentral()
@@ -18,7 +18,9 @@ dependencies {
         val localAi = providers.gradleProperty("aiAssistantPath").orNull
         if (localAi != null) localPlugin(localAi)
         else plugin("com.intellij.ml.llm:262.10968.223")
-        providers.gradleProperty("airPluginPath").orNull?.let { localPlugin(it) }
+        val localAir = providers.gradleProperty("airPluginPath").orNull
+        if (localAir != null) localPlugin(localAir)
+        else plugin("com.intellij.air:262.8665.497")
     }
 }
 
@@ -42,6 +44,9 @@ intellijPlatform {
         }
         changeNotes = """
             <ul>
+            <li>Air: restore native agent, model and settings controls through the platform action update session.</li>
+            <li>Resolve AI Assistant ACP classes through their native content module.</li>
+            <li>Use public plugin-state queries; remaining internal integrations are under Marketplace review preparation.</li>
             <li>IDEA 2026.3: the switch dialog slider no longer subclasses the final Darcula slider UI.</li>
             <li>IDEA 2026.3: agent presentation no longer calls the removed process-environment method.</li>
             <li>Startup still skips route sync when AI Assistant's agent catalog is absent. Saved profiles stay unchanged.</li>

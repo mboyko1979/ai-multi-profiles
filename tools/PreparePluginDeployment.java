@@ -10,13 +10,19 @@ public class PreparePluginDeployment {
     if(Files.isSymbolicLink(plugins)||Files.isSymbolicLink(target))throw new IllegalStateException("Redirected plugins directory");
     Class<?> manager=Class.forName("com.intellij.ide.startup.StartupActionScriptManager");
     List<?> previous=(List<?>)manager.getMethod("loadActionScript",Path.class).invoke(null,queue);
-    Path superseded=args.length>4?Path.of(args[4]).toAbsolutePath().normalize():null;
+    boolean migrateLegacy=Arrays.asList(args).contains("--migrate-legacy");
+    Path legacy=plugins.resolve("AIMulti");
+    if(Files.isSymbolicLink(legacy))throw new IllegalStateException("Redirected legacy plugin directory");
+    Path superseded=args.length>4 && !args[4].equals("--migrate-legacy")?Path.of(args[4]).toAbsolutePath().normalize():null;
     if(superseded!=null && (!superseded.getParent().equals(queue.toAbsolutePath().normalize().getParent()) ||
         !superseded.getFileName().toString().matches("ai-multi-profiles-\\d+\\.\\d+\\.\\d+-dev\\.\\d+-deploy\\.zip")))
       throw new IllegalStateException("Invalid superseded development archive");
     List<Object> commands=new ArrayList<>();int removedDelete=0,removedUnzip=0;
     for(Object command:previous){
       String type=command.getClass().getSimpleName();
+      if(migrateLegacy && ((type.equals("DeleteCommand") || type.equals("UnzipCommand")) && fieldPath(command,"mySource").equals(legacy) ||
+          command.toString().contains(legacy.toString())))
+        throw new IllegalStateException("An update of the legacy plugin is queued; refusing migration");
       if(superseded!=null && type.equals("DeleteCommand") && fieldPath(command,"mySource").equals(target)){removedDelete++;continue;}
       if(superseded!=null && type.equals("UnzipCommand") && fieldPath(command,"mySource").equals(superseded)){
         if(!fieldPath(command,"myDestination").equals(plugins) || field(command,"myFilenameFilter")!=null)
@@ -27,6 +33,7 @@ public class PreparePluginDeployment {
       commands.add(command);
     }
     if(removedDelete!=removedUnzip || removedDelete>1)throw new IllegalStateException("Pending AI Multi update is not one complete installation pair");
+    if(migrateLegacy)commands.add(Class.forName(manager.getName()+"$DeleteCommand").getConstructor(Path.class).newInstance(legacy));
     commands.add(Class.forName(manager.getName()+"$DeleteCommand").getConstructor(Path.class).newInstance(target));
     commands.add(Class.forName(manager.getName()+"$UnzipCommand").getConstructor(Path.class,Path.class).newInstance(archive,plugins));
     manager.getMethod("saveActionScript",List.class,Path.class).invoke(null,commands,output);

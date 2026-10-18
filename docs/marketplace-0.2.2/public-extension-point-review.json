@@ -1,0 +1,3368 @@
+{
+  "note": "Absence of a class-level Internal annotation does not certify all members, parameter types or semantic suitability. Extracted from exact distributed host artifacts; duplicated declarations deduplicated by extension point and contract type.",
+  "hosts": [
+    {
+      "host": "Air",
+      "version": "262.8665.497",
+      "contracts": [
+        {
+          "ep": "com.intellij.air.agentModeKindProvider",
+          "type": "com.intellij.air.backend.prompt.api.mode.AgentModeKindProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.probeSessionDisposer",
+          "type": "com.intellij.air.acp.api.AcpProbeSessionDisposer",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.cloudGitTargetResolver",
+          "type": "com.intellij.air.acp.api.AirCloudGitTargetResolver",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.cloudResultsBranchOperations",
+          "type": "com.intellij.air.acp.api.AirCloudResultsBranchOperations",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.additionalRootsProvider",
+          "type": "com.intellij.air.acp.api.AcpAdditionalRootsProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.agentStartConfigOverrideProvider",
+          "type": "com.intellij.air.acp.api.AcpAgentStartConfigOverrideProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.providerMetadataDecoder",
+          "type": "com.intellij.air.acp.AcpProviderMetadataDecoder",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.mcpServerProvider",
+          "type": "com.intellij.air.acp.AcpMcpServerProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.acp.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.registryLifecycleListener",
+          "type": "com.intellij.air.acp.runtime.registry.AcpRegistryLifecycleListener",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.runtime.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.recommendedAgentsProvider",
+          "type": "com.intellij.air.acp.runtime.registry.AcpRecommendedAgentsProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.runtime.jar"
+        },
+        {
+          "ep": "com.intellij.air.acpPromptSupplement",
+          "type": "com.intellij.air.acp.runtime.AcpPromptSupplement",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.runtime.jar"
+        },
+        {
+          "ep": "com.intellij.air.skillNamesProvider",
+          "type": "com.intellij.air.backend.session.api.AirSkillNamesProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.terminalRuntimeLaunchParticipant",
+          "type": "com.intellij.air.backend.session.api.AgentTerminalRuntimeLaunchParticipant",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agent",
+          "type": "com.intellij.air.backend.session.api.AgentDescriptorBean",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.threadViewSurfaceLifecycleListener",
+          "type": "com.intellij.air.backend.session.api.AgentThreadViewSurfaceLifecycleListener",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.threadArchiveListener",
+          "type": "com.intellij.air.backend.session.api.AgentThreadArchiveListener",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentSessionWriterProbe",
+          "type": "com.intellij.air.backend.session.api.AgentSessionWriterProbe",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentToolingExperimentProvider",
+          "type": "com.intellij.air.backend.session.api.AgentToolingExperimentProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.thread.view.agentThreadViewBehavior",
+          "type": "com.intellij.air.backend.session.api.AgentThreadViewBehaviorBean",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentSessionRuntimeAdapter",
+          "type": "com.intellij.air.backend.session.api.AgentSessionRuntimeAdapter",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentSessionSurfaceSwitchBridge",
+          "type": "com.intellij.air.backend.session.api.AgentSessionSurfaceSwitchBridge",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionPromptPreparationProvider",
+          "type": "com.intellij.air.backend.session.api.SessionPromptPreparationProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.remoteOperationHandler",
+          "type": "com.intellij.air.backend.session.api.RemoteOperationHandler",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionWorkspaceIntegration",
+          "type": "com.intellij.air.backend.session.api.AgentSessionWorkspaceIntegration",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.structuredSessionDerivedStateContributor",
+          "type": "com.intellij.air.backend.session.api.StructuredSessionDerivedStateContributor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentCatalogContributor",
+          "type": "com.intellij.air.backend.session.launch.AgentCatalogContributor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.threadLaunchSpecAugmenter",
+          "type": "com.intellij.air.backend.session.launch.AgentThreadLaunchSpecAugmenter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.threadLaunchContributor",
+          "type": "com.intellij.air.backend.session.launch.AgentThreadLaunchContributor",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentLaunchTargetExecutor",
+          "type": "com.intellij.air.backend.session.launch.AgentLaunchTargetExecutor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.mcpStreamUrlProvider",
+          "type": "com.intellij.air.backend.session.launch.McpStreamUrlProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.ideThemePaletteProvider",
+          "type": "com.intellij.air.backend.session.launch.IdeThemePaletteProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.threadUsageCostCalculator",
+          "type": "com.intellij.air.backend.session.cost.AgentThreadUsageCostCalculator",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.cost.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionMcpTools",
+          "type": "com.intellij.air.backend.session.mcp.api.AirSessionMcpToolProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.mcp.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionMcpServerInstaller",
+          "type": "com.intellij.air.backend.session.mcp.api.AgentSessionMcpServerInstaller",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.mcp.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promptContextContributor",
+          "type": "com.intellij.air.frontend.prompt.api.AgentPromptContextContributorBridge",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promptContextRenderer",
+          "type": "com.intellij.air.frontend.prompt.api.AgentPromptContextRendererBridge",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promptTokenChipKind",
+          "type": "com.intellij.air.frontend.prompt.api.AgentPromptTokenChipKind",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promptContextOwner",
+          "type": "com.intellij.air.frontend.prompt.api.AgentPromptContextOwnerBridge",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promptPaletteExtension",
+          "type": "com.intellij.air.frontend.prompt.api.AgentPromptPaletteExtension",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promptManualContextSource",
+          "type": "com.intellij.air.frontend.prompt.api.AgentPromptManualContextSourceBridge",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promptWorkspaceSettingsContributor",
+          "type": "com.intellij.air.frontend.prompt.api.AgentPromptWorkspaceSettingsService",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.lightExtensionContributionKind",
+          "type": "com.intellij.air.light.extensions.contributions.LightExtensionContributionKind",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.light.extensions.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentLaunchTargetProvisioningProvider",
+          "type": "com.intellij.air.frontend.launch.AgentLaunchTargetProvisioningProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentLaunchTargetPresentationProvider",
+          "type": "com.intellij.air.frontend.launch.AgentLaunchTargetPresentationProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentSessionPickSource",
+          "type": "com.intellij.air.frontend.launch.preset.AgentSessionPickSource",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentSessionPickPolicy",
+          "type": "com.intellij.air.frontend.launch.preset.AgentSessionPickPolicy",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promoSessionStarter",
+          "type": "com.intellij.air.frontend.launch.AgentPromoSessionStarter",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.welcomePageOpener",
+          "type": "com.intellij.air.frontend.launch.AgentWelcomePageOpener",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.byokProvider",
+          "type": "com.intellij.air.frontend.llm.api.AirByokProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": true,
+          "artifact": "intellij.air.frontend.llm.byok.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.aiGovernanceSource",
+          "type": "com.intellij.air.shared.llm.AirAiGovernanceSource",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.shared.llm.jar"
+        },
+        {
+          "ep": "com.intellij.air.aiGovernanceProxyAuthProvider",
+          "type": "com.intellij.air.frontend.llm.api.AirAiGovernanceProxyAuthProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.llm.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.pi.controlRequestHandler",
+          "type": "com.intellij.air.backend.pi.threads.PiControlRequestHandler",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.pi.threads.jar"
+        },
+        {
+          "ep": "com.intellij.air.settingsContributor",
+          "type": "com.intellij.air.settings.AgentSettingsContributor",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.settings.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentManagementUiProvider",
+          "type": "com.intellij.air.settings.AgentManagementUiProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.settings.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.workspaceWorkingTreeSourceProvider",
+          "type": "com.intellij.air.backend.session.working.tree.api.WorkspaceWorkingTreeSourceProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.working.tree.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.thread.view.sessionForkHandler",
+          "type": "com.intellij.air.thread.view.AgentSessionForkHandler",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.thread.view.agentThreadViewContent",
+          "type": "com.intellij.air.thread.view.AgentThreadViewContentProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.thread.view.sessionBannerContributor",
+          "type": "com.intellij.air.thread.view.AgentSessionBannerContributor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.session.linkProvider",
+          "type": "com.intellij.air.thread.view.AgentSessionLinkProviderBean",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.session.linkParser",
+          "type": "com.intellij.air.thread.view.AgentSessionLinkParserBean",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.session.linkConsumer",
+          "type": "com.intellij.air.thread.view.AgentSessionLinkConsumerBean",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.thread.view.transcriptChipExtension",
+          "type": "com.intellij.air.thread.view.AgentTranscriptChipExtension",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.ui.markdownCodeFenceRenderer",
+          "type": "com.intellij.air.frontend.session.ui.AgentSessionMarkdownCodeFenceRenderer",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.ui.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.ui.outgoingCommitIssueLinkRenderer",
+          "type": "com.intellij.air.frontend.session.ui.AgentSessionOutgoingCommitIssueLinkRenderer",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.ui.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.changedFileDiffOpener",
+          "type": "com.intellij.air.frontend.session.ui.AgentChangedFileDiffOpener",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.ui.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionTreeWorkspaceContributor",
+          "type": "com.intellij.air.frontend.session.ui.AgentSessionTreeWorkspaceContributor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.ui.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionWorkspaceVisibilityProvider",
+          "type": "com.intellij.air.frontend.session.catalog.api.SessionWorkspaceVisibilityProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.catalog.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.codeNotes.api.anchorType",
+          "type": "com.intellij.air.codeNotes.api.AnchorType",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.codeNotes.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.codeNotes.repositoryProvider",
+          "type": "com.intellij.air.codeNotes.data.backend.api.CodeNotesRepositoryProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.codeNotes.data.backend.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.codeNotes.parentProvider",
+          "type": "com.intellij.air.codeNotes.data.backend.api.CodeNoteParentProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.codeNotes.data.backend.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.codeNotes.parentSelectionProvider",
+          "type": "com.intellij.air.codeNotes.data.backend.api.CodeNoteParentSelectionProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.codeNotes.data.backend.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.codeNotes.diffOwnerProvider",
+          "type": "com.intellij.air.codeNotes.ui.frontend.api.CodeNoteDiffOwnerProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.codeNotes.ui.frontend.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionLogCompactor",
+          "type": "com.intellij.air.backend.session.log.compaction.SessionLogCompactor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.log.storage.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionProjectionChangeSubscriber",
+          "type": "com.intellij.air.backend.session.log.SessionProjectionChangeSubscriber",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.projection.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionRichProjectionLoadListener",
+          "type": "com.intellij.air.backend.session.log.SessionRichProjectionLoadListener",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.projection.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionLogCompactionCondition",
+          "type": "com.intellij.air.backend.session.log.reducer.SessionLogCompactionCondition",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.log.reducer.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionLogCompactionStrategy",
+          "type": "com.intellij.air.backend.session.log.reducer.SessionLogCompactionStrategy",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.log.reducer.jar"
+        },
+        {
+          "ep": "com.intellij.air.frontend.session.view.gui.mcpContentRenderer",
+          "type": "com.intellij.air.frontend.session.view.gui.mcp.render.McpContentRenderer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.gui.mcp.render.jar"
+        }
+      ]
+    },
+    {
+      "host": "Air",
+      "version": "263.7031.23",
+      "contracts": [
+        {
+          "ep": "com.intellij.air.agentModeKindProvider",
+          "type": "com.intellij.air.backend.prompt.api.mode.AgentModeKindProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.probeSessionDisposer",
+          "type": "com.intellij.air.acp.api.AcpProbeSessionDisposer",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.cloudGitTargetResolver",
+          "type": "com.intellij.air.acp.api.AirCloudGitTargetResolver",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.cloudResultsBranchOperations",
+          "type": "com.intellij.air.acp.api.AirCloudResultsBranchOperations",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.additionalRootsProvider",
+          "type": "com.intellij.air.acp.api.AcpAdditionalRootsProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.agentStartConfigOverrideProvider",
+          "type": "com.intellij.air.acp.api.AcpAgentStartConfigOverrideProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.providerMetadataDecoder",
+          "type": "com.intellij.air.acp.AcpProviderMetadataDecoder",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.mcpServerProvider",
+          "type": "com.intellij.air.acp.AcpMcpServerProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.acp.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.registryLifecycleListener",
+          "type": "com.intellij.air.acp.runtime.registry.AcpRegistryLifecycleListener",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.runtime.jar"
+        },
+        {
+          "ep": "com.intellij.air.acp.recommendedAgentsProvider",
+          "type": "com.intellij.air.acp.runtime.registry.AcpRecommendedAgentsProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.runtime.jar"
+        },
+        {
+          "ep": "com.intellij.air.acpPromptSupplement",
+          "type": "com.intellij.air.acp.runtime.AcpPromptSupplement",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.acp.runtime.jar"
+        },
+        {
+          "ep": "com.intellij.air.skillNamesProvider",
+          "type": "com.intellij.air.backend.session.api.AirSkillNamesProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.terminalRuntimeLaunchParticipant",
+          "type": "com.intellij.air.backend.session.api.AgentTerminalRuntimeLaunchParticipant",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agent",
+          "type": "com.intellij.air.backend.session.api.AgentDescriptorBean",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.threadViewSurfaceLifecycleListener",
+          "type": "com.intellij.air.backend.session.api.AgentThreadViewSurfaceLifecycleListener",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.threadArchiveListener",
+          "type": "com.intellij.air.backend.session.api.AgentThreadArchiveListener",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentSessionWriterProbe",
+          "type": "com.intellij.air.backend.session.api.AgentSessionWriterProbe",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentToolingExperimentProvider",
+          "type": "com.intellij.air.backend.session.api.AgentToolingExperimentProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.thread.view.agentThreadViewBehavior",
+          "type": "com.intellij.air.backend.session.api.AgentThreadViewBehaviorBean",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentSessionRuntimeAdapter",
+          "type": "com.intellij.air.backend.session.api.AgentSessionRuntimeAdapter",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentSessionSurfaceSwitchBridge",
+          "type": "com.intellij.air.backend.session.api.AgentSessionSurfaceSwitchBridge",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionPromptPreparationProvider",
+          "type": "com.intellij.air.backend.session.api.SessionPromptPreparationProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.remoteOperationHandler",
+          "type": "com.intellij.air.backend.session.api.RemoteOperationHandler",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionWorkspaceIntegration",
+          "type": "com.intellij.air.backend.session.api.AgentSessionWorkspaceIntegration",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.structuredSessionDerivedStateContributor",
+          "type": "com.intellij.air.backend.session.api.StructuredSessionDerivedStateContributor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentCatalogContributor",
+          "type": "com.intellij.air.backend.session.launch.AgentCatalogContributor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.threadLaunchSpecAugmenter",
+          "type": "com.intellij.air.backend.session.launch.AgentThreadLaunchSpecAugmenter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.threadLaunchContributor",
+          "type": "com.intellij.air.backend.session.launch.AgentThreadLaunchContributor",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentLaunchTargetExecutor",
+          "type": "com.intellij.air.backend.session.launch.AgentLaunchTargetExecutor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.mcpStreamUrlProvider",
+          "type": "com.intellij.air.backend.session.launch.McpStreamUrlProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.ideThemePaletteProvider",
+          "type": "com.intellij.air.backend.session.launch.IdeThemePaletteProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.threadUsageCostCalculator",
+          "type": "com.intellij.air.backend.session.cost.AgentThreadUsageCostCalculator",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.cost.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionMcpTools",
+          "type": "com.intellij.air.backend.session.mcp.api.AirSessionMcpToolProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.mcp.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionMcpServerInstaller",
+          "type": "com.intellij.air.backend.session.mcp.api.AgentSessionMcpServerInstaller",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.mcp.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promptContextContributor",
+          "type": "com.intellij.air.frontend.prompt.api.AgentPromptContextContributorBridge",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promptContextRenderer",
+          "type": "com.intellij.air.frontend.prompt.api.AgentPromptContextRendererBridge",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promptTokenChipKind",
+          "type": "com.intellij.air.frontend.prompt.api.AgentPromptTokenChipKind",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promptContextOwner",
+          "type": "com.intellij.air.frontend.prompt.api.AgentPromptContextOwnerBridge",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promptPaletteExtension",
+          "type": "com.intellij.air.frontend.prompt.api.AgentPromptPaletteExtension",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promptManualContextSource",
+          "type": "com.intellij.air.frontend.prompt.api.AgentPromptManualContextSourceBridge",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promptWorkspaceSettingsContributor",
+          "type": "com.intellij.air.frontend.prompt.api.AgentPromptWorkspaceSettingsService",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.prompt.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.lightExtensionContributionKind",
+          "type": "com.intellij.air.light.extensions.contributions.LightExtensionContributionKind",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.light.extensions.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentLaunchTargetProvisioningProvider",
+          "type": "com.intellij.air.frontend.launch.AgentLaunchTargetProvisioningProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentLaunchTargetPresentationProvider",
+          "type": "com.intellij.air.frontend.launch.AgentLaunchTargetPresentationProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentSessionPickSource",
+          "type": "com.intellij.air.frontend.launch.preset.AgentSessionPickSource",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentSessionPickPolicy",
+          "type": "com.intellij.air.frontend.launch.preset.AgentSessionPickPolicy",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.promoSessionStarter",
+          "type": "com.intellij.air.frontend.launch.AgentPromoSessionStarter",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.welcomePageOpener",
+          "type": "com.intellij.air.frontend.launch.AgentWelcomePageOpener",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.launch.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.byokProvider",
+          "type": "com.intellij.air.frontend.llm.api.AirByokProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": true,
+          "artifact": "intellij.air.frontend.llm.byok.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.aiGovernanceSource",
+          "type": "com.intellij.air.shared.llm.AirAiGovernanceSource",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.shared.llm.jar"
+        },
+        {
+          "ep": "com.intellij.air.aiGovernanceProxyAuthProvider",
+          "type": "com.intellij.air.frontend.llm.api.AirAiGovernanceProxyAuthProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.llm.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.pi.controlRequestHandler",
+          "type": "com.intellij.air.backend.pi.threads.PiControlRequestHandler",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.pi.threads.jar"
+        },
+        {
+          "ep": "com.intellij.air.settingsContributor",
+          "type": "com.intellij.air.settings.AgentSettingsContributor",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.settings.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.agentManagementUiProvider",
+          "type": "com.intellij.air.settings.AgentManagementUiProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.settings.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.workspaceWorkingTreeSourceProvider",
+          "type": "com.intellij.air.backend.session.working.tree.api.WorkspaceWorkingTreeSourceProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.working.tree.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.thread.view.sessionForkHandler",
+          "type": "com.intellij.air.thread.view.AgentSessionForkHandler",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.thread.view.agentThreadViewContent",
+          "type": "com.intellij.air.thread.view.AgentThreadViewContentProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.thread.view.sessionBannerContributor",
+          "type": "com.intellij.air.thread.view.AgentSessionBannerContributor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.session.linkProvider",
+          "type": "com.intellij.air.thread.view.AgentSessionLinkProviderBean",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.session.linkParser",
+          "type": "com.intellij.air.thread.view.AgentSessionLinkParserBean",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.session.linkConsumer",
+          "type": "com.intellij.air.thread.view.AgentSessionLinkConsumerBean",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.thread.view.transcriptChipExtension",
+          "type": "com.intellij.air.thread.view.AgentTranscriptChipExtension",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.ui.markdownCodeFenceRenderer",
+          "type": "com.intellij.air.frontend.session.ui.AgentSessionMarkdownCodeFenceRenderer",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.ui.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.ui.outgoingCommitIssueLinkRenderer",
+          "type": "com.intellij.air.frontend.session.ui.AgentSessionOutgoingCommitIssueLinkRenderer",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.ui.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.changedFileDiffOpener",
+          "type": "com.intellij.air.frontend.session.ui.AgentChangedFileDiffOpener",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.ui.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionTreeWorkspaceContributor",
+          "type": "com.intellij.air.frontend.session.ui.AgentSessionTreeWorkspaceContributor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.ui.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionWorkspaceVisibilityProvider",
+          "type": "com.intellij.air.frontend.session.catalog.api.SessionWorkspaceVisibilityProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.catalog.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.codeNotes.api.anchorType",
+          "type": "com.intellij.air.codeNotes.api.AnchorType",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.codeNotes.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.codeNotes.repositoryProvider",
+          "type": "com.intellij.air.codeNotes.data.backend.api.CodeNotesRepositoryProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.codeNotes.data.backend.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.codeNotes.parentProvider",
+          "type": "com.intellij.air.codeNotes.data.backend.api.CodeNoteParentProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.codeNotes.data.backend.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.codeNotes.parentSelectionProvider",
+          "type": "com.intellij.air.codeNotes.data.backend.api.CodeNoteParentSelectionProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.codeNotes.data.backend.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.codeNotes.diffOwnerProvider",
+          "type": "com.intellij.air.codeNotes.ui.frontend.api.CodeNoteDiffOwnerProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.codeNotes.ui.frontend.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionLogCompactor",
+          "type": "com.intellij.air.backend.session.log.compaction.SessionLogCompactor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.log.storage.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionProjectionChangeSubscriber",
+          "type": "com.intellij.air.backend.session.log.SessionProjectionChangeSubscriber",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.projection.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionRichProjectionLoadListener",
+          "type": "com.intellij.air.backend.session.log.SessionRichProjectionLoadListener",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.projection.api.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionLogCompactionCondition",
+          "type": "com.intellij.air.backend.session.log.reducer.SessionLogCompactionCondition",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.log.reducer.jar"
+        },
+        {
+          "ep": "com.intellij.air.sessionLogCompactionStrategy",
+          "type": "com.intellij.air.backend.session.log.reducer.SessionLogCompactionStrategy",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.backend.session.log.reducer.jar"
+        },
+        {
+          "ep": "com.intellij.air.frontend.session.view.gui.mcpContentRenderer",
+          "type": "com.intellij.air.frontend.session.view.gui.mcp.render.McpContentRenderer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.air.frontend.session.view.gui.mcp.render.jar"
+        }
+      ]
+    },
+    {
+      "host": "AI Assistant",
+      "version": "262.10968.223",
+      "contracts": [
+        {
+          "ep": "com.intellij.ml.llm.privacy.rag.contextPrivacyFilter",
+          "type": "com.intellij.ml.llm.privacy.rag.ContextPrivacyFilter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.contextRetrieverFactory",
+          "type": "com.intellij.ml.llm.context.ContextRetrieverFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.contextTransformerFactory",
+          "type": "com.intellij.ml.llm.context.ContextTransformerFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.contextPostProcessorFactory",
+          "type": "com.intellij.ml.llm.context.ContextPostProcessorFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.retrievalSessionRegistrar",
+          "type": "com.intellij.ml.llm.context.RetrievalSessionRegistrar",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.java.jvmSuperClassCollector",
+          "type": "com.intellij.ml.llm.java.generate.test.JvmSuperClassCollector",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.jupyter.kotlin.jdiProxyValueRenderer",
+          "type": "com.intellij.ml.llm.jupyter.kotlin.runtime.renderers.JdiProxyValueRenderer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.ruby.rubyMethodTypePromptPresentationProvider",
+          "type": "com.intellij.ml.llm.ruby.util.type.RubyMethodTypePromptPresentationProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.code.engine.repomap.imports.importReferenceProviderFactory",
+          "type": "com.intellij.ml.llm.codeEngine.repomap.imports.IJImportReferenceProviderFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.code.engine.repomap.imports.importResolveProviderFactory",
+          "type": "com.intellij.ml.llm.codeEngine.repomap.imports.IJImportResolveProviderFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.code.engine.repomap.everything.everyReferenceProviderFactory",
+          "type": "com.intellij.ml.llm.codeEngine.repomap.everything.IJEveryReferenceProviderFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chatInputLanguage.chatInputCommand",
+          "type": "com.intellij.ml.llm.chatInputLanguage.commands.ChatInputCommandProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chatInputLanguage.chatInputCommandsProvider",
+          "type": "com.intellij.ml.llm.chatInputLanguage.commands.ChatInputCommandsProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chatInputLanguage.completion.aliasContributor",
+          "type": "com.intellij.ml.llm.chatInputLanguage.completion.ChatInputAliasContributor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.github.projectVmAdapter",
+          "type": "com.intellij.ml.llm.github.assistedReview.GHPRAIReviewPluginAdapter$Factory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.domains.provider",
+          "type": "com.intellij.ml.llm.domains.DomainProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.domains.association",
+          "type": "com.intellij.ml.llm.domains.associations.DomainAssociation",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.domains.command",
+          "type": "com.intellij.ml.llm.domains.commands.LLMDomainCommand",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.domains.ide.contextElementsVisitor",
+          "type": "com.intellij.ml.llm.domains.ide.DomainContextElementsVisitor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.vcs.selfReviewAcpAgentContributor",
+          "type": "com.intellij.ml.llm.vcs.selfReview.agent.acp.SelfReviewAcpAgentContributor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.mcp.allowedToolsProvider",
+          "type": "com.intellij.ml.llm.mcp.client.AllowedToolsProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.jupyterPromptEnhancer",
+          "type": "com.intellij.ml.llm.codeGeneration.grazie.jupyter.JupyterCgPromptEnhancer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.llmDiffChangeApplier",
+          "type": "com.intellij.ml.llm.codeGeneration.multifile.core.applier.LlmDiffChangeApplier",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.llmDiffChangeFactory",
+          "type": "com.intellij.ml.llm.codeGeneration.multifile.core.change.factory.DiffChangeFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.llmDiffCustomApplierProvider",
+          "type": "com.intellij.ml.llm.codeGeneration.multifile.core.change.processor.LlmDiffCustomApplierProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ai.codeGenerationInteractionProvider",
+          "type": "com.intellij.ml.llm.codeGeneration.inplace.AICodeGenerationInteractionProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ai.testGenerationInteractionProvider",
+          "type": "com.intellij.ml.llm.codeGeneration.inplace.AITestGenerationInteractionProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.changeNavigationProvider",
+          "type": "com.intellij.ml.llm.codeGeneration.popup.changeNavigation.ChangeNavigationProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.aiCodeGenerationFollowupCustomization",
+          "type": "com.intellij.ml.llm.codeGeneration.popup.AICodeGenerationFollowupPanelCustomization",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.testLibrariesProvider",
+          "type": "com.intellij.ml.llm.codeGeneration.testGeneration.TestLibrariesProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.testFrameworkInstructionsProvider",
+          "type": "com.intellij.ml.llm.codeGeneration.testGeneration.TestFrameworkInstructionsProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.core.accountsSettingsPanelProvider",
+          "type": "com.intellij.ml.llm.core.settings.AccountsSettingsPanelProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.core.agentAuthorizationRowProvider",
+          "type": "com.intellij.ml.llm.core.settings.AgentAuthorizationRowProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.core.thirdPartyAiProviderFeatureSettingsContributor",
+          "type": "com.intellij.ml.llm.core.settings.ThirdPartyAiProviderFeatureSettingsContributor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.core.optionsApplicabilityFilter",
+          "type": "com.intellij.ml.llm.core.settings.LLMOptionsApplicabilityFilter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.assistantKillSwitch",
+          "type": "com.intellij.ml.llm.core.AIAssistantKillSwitch",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ai.indentMatcherProvider",
+          "type": "com.intellij.ml.llm.core.postProcessing.IndentMatcherProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ai.shRunnerProvider",
+          "type": "com.intellij.ml.llm.core.ssh.LLMShRunnerProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ai.customScriptRunnerProvider",
+          "type": "com.intellij.ml.llm.core.ssh.LLMCustomCodeSnippetRunnerProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.aiAssistantPsiSearchFilter",
+          "type": "com.intellij.ml.llm.PsiSearchFilter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.promptLibrary.customizableAIPrompt",
+          "type": "com.intellij.ml.llm.core.chat.promptLibrary.AICustomizablePrompt",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chatLabelsProvider",
+          "type": "com.intellij.ml.llm.core.statistics.ChatLabelsProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.llmCompletionDisabledListener",
+          "type": "com.intellij.ml.llm.core.settings.LLMCompletionDisabledListener",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.settings.featureSettings",
+          "type": "com.intellij.ml.llm.core.settings.LLMFeatureSettings",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.settings.insightsSettingsContentProvider",
+          "type": "com.intellij.ml.llm.core.settings.InsightsSettingsContentProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.thirdPartyAIProvider",
+          "type": "com.intellij.ml.llm.core.providers.ThirdPartyAIProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.importFixer",
+          "type": "com.intellij.ml.llm.codeGeneration.diff.AIImportFixer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.experimentalFeatureProvider",
+          "type": "com.intellij.ml.llm.registry.ExperimentalFeatureProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.grazieTaskProvider",
+          "type": "com.intellij.ml.llm.tasks.GrazieTaskChatBuilder",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.internalFeedbackDataProvider",
+          "type": "com.intellij.ml.llm.internalFeedback.InternalFeedbackDataProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.collectorSubgroupProvider",
+          "type": "com.intellij.ml.llm.core.statistics.AIAssistantCollectorSubgroupProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.inlineCompletionModeProvider",
+          "type": "com.intellij.ml.llm.core.completion.InlineCompletionModeProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.preferableModelProvider",
+          "type": "com.intellij.ml.llm.core.models.PreferableModelProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.experimentConnector.byEditorType",
+          "type": "com.intellij.ml.llm.core.chat.experiments.AIExperimentConnectorByEditorTypeExtensionPoint",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.editor.experimentFetcher",
+          "type": "com.intellij.ml.llm.core.chat.experiments.AIAEditorExperimentFetcher",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.grazie.client.grazieApiClientProvider",
+          "type": "com.intellij.ml.llm.grazie.client.GrazieApiClientProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.grazie.client.grazieQuotaClientProvider",
+          "type": "com.intellij.ml.llm.grazie.client.GrazieQuotaClientProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.campaignActionHandler",
+          "type": "com.intellij.ml.llm.campaign.CampaignActionHandler",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.insights.provenanceProvider",
+          "type": "com.intellij.ml.llm.insights.insight.authorship.InsightProvenanceProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.insights.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.insights.insight.diagnostics.tabProvider",
+          "type": "com.intellij.ml.llm.insights.insight.diagnostics.InsightDiagnosticsTabProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.insights.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.insights.featureQuotaConfig",
+          "type": "com.intellij.ml.llm.insights.insight.quota.InsightsFeatureQuotaConfig",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.insights.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.insights.diff.frontend.chatOpener",
+          "type": "com.intellij.ml.llm.insights.diff.common.launcher.DiffInsightsChatOpener",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.insights.diff.common.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.insights.diff.backend.diffPsiScoringContributor",
+          "type": "com.intellij.ml.llm.insights.diff.backend.handler.scoring.analysis.DiffPsiScoringContributor",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.insights.diff.backend.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.insights.diff.backend.sessionSource",
+          "type": "com.intellij.ml.llm.insights.diff.backend.session.DiffInsightsSessionSource",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.insights.diff.backend.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chatMessageViewProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.ChatMessageViewProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.featureCollector",
+          "type": "com.intellij.ml.llm.core.statistics.fus.collectors.FeatureCollector",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatContextProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.ChatContextProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatContextFilter",
+          "type": "com.intellij.ml.llm.core.chat.context.ChatContextFilter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.context.usersPromptContextProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.UsersPromptContextProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.prompt.usersPromptIdDetector",
+          "type": "com.intellij.ml.llm.core.chat.messages.UsersPromptIdDetector",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.projectTechnologiesChatContextProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.ProjectTechnologiesChatContextProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.errorExplainFilterFactory",
+          "type": "com.intellij.ml.llm.errorExplanation.filters.ErrorExplainFilterFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.runtimeTextPostprocessor",
+          "type": "com.intellij.ml.llm.errorExplanation.provider.RuntimeTextPostprocessor",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.codeContextProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.CodeContextProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.documentationSource",
+          "type": "com.intellij.ml.llm.qa.sources.DocumentationSource",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatIntentionCandidateProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.ChatIntentionCandidatesProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatIntentionProvider",
+          "type": "com.intellij.ml.llm.intentions.chat.ChatIntentionProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.codeContextAttachmentsProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.traverser.CodeDependencyCollector",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": true,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatCodeSnippetProvider",
+          "type": "com.intellij.ml.llm.core.chat.snippets.CodeSnippetProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatUiCodeSnippetLanguageProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.codeSnippet.CodeSnippetLanguageProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatUiUserMessageTextToHtmlConvertor",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.UserMessageTextToHtmlConvertor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatInputDropHandler",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.input.AIAssistantInputDropHandler",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatUiMessagePartViewExtension",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.MessagePartViewExtension",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatMessageHandler",
+          "type": "com.intellij.ml.llm.core.chat.session.ChatMessageHandler",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.createFileFromSnippetProcessor",
+          "type": "com.intellij.ml.llm.core.chat.actions.codeSnippet.createFile.CreateFileFromSnippetProcessor",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatExampleQueryProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.AIAssistantChatExampleQueryProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.userMessageFactory",
+          "type": "com.intellij.ml.llm.core.chat.messages.ChatUserMessageFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chatPanelComponentProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.AIAssistantChatPanelComponentProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chatEmptyStatePromoProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.AIAssistantChatEmptyStatePromoProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.agentsModelServiceProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.AIAssistantAgentsModelServiceProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.smartChatEndpointProvider",
+          "type": "com.intellij.ml.llm.smartChat.endpoints.SmartChatEndpointProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.smartChatConfiguration",
+          "type": "com.intellij.ml.llm.smartChat.endpoints.SmartChatConfiguration",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.aiSearchProvider",
+          "type": "com.intellij.ml.llm.smartChat.endpoints.search.AISearchProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ai.findUsagesProvider",
+          "type": "com.intellij.ml.llm.smartChat.endpoints.search.FindUsagesProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatContextItemIdentityExtension",
+          "type": "com.intellij.ml.llm.core.chat.context.ChatContextItemIdentityExtension",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.caretCodeProvider",
+          "type": "com.intellij.ml.llm.smartChat.endpoints.CaretCodeProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ai.projectViewLocationProvider",
+          "type": "com.intellij.ml.llm.core.chat.actions.AIAssistantProjectViewLocationProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.assistantScopeProvider",
+          "type": "com.intellij.ml.llm.core.chat.actions.scope.AIAssistantScopeProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ai.runtimeErrorTraceContextProvider",
+          "type": "com.intellij.ml.llm.errorExplanation.provider.RuntimeErrorTraceContextProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ai.buildErrorContextProvider",
+          "type": "com.intellij.ml.llm.errorExplanation.provider.BuildErrorContextProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ai.convertTransformationsProvider",
+          "type": "com.intellij.ml.llm.intentions.conversion.editor.ConvertTransformationsProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ai.pasteConvertVetoer",
+          "type": "com.intellij.ml.llm.intentions.conversion.PasteConvertVetoer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.chatReferenceContributor",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.navigation.ChatReferenceContributor",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": true,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.chatReferenceResolver",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.navigation.ChatReferenceResolver",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": true,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatReferenceCompletionProvider",
+          "type": "com.intellij.ml.llm.completion.chat.ChatReferenceCompletionProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatInputFileFilter",
+          "type": "com.intellij.ml.llm.completion.chat.ChatInputFileFilter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatAttachmentEnhancer",
+          "type": "com.intellij.ml.llm.core.chat.attachments.ChatAttachmentEnhancer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": true,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.aiAssistantInputCompiler",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.input.AIAssistantInputCompiler",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.aiAssistantConsentExtension",
+          "type": "com.intellij.ml.llm.core.chat.AIAssistantConsentExtension",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.aiaInEditorInterceptor",
+          "type": "com.intellij.ml.llm.core.chat.actions.editor.AiaInEditorInterceptor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.psiElementLanguageNameProvider",
+          "type": "com.intellij.ml.llm.intentions.PsiElementLanguageNameProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.contextPopupContributor",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.context.popup.contributor.ContextPopupContributor",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.functionCallsConverter",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.context.functioncalls.FunctionCallContextAttachmentConverter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.contextPickerProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.uiPicker.ContextPickerAttachmentProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.contextItemRenderer",
+          "type": "com.intellij.ml.llm.core.chat.context.ContextItemRenderer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatAttachmentRenderer",
+          "type": "com.intellij.ml.llm.core.chat.context.renderer.AIAssistantChatAttachmentRenderer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatInputFileDropHandler",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.context.AIAssistantInputFileDropHandler",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.messagePartFactory",
+          "type": "com.intellij.ml.llm.core.chat.parts.MessagePartFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.messagePartViewFactory",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.parts.MessagePartViewFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.context.projectDependencyProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.project.ProjectDependenciesProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chatSessionStringifier",
+          "type": "com.intellij.ml.llm.core.chat.session.ChatSessionStringifier",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.aiChatToggleProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.input.toggle.AiChatToolbarToggleProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.recentFilesSymbolFetcher",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.context.popup.contributor.RecentFilesSymbolFetcher",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.shareFeedbackExtension",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.AIAssistantShareFeedbackExtension",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.core.chat.ui.agentPopupEnhancementProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.AgentPopupEnhancementProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.core.chat.ui.agentPopupAdditionDataProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.AgentPopupAdditionDataProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.core.chat.ui.agentIconService",
+          "type": "com.intellij.ml.llm.core.chat.ui.AgentIconService",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agentAllowedNamesProvider",
+          "type": "com.intellij.ml.llm.core.statistics.fus.AgentAllowedNamesProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.agentFinishedListener",
+          "type": "com.intellij.ml.llm.chat.session.AgentFinishedListener",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.fileContextAttachmentTextProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.attachments.readers.FileContextAttachmentTextProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.agentSessionFactory",
+          "type": "com.intellij.ml.llm.chat.session.AgentSessionFactory",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.newChatReadinessAwaiter",
+          "type": "com.intellij.ml.llm.chat.session.NewChatReadinessAwaiter",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agentAdvancedModeExtension",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.agentSelector.model.AgentAdvancedModeExtension",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.remoteAgentSessionResolver",
+          "type": "com.intellij.ml.llm.chat.jbprotocol.RemoteAgentSessionResolver",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.chatModeGroupingKeyProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.input.chatModeSelector.ChatModeGroupingKeyProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.aiaVcsDiffRequestCustomizer",
+          "type": "com.intellij.ml.llm.chat.rpc.AIAssistantVcsDiffRequestCustomizer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.figma.desktopMcpConfigurator",
+          "type": "com.intellij.ml.llm.figma.backend.FigmaDesktopMcpConfigurator",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.figma.backend.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.embeddings.indexSettings",
+          "type": "com.intellij.ml.llm.embeddings.settings.EmbeddingIndexSettings",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.embeddings.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.embeddings.fileBasedIndexId",
+          "type": "com.intellij.ml.llm.embeddings.indexer.FileBasedEmbeddingIndexId",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.embeddings.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.embeddings.indexPersistedEventsCounter",
+          "type": "com.intellij.ml.llm.embeddings.jvm.indices.IndexPersistedEventsCounter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.embeddings.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.embeddings.textEmbeddingsConfiguration",
+          "type": "com.intellij.ml.llm.embeddings.indexer.configuration.EmbeddingsConfigurationBean",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.embeddings.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.embeddings.indexer.customElementLocator",
+          "type": "com.intellij.ml.llm.embeddings.indexer.CustomElementLocator",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.embeddings.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.skills.bundledRegistry",
+          "type": "com.intellij.ml.llm.agents.skills.extension.AgentSkillRegistryProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": true,
+          "artifact": "intellij.ml.llm.agents.skills.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.skills.badgeProvider",
+          "type": "com.intellij.ml.llm.agents.skills.extension.AgentSkillBadgeProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": true,
+          "artifact": "intellij.ml.llm.agents.skills.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.skills.recommendedSectionProvider",
+          "type": "com.intellij.ml.llm.agents.skills.extension.AgentSkillRecommendedSectionProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": true,
+          "artifact": "intellij.ml.llm.agents.skills.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.skills.integration",
+          "type": "com.intellij.ml.llm.agents.skills.integration.AgentSkillsIntegration",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.skills.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.contrib.allowedMcpToolNamesProvider",
+          "type": "com.intellij.ml.llm.agents.contrib.contract.AllowedMcpToolNamesProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.contrib.contract.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.contrib.bundledSkillNamesProvider",
+          "type": "com.intellij.ml.llm.agents.contrib.contract.SkillNamesProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.contrib.contract.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.contrib.loggableMcpToolNamesProvider",
+          "type": "com.intellij.ml.llm.agents.contrib.contract.LoggableMcpToolNamesProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.contrib.contract.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.chatAgent",
+          "type": "com.intellij.ml.llm.agents.ChatAgent",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.termsOfServiceProvider",
+          "type": "com.intellij.ml.llm.agents.tos.AgentTermsOfServiceProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.frontend.mermaidRendererProvider",
+          "type": "com.intellij.ml.llm.agents.frontend.mermaid.MermaidRendererProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.frontend.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.acp.additionalRootsProvider",
+          "type": "com.intellij.ml.llm.agents.acp.client.AcpAdditionalRootsProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.acp.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.acp.chatAgentExtension",
+          "type": "com.intellij.ml.llm.agents.acp.registry.AcpChatAgentExtension",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.acp.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.acp.ideaMcpTransportProvider",
+          "type": "com.intellij.ml.llm.agents.acp.client.AcpIdeaMcpTransportProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.acp.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.matterhorn.modelRegistryProvider",
+          "type": "com.intellij.ml.llm.matterhorn.ide.core.ModelRegistryProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.junie.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.matterhorn.support.rpcServicesProvider",
+          "type": "com.intellij.ml.llm.matterhorn.ide.core.rpc.JunieRpcServiceProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.junie.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.matterhorn.ideTestRunProvider",
+          "type": "com.intellij.ml.llm.matterhorn.ide.core.testing.IdeTestRunProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.junie.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.matterhorn.ideSemanticSearchProvider",
+          "type": "com.intellij.ml.llm.matterhorn.ide.core.search.IdeSemanticSearchProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.junie.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.matterhorn.programmingLanguageGuidelinesProvider",
+          "type": "com.intellij.ml.llm.matterhorn.ide.core.ProgrammingLanguageGuidelinesProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.junie.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.matterhorn.quotaInfoProvider",
+          "type": "com.intellij.ml.llm.matterhorn.ide.core.rpc.QuotaInfoProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.junie.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.matterhorn.projectUpdateTrigger",
+          "type": "com.intellij.ml.llm.matterhorn.ide.core.sync.ProjectUpdateTrigger",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.junie.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.matterhorn.projectModelUpdater",
+          "type": "com.intellij.ml.llm.matterhorn.ide.core.sync.ProjectModelUpdater",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.junie.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.matterhorn.junieProjectSettingsProvider",
+          "type": "com.intellij.ml.llm.matterhorn.ide.core.settings.JunieProjectSettingsProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.junie.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.matterhorn.junieSearchEx",
+          "type": "com.intellij.ml.llm.matterhorn.ide.core.search.JunieSearchEx",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.junie.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.matterhorn.run.buildListenerRegistrar",
+          "type": "com.intellij.ml.llm.matterhorn.junie.core.java.run.BuildListenerRegistrar",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.junie.core.java.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.matterhorn.run.testListenerRegistrar",
+          "type": "com.intellij.ml.llm.matterhorn.junie.core.java.run.TestListenerRegistrar",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.junie.core.java.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.matterhorn.run.testConfigurationPopupInterceptorProvider",
+          "type": "com.intellij.ml.llm.matterhorn.junie.core.java.run.tests.TestConfigurationPopupInterceptor$Provider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.junie.core.java.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.matterhorn.run.runTestActionListener",
+          "type": "com.intellij.ml.llm.matterhorn.junie.core.java.run.RunTestActionListener",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.junie.core.java.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.matterhorn.ide.kmp.openPreviewExtension",
+          "type": "com.intellij.ml.llm.matterhorn.ide.kmp.OpenComposePreviewExtension",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.junie.core.kmp.platform.jar"
+        }
+      ]
+    },
+    {
+      "host": "AI Assistant",
+      "version": "263.7031.23",
+      "contracts": [
+        {
+          "ep": "com.intellij.ml.llm.privacy.rag.contextPrivacyFilter",
+          "type": "com.intellij.ml.llm.privacy.rag.ContextPrivacyFilter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.core.accountsSettingsPanelProvider",
+          "type": "com.intellij.ml.llm.core.settings.AccountsSettingsPanelProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.core.agentAuthorizationRowProvider",
+          "type": "com.intellij.ml.llm.core.settings.AgentAuthorizationRowProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.core.thirdPartyAiProviderFeatureSettingsContributor",
+          "type": "com.intellij.ml.llm.core.settings.ThirdPartyAiProviderFeatureSettingsContributor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.core.optionsApplicabilityFilter",
+          "type": "com.intellij.ml.llm.core.settings.LLMOptionsApplicabilityFilter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.assistantKillSwitch",
+          "type": "com.intellij.ml.llm.core.AIAssistantKillSwitch",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ai.indentMatcherProvider",
+          "type": "com.intellij.ml.llm.core.postProcessing.IndentMatcherProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ai.shRunnerProvider",
+          "type": "com.intellij.ml.llm.core.ssh.LLMShRunnerProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ai.customScriptRunnerProvider",
+          "type": "com.intellij.ml.llm.core.ssh.LLMCustomCodeSnippetRunnerProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.aiAssistantPsiSearchFilter",
+          "type": "com.intellij.ml.llm.PsiSearchFilter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.promptLibrary.customizableAIPrompt",
+          "type": "com.intellij.ml.llm.core.chat.promptLibrary.AICustomizablePrompt",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chatLabelsProvider",
+          "type": "com.intellij.ml.llm.core.statistics.ChatLabelsProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.llmCompletionDisabledListener",
+          "type": "com.intellij.ml.llm.core.settings.LLMCompletionDisabledListener",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.settings.featureSettings",
+          "type": "com.intellij.ml.llm.core.settings.LLMFeatureSettings",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.settings.insightsSettingsContentProvider",
+          "type": "com.intellij.ml.llm.core.settings.InsightsSettingsContentProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.settings.nextFileSettingsContentProvider",
+          "type": "com.intellij.ml.llm.core.settings.NextFileSettingsContentProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.thirdPartyAIProvider",
+          "type": "com.intellij.ml.llm.core.providers.ThirdPartyAIProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.importFixer",
+          "type": "com.intellij.ml.llm.codeGeneration.diff.AIImportFixer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.experimentalFeatureProvider",
+          "type": "com.intellij.ml.llm.registry.ExperimentalFeatureProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.grazieTaskProvider",
+          "type": "com.intellij.ml.llm.tasks.GrazieTaskChatBuilder",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.internalFeedbackDataProvider",
+          "type": "com.intellij.ml.llm.internalFeedback.InternalFeedbackDataProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.collectorSubgroupProvider",
+          "type": "com.intellij.ml.llm.core.statistics.AIAssistantCollectorSubgroupProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.inlineCompletionModeProvider",
+          "type": "com.intellij.ml.llm.core.completion.InlineCompletionModeProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.preferableModelProvider",
+          "type": "com.intellij.ml.llm.core.models.PreferableModelProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.experimentConnector.byEditorType",
+          "type": "com.intellij.ml.llm.core.chat.experiments.AIExperimentConnectorByEditorTypeExtensionPoint",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.editor.experimentFetcher",
+          "type": "com.intellij.ml.llm.core.chat.experiments.AIAEditorExperimentFetcher",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.grazie.client.grazieApiClientProvider",
+          "type": "com.intellij.ml.llm.grazie.client.GrazieApiClientProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.grazie.client.grazieQuotaClientProvider",
+          "type": "com.intellij.ml.llm.grazie.client.GrazieQuotaClientProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.campaignActionHandler",
+          "type": "com.intellij.ml.llm.campaign.CampaignActionHandler",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.core.jar"
+        },
+        {
+          "ep": "com.intellij.contextRetrieverFactory",
+          "type": "com.intellij.ml.llm.context.ContextRetrieverFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.contextTransformerFactory",
+          "type": "com.intellij.ml.llm.context.ContextTransformerFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.contextPostProcessorFactory",
+          "type": "com.intellij.ml.llm.context.ContextPostProcessorFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.retrievalSessionRegistrar",
+          "type": "com.intellij.ml.llm.context.RetrievalSessionRegistrar",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.insights.provenanceProvider",
+          "type": "com.intellij.ml.llm.insights.insight.authorship.InsightProvenanceProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.insights.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.insights.insight.diagnostics.tabProvider",
+          "type": "com.intellij.ml.llm.insights.insight.diagnostics.InsightDiagnosticsTabProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.insights.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.insights.featureQuotaConfig",
+          "type": "com.intellij.ml.llm.insights.insight.quota.InsightsFeatureQuotaConfig",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.insights.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.insights.diff.frontend.chatOpener",
+          "type": "com.intellij.ml.llm.insights.diff.common.launcher.DiffInsightsChatOpener",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.insights.diff.common.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.insights.diff.backend.diffPsiScoringContributor",
+          "type": "com.intellij.ml.llm.insights.diff.backend.handler.scoring.analysis.DiffPsiScoringContributor",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.insights.diff.backend.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.insights.diff.backend.sessionSource",
+          "type": "com.intellij.ml.llm.insights.diff.backend.session.DiffInsightsSessionSource",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.insights.diff.backend.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chatMessageViewProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.ChatMessageViewProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.featureCollector",
+          "type": "com.intellij.ml.llm.core.statistics.fus.collectors.FeatureCollector",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatContextProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.ChatContextProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatContextFilter",
+          "type": "com.intellij.ml.llm.core.chat.context.ChatContextFilter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.context.usersPromptContextProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.UsersPromptContextProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.prompt.usersPromptIdDetector",
+          "type": "com.intellij.ml.llm.core.chat.messages.UsersPromptIdDetector",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.projectTechnologiesChatContextProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.ProjectTechnologiesChatContextProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.errorExplainFilterFactory",
+          "type": "com.intellij.ml.llm.errorExplanation.filters.ErrorExplainFilterFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.runtimeTextPostprocessor",
+          "type": "com.intellij.ml.llm.errorExplanation.provider.RuntimeTextPostprocessor",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.codeContextProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.CodeContextProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.documentationSource",
+          "type": "com.intellij.ml.llm.qa.sources.DocumentationSource",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatIntentionCandidateProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.ChatIntentionCandidatesProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatIntentionProvider",
+          "type": "com.intellij.ml.llm.intentions.chat.ChatIntentionProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.codeContextAttachmentsProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.traverser.CodeDependencyCollector",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": true,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatCodeSnippetProvider",
+          "type": "com.intellij.ml.llm.core.chat.snippets.CodeSnippetProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatUiCodeSnippetLanguageProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.codeSnippet.CodeSnippetLanguageProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatUiUserMessageTextToHtmlConvertor",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.UserMessageTextToHtmlConvertor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatInputDropHandler",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.input.AIAssistantInputDropHandler",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatUiMessagePartViewExtension",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.MessagePartViewExtension",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatMessageHandler",
+          "type": "com.intellij.ml.llm.core.chat.session.ChatMessageHandler",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.createFileFromSnippetProcessor",
+          "type": "com.intellij.ml.llm.core.chat.actions.codeSnippet.createFile.CreateFileFromSnippetProcessor",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatExampleQueryProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.AIAssistantChatExampleQueryProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.userMessageFactory",
+          "type": "com.intellij.ml.llm.core.chat.messages.ChatUserMessageFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chatPanelComponentProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.AIAssistantChatPanelComponentProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.agentsModelServiceProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.AIAssistantAgentsModelServiceProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.smartChatEndpointProvider",
+          "type": "com.intellij.ml.llm.smartChat.endpoints.SmartChatEndpointProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.smartChatConfiguration",
+          "type": "com.intellij.ml.llm.smartChat.endpoints.SmartChatConfiguration",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.aiSearchProvider",
+          "type": "com.intellij.ml.llm.smartChat.endpoints.search.AISearchProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ai.findUsagesProvider",
+          "type": "com.intellij.ml.llm.smartChat.endpoints.search.FindUsagesProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatContextItemIdentityExtension",
+          "type": "com.intellij.ml.llm.core.chat.context.ChatContextItemIdentityExtension",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.caretCodeProvider",
+          "type": "com.intellij.ml.llm.smartChat.endpoints.CaretCodeProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ai.projectViewLocationProvider",
+          "type": "com.intellij.ml.llm.core.chat.actions.AIAssistantProjectViewLocationProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.assistantScopeProvider",
+          "type": "com.intellij.ml.llm.core.chat.actions.scope.AIAssistantScopeProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ai.runtimeErrorTraceContextProvider",
+          "type": "com.intellij.ml.llm.errorExplanation.provider.RuntimeErrorTraceContextProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ai.buildErrorContextProvider",
+          "type": "com.intellij.ml.llm.errorExplanation.provider.BuildErrorContextProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ai.convertTransformationsProvider",
+          "type": "com.intellij.ml.llm.intentions.conversion.editor.ConvertTransformationsProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ai.pasteConvertVetoer",
+          "type": "com.intellij.ml.llm.intentions.conversion.PasteConvertVetoer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.chatReferenceContributor",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.navigation.ChatReferenceContributor",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": true,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.chatReferenceResolver",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.navigation.ChatReferenceResolver",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": true,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatReferenceCompletionProvider",
+          "type": "com.intellij.ml.llm.completion.chat.ChatReferenceCompletionProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatInputFileFilter",
+          "type": "com.intellij.ml.llm.completion.chat.ChatInputFileFilter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatAttachmentEnhancer",
+          "type": "com.intellij.ml.llm.core.chat.attachments.ChatAttachmentEnhancer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": true,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.aiAssistantInputCompiler",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.input.AIAssistantInputCompiler",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.aiAssistantConsentExtension",
+          "type": "com.intellij.ml.llm.core.chat.AIAssistantConsentExtension",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.aiaInEditorInterceptor",
+          "type": "com.intellij.ml.llm.core.chat.actions.editor.AiaInEditorInterceptor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.psiElementLanguageNameProvider",
+          "type": "com.intellij.ml.llm.intentions.PsiElementLanguageNameProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.contextPopupContributor",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.context.popup.contributor.ContextPopupContributor",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.functionCallsConverter",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.context.functioncalls.FunctionCallContextAttachmentConverter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.contextPickerProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.uiPicker.ContextPickerAttachmentProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.contextItemRenderer",
+          "type": "com.intellij.ml.llm.core.chat.context.ContextItemRenderer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatAttachmentRenderer",
+          "type": "com.intellij.ml.llm.core.chat.context.renderer.AIAssistantChatAttachmentRenderer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.chatInputFileDropHandler",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.context.AIAssistantInputFileDropHandler",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.messagePartFactory",
+          "type": "com.intellij.ml.llm.core.chat.parts.MessagePartFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.messagePartViewFactory",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.parts.MessagePartViewFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.context.projectDependencyProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.project.ProjectDependenciesProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chatSessionStringifier",
+          "type": "com.intellij.ml.llm.core.chat.session.ChatSessionStringifier",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.aiChatToggleProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.input.toggle.AiChatToolbarToggleProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.recentFilesSymbolFetcher",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.context.popup.contributor.RecentFilesSymbolFetcher",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.shareFeedbackExtension",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.AIAssistantShareFeedbackExtension",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.core.chat.ui.agentPopupEnhancementProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.AgentPopupEnhancementProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.core.chat.ui.agentPopupAdditionDataProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.AgentPopupAdditionDataProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.core.chat.ui.agentIconService",
+          "type": "com.intellij.ml.llm.core.chat.ui.AgentIconService",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agentAllowedNamesProvider",
+          "type": "com.intellij.ml.llm.core.statistics.fus.AgentAllowedNamesProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.agentFinishedListener",
+          "type": "com.intellij.ml.llm.chat.session.AgentFinishedListener",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.fileContextAttachmentTextProvider",
+          "type": "com.intellij.ml.llm.core.chat.context.attachments.readers.FileContextAttachmentTextProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.agentSessionFactory",
+          "type": "com.intellij.ml.llm.chat.session.AgentSessionFactory",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.newChatReadinessAwaiter",
+          "type": "com.intellij.ml.llm.chat.session.NewChatReadinessAwaiter",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.aiaVcsDiffRequestCustomizer",
+          "type": "com.intellij.ml.llm.chat.rpc.AIAssistantVcsDiffRequestCustomizer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agentAdvancedModeExtension",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.agentSelector.model.AgentAdvancedModeExtension",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.remoteAgentSessionResolver",
+          "type": "com.intellij.ml.llm.chat.jbprotocol.RemoteAgentSessionResolver",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chat.chatModeGroupingKeyProvider",
+          "type": "com.intellij.ml.llm.core.chat.ui.chat.input.chatModeSelector.ChatModeGroupingKeyProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.chat.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.java.jvmSuperClassCollector",
+          "type": "com.intellij.ml.llm.java.generate.test.JvmSuperClassCollector",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.java.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.figma.desktopMcpConfigurator",
+          "type": "com.intellij.ml.llm.figma.backend.FigmaDesktopMcpConfigurator",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.figma.backend.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.embeddings.indexSettings",
+          "type": "com.intellij.ml.llm.embeddings.settings.EmbeddingIndexSettings",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.embeddings.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.embeddings.fileBasedIndexId",
+          "type": "com.intellij.ml.llm.embeddings.indexer.FileBasedEmbeddingIndexId",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.embeddings.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.embeddings.indexPersistedEventsCounter",
+          "type": "com.intellij.ml.llm.embeddings.jvm.indices.IndexPersistedEventsCounter",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.embeddings.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.embeddings.textEmbeddingsConfiguration",
+          "type": "com.intellij.ml.llm.embeddings.indexer.configuration.EmbeddingsConfigurationBean",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.embeddings.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.embeddings.indexer.customElementLocator",
+          "type": "com.intellij.ml.llm.embeddings.indexer.CustomElementLocator",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.embeddings.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.ruby.rubyMethodTypePromptPresentationProvider",
+          "type": "com.intellij.ml.llm.ruby.util.type.RubyMethodTypePromptPresentationProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chatInputLanguage.chatInputCommand",
+          "type": "com.intellij.ml.llm.chatInputLanguage.commands.ChatInputCommandProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chatInputLanguage.chatInputCommandsProvider",
+          "type": "com.intellij.ml.llm.chatInputLanguage.commands.ChatInputCommandsProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.chatInputLanguage.completion.aliasContributor",
+          "type": "com.intellij.ml.llm.chatInputLanguage.completion.ChatInputAliasContributor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.codeGeneration.nextEdits.backend.triggerCheck",
+          "type": "com.intellij.ml.llm.codeGeneration.nextEdits.backend.NextEditTriggerCheck",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.github.projectVmAdapter",
+          "type": "com.intellij.ml.llm.github.assistedReview.GHPRAIReviewPluginAdapter$Factory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.domains.provider",
+          "type": "com.intellij.ml.llm.domains.DomainProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.domains.association",
+          "type": "com.intellij.ml.llm.domains.associations.DomainAssociation",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.domains.command",
+          "type": "com.intellij.ml.llm.domains.commands.LLMDomainCommand",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.domains.ide.contextElementsVisitor",
+          "type": "com.intellij.ml.llm.domains.ide.DomainContextElementsVisitor",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.mcp.allowedToolsProvider",
+          "type": "com.intellij.ml.llm.mcp.client.AllowedToolsProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.chatAgent",
+          "type": "com.intellij.ml.llm.agents.ChatAgent",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.termsOfServiceProvider",
+          "type": "com.intellij.ml.llm.agents.tos.AgentTermsOfServiceProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.contrib.allowedMcpToolNamesProvider",
+          "type": "com.intellij.ml.llm.agents.contrib.contract.AllowedMcpToolNamesProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.contrib.contract.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.contrib.bundledSkillNamesProvider",
+          "type": "com.intellij.ml.llm.agents.contrib.contract.SkillNamesProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.contrib.contract.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.contrib.loggableMcpToolNamesProvider",
+          "type": "com.intellij.ml.llm.agents.contrib.contract.LoggableMcpToolNamesProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.contrib.contract.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.frontend.mermaidRendererProvider",
+          "type": "com.intellij.ml.llm.agents.frontend.mermaid.MermaidRendererProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.frontend.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.jupyterPromptEnhancer",
+          "type": "com.intellij.ml.llm.codeGeneration.grazie.jupyter.JupyterCgPromptEnhancer",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.llmDiffChangeApplier",
+          "type": "com.intellij.ml.llm.codeGeneration.multifile.core.applier.LlmDiffChangeApplier",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.llmDiffChangeFactory",
+          "type": "com.intellij.ml.llm.codeGeneration.multifile.core.change.factory.DiffChangeFactory",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.llmDiffCustomApplierProvider",
+          "type": "com.intellij.ml.llm.codeGeneration.multifile.core.change.processor.LlmDiffCustomApplierProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ai.codeGenerationInteractionProvider",
+          "type": "com.intellij.ml.llm.codeGeneration.inplace.AICodeGenerationInteractionProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ai.testGenerationInteractionProvider",
+          "type": "com.intellij.ml.llm.codeGeneration.inplace.AITestGenerationInteractionProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.changeNavigationProvider",
+          "type": "com.intellij.ml.llm.codeGeneration.popup.changeNavigation.ChangeNavigationProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.aiCodeGenerationFollowupCustomization",
+          "type": "com.intellij.ml.llm.codeGeneration.popup.AICodeGenerationFollowupPanelCustomization",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.testLibrariesProvider",
+          "type": "com.intellij.ml.llm.codeGeneration.testGeneration.TestLibrariesProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.testFrameworkInstructionsProvider",
+          "type": "com.intellij.ml.llm.codeGeneration.testGeneration.TestFrameworkInstructionsProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.codeSuggestionSupport",
+          "type": "com.intellij.ml.llm.codeGeneration.generate.core.LanguageCodeGenerationSupport",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.psiElementPresentationProvider",
+          "type": "com.intellij.ml.llm.codeGeneration.generate.method.generator.context.PsiElementPresentationProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.classDependenciesProvider",
+          "type": "com.intellij.ml.llm.codeGeneration.generate.method.context.DependencyClassProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "ml-llm.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.acp.additionalRootsProvider",
+          "type": "com.intellij.ml.llm.agents.acp.client.AcpAdditionalRootsProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.acp.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.acp.chatAgentExtension",
+          "type": "com.intellij.ml.llm.agents.acp.registry.AcpChatAgentExtension",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.acp.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.agents.acp.ideaMcpTransportProvider",
+          "type": "com.intellij.ml.llm.agents.acp.client.AcpIdeaMcpTransportProvider",
+          "classInternalAnnotation": true,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.agents.acp.jar"
+        },
+        {
+          "ep": "com.intellij.ml.llm.nextFile.diagnostics.tabProvider",
+          "type": "com.intellij.ml.llm.nextFile.monolith.diagnostics.NextFileDiagnosticsTabProvider",
+          "classInternalAnnotation": false,
+          "classExperimentalAnnotation": false,
+          "artifact": "intellij.ml.llm.nextFile.monolith.jar"
+        }
+      ]
+    }
+  ]
+}

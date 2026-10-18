@@ -1,8 +1,30 @@
 # Product decisions
 
+## 2026-10-18 - Verify public alternatives before contacting JetBrains
+
+The user requires a deeper review against JetBrains' Internal API Migration guide before any support response. Absence from its incomplete replacement table is not evidence of absence. Check exact-target sources, actual extension declarations/annotations, candidate consumers and behavioral equivalence.
+
+The [recheck](public-api-recheck-2026-10-18.md) found a documented classloading replacement: use declared optional dependency loaders and public `PluginAwareClassLoader.pluginId`. It replaces internal plugin-set enumeration in recovery and the existing reflective scan in defaults discovery, without changing host class identity. A proposed public editor-document substitution was rejected after the real composer returned a different Document instance; that production change was reverted. Public Air launch-spec hooks exist but did not establish a replacement for the distinct prepared ACP path. The native Air/Assistant suite verifies class identity, owner rejection, real ACP v1 client initialization, drafts and native controls. The support draft now asks only about the remaining concrete gaps and remains unsent. Build/verifier/deployment evidence is in the recheck.
+
+## 2026-10-18 - Internal API rejection and restored Air native controls
+
+Investigate Marketplace beta 0.2.2 update 1197250 without uploading a replacement or sending support messages. Use public replacements only when they preserve the agreed native-client behavior; do not conceal findings through reflection, suppression or TestOnly APIs, and do not remove features to obtain approval. Remaining unsupported integrations require explicit JetBrains guidance/permission or supported extension points. Lack of a public alternative is not permission.
+
+The original reports contain 382 active plus two ignored rows and 185 unique active API elements on both exact targets. `RegistrationLifecycle` now queries public Experimental `PluginDetailsService` while retaining the unsupported disable-state listener. Assistant ACP classes now use the public native `AcpAgentId` content-module loader; the previous main-plugin loader could not read installed agents. The 0.2.2 static Air action expansion was a regression: it discarded dynamic model/settings controls. Public `UpdateSession.children` restores native expansion and removes reflective override-only dispatch. The combined isolated Air/Assistant suite passes, including an explicit check for visible native model/reasoning controls. See [audit, exact inventory, validation and deployment](marketplace-internal-api-2026-10-18.md) and the [unsent support draft](marketplace-support-draft-9266991.md).
+
+## 2026-10-18 - Retire old checkouts and install the current identity for verification
+
+The user authorizes deleting old builds/caches and moving the remaining CodexProjectSwitcher and AIAgentProjectSwitcher project files into a temporary pending-deletion directory under ai-multi-profiles-backups. This archive is disposable after manual verification, not permanent project baggage. Shared production profile and chat storage remain outside the retired checkouts.
+
+The user also explicitly requests fixing the current build and installing the latest build into the primary IDEA. This supersedes the migration task's installation prohibition for this deployment. Stage native startup removal of the proven old AIMulti identity followed by installation of ai-multi-profiles, back up the installed plugin and native state, preserve unrelated queued updates, and leave the running IDEA and its chats uninterrupted. A restart still needs separate consent. The deployment script requires an explicit migration flag and refuses ambiguous installed identities or a queued legacy update.
+
+Build fixes add the missing pinned Air compile dependency, retain local-plugin overrides, and let the Windows build script pass JDK 21 and the selected IDE's Java 25 to Gradle toolchain discovery. No agent behavior, profile routing, runtime optional dependencies, project Default Profile or session ownership policy changes.
+
+Implementation status: both old checkouts were retired into a 2.3 MiB temporary archive with per-file SHA-256 verification; generated data and obsolete development ZIPs were deleted. The ordinary default-dependency `check buildPlugin` and native installer queue regressions passed. Version 0.2.2 is queued with verified plugin/native-state rollback backups; activation awaits the user's restart. See [evidence and limits](build-and-retirement-2026-10-18.md).
+
 ## 2026-10-18 - Beta 0.2.2 drops two IDEA 2026.3 binary breaks
 
-Marketplace verification of 0.2.0 against IDEA 2026.3 EAP 263.7031.23 reported two critical binary problems. `DarculaSliderUI` is final there, so the switch-dialog slider now uses `BasicSliderUI` and paints its own track and round thumb. `AcpChatAgentExtension.contributeProcessEnv` is gone there. The Kotlin implementation copied that default method into `AiMultiAgentPresentation` and called it; the class is now Java and implements only the icon and description. Air's preference group reads `DefaultActionGroup.getChildren(ActionManager)` because `getChildren(AnActionEvent)` is override-only. A missing agent catalog still leaves saved profiles unchanged. 0.2.2 stays on the beta channel, since-build 262.10968, no until-build.
+Marketplace verification of 0.2.0 against IDEA 2026.3 EAP 263.7031.23 reported two critical binary problems. `DarculaSliderUI` is final there, so the switch-dialog slider now uses `BasicSliderUI` and paints its own track and round thumb. `AcpChatAgentExtension.contributeProcessEnv` is gone there. The Kotlin implementation copied that default method into `AiMultiAgentPresentation` and called it; the class is now Java and implements only the icon and description. Air's preference group initially used `DefaultActionGroup.getChildren(ActionManager)` to avoid the override-only event overload; this dropped dynamic model/settings actions and is superseded by public `UpdateSession.children` in the Internal API investigation above. A missing agent catalog still leaves saved profiles unchanged. 0.2.2 stays on the beta channel, since-build 262.10968, no until-build.
 
 ## 2026-10-18 - Beta 0.2.1 keeps startup alive without the old agent catalog
 

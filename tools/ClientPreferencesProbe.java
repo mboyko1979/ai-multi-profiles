@@ -113,6 +113,8 @@ public class ClientPreferencesProbe {
   final Object[] inputDocument={null};SettingsRefreshProbe.await(()->{
     Object input=call(call(original,"getAssociatedInput"),"getValue");check(input!=null,"Native input is not attached yet");
     inputDocument[0]=call(input,"getDocument");call(input,"setText","Unsent draft remains here");
+    Object publicDocument=call(call(input,"getEditorTextField"),"getDocument");
+    Files.writeString(dir.resolve("public-editor-document.txt"),"sameDocument="+(publicDocument==inputDocument[0])+"\nnativeDocument="+inputDocument[0].getClass().getName()+"\npublicDocument="+publicDocument.getClass().getName()+"\nsameText="+call(publicDocument,"getText").equals(call(inputDocument[0],"getText"))+"\n");
     check(call(inputDocument[0],"getText").equals("Unsent draft remains here"),"Native input did not accept the draft");
   });
   Files.writeString(dir.resolve("draft-binding.txt"),"before="+call(inputDocument[0],"getText")+"; document="+System.identityHashCode(inputDocument[0])+"\n");
@@ -150,6 +152,28 @@ public class ClientPreferencesProbe {
   return current;
  }
  static void installedLaunchRefresh()throws Exception{
+  Object resolver=singleton("NativeRecoveryContinuation");
+  for(String name:List.of("com.intellij.air.acp.AcpSessionManager",
+      "com.intellij.air.acp.pool.AcpInitializedClientFactoryKt",
+      "com.intellij.air.frontend.prompt.composer.actions.toolbar.AirPromptSelectorKeys",
+      "com.intellij.air.frontend.session.view.api.AgentSessionViewTabContextKt",
+      "com.intellij.air.backend.session.api.AgentSessionRuntimeAdapter",
+      "com.intellij.ml.llm.agents.acp.api.AcpAgentId",
+      "com.intellij.ml.llm.agents.acp.settings.AcpAgentSettingsService",
+      "com.intellij.ml.llm.chat.session.SessionHistoryStorage")){
+   String owner=name.startsWith("com.intellij.air.")?"com.intellij.air":"com.intellij.ml.llm";
+   Object resolved=AirProfileProbe.call(resolver,"type",name,owner);
+   check(resolved==SettingsRefreshProbe.type(name),"Dependency loading changed native class identity: "+name);
+   check(AirProfileProbe.call(resolver,"type",name,"another.plugin")==null,"Class resolution ignored the requested host");
+  }
+  check(AirProfileProbe.call(resolver,"type","com.intellij.air.missing.ReviewFixture","com.intellij.air")==null,"Missing optional class did not return null");
+  Files.writeString(dir.resolve("public-classloading.txt"),"PASS: declared dependency loaders preserve both native host class identities; wrong host and missing classes rejected.\n");
+  Object defaults=type("dev.boyko.aiagentswitcher.compat.DefaultsClients").getField("INSTANCE").get(null);
+  for(String host:List.of("assistant","air")){
+   Object initialized=call(defaults,"initialize",project,host);
+   check(call(call(initialized,"get","protocolVersion"),"getAsInt").equals(1),"Native defaults discovery changed ACP negotiation");
+   check(call(initialized,"has","clientCapabilities").equals(true)&&call(initialized,"has","clientInfo").equals(true),"Native client initialization metadata is absent: "+host);
+  }
   Path config=dir.resolve("home/.jetbrains/acp.json");
   for(int i=0;i<100&&!Files.exists(config);i++)Thread.sleep(100);
   String original=Files.readString(config);

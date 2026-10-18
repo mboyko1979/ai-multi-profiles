@@ -2,7 +2,6 @@ package dev.boyko.aiagentswitcher.compat
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
@@ -15,14 +14,9 @@ internal object DefaultsClients {
         val capabilities: Any
         val implementation: Any
         if (host == "air") {
-            val set = PluginManagerCore::class.java.getMethod("getPluginSet").invoke(null)
-            val modules = set.javaClass.getMethod("getEnabledModules").invoke(set) as List<*>
-            val module = modules.filterNotNull().firstOrNull { descriptor ->
-                descriptor.javaClass.methods.firstOrNull { it.name == "getModuleNameString" && it.parameterCount == 0 }
-                    ?.invoke(descriptor) == "intellij.air.backend.session.acp"
-            } ?: error("Air's native ACP module is not installed or enabled.")
-            val loader = module.javaClass.getMethod("getPluginClassLoader").invoke(module) as ClassLoader
-            val type = Class.forName("com.intellij.air.acp.pool.AcpInitializedClientFactoryKt", true, loader)
+            val type = dev.boyko.aiagentswitcher.NativeRecoveryContinuation.type(
+                "com.intellij.air.acp.pool.AcpInitializedClientFactoryKt", "com.intellij.air"
+            ) ?: error("Air's native ACP module is not installed or enabled.")
             val native = type.getDeclaredMethod("acpClientInfo").apply { isAccessible = true }.invoke(null)
             capabilities = native.javaClass.getMethod("getCapabilities").invoke(native)
             implementation = native.javaClass.getMethod("getImplementation").invoke(native)

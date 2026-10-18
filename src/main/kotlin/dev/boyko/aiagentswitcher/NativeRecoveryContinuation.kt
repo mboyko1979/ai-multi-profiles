@@ -1,11 +1,8 @@
-@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-
 package dev.boyko.aiagentswitcher
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import com.intellij.ide.plugins.PluginManagerCore
-import com.intellij.openapi.extensions.PluginId
+import com.intellij.ide.plugins.cl.PluginAwareClassLoader
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.*
 import java.lang.reflect.InvocationTargetException
@@ -17,18 +14,14 @@ import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 /** Pinned host adapters: a consented transfer runs as a native task, never a router-side prompt. */
 internal object NativeRecoveryContinuation {
     internal fun type(name: String, plugin: String): Class<*>? {
-        val root = PluginManagerCore.getPlugin(PluginId.getId(plugin)) ?: return null
-        // Resolve module descriptors through the runtime's public JVM methods;
-        // Kotlin's internal property accessor is not a stable IDE binary API.
-        val modules = call(PluginManagerCore.getPluginSet(), "getEnabledModules") as List<*>
-        val loaders = listOf(root.pluginClassLoader) + modules.filterNotNull()
-            .filter { call(it, "getPluginId") == root.pluginId }
-            .mapNotNull { call(it, "getPluginClassLoader") as? ClassLoader }
-        for (loader in loaders.filterNotNull().distinct()) {
-            try { return Class.forName(name, true, loader) }
-            catch (_: ClassNotFoundException) { /* Air isolates its content modules. */ }
-        }
-        return null
+        // Our declared optional dependencies expose their content-module loaders
+        // as parents. Use that documented dependency graph rather than enumerating
+        // the platform's internal plugin set. Keep the requested host identity.
+        val type = try { javaClass.classLoader.loadClass(name) }
+        catch (_: ClassNotFoundException) { return null }
+        val owner = type.classLoader as? PluginAwareClassLoader ?: return null
+        if (owner.pluginId.idString != plugin) return null
+        return Class.forName(name, true, type.classLoader)
     }
     internal fun field(value: Any, name: String): Any? {
         var cls: Class<*>? = value.javaClass

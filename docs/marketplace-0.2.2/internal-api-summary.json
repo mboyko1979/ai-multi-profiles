@@ -1,0 +1,122 @@
+{
+  "reports": [
+    {
+      "ide": "IU-262.10968.63",
+      "sha256": "ae60925b30dc823cb8c1ef342f80b1b30be6529d0aa8d379caf8d2b7dd8565ed",
+      "active": 382,
+      "ignored": 2,
+      "uniqueActiveApis": 185,
+      "byCategory": {
+        "AI Assistant native integration": {
+          "active": 22,
+          "ignored": 0,
+          "uniqueActiveApis": 17
+        },
+        "Air native integration": {
+          "active": 335,
+          "ignored": 0,
+          "uniqueActiveApis": 154
+        },
+        "Assistant split UI / RPC": {
+          "active": 6,
+          "ignored": 0,
+          "uniqueActiveApis": 5
+        },
+        "Assistant toolbar provider binding": {
+          "active": 2,
+          "ignored": 0,
+          "uniqueActiveApis": 2
+        },
+        "Plugin enable/disable lifecycle": {
+          "active": 16,
+          "ignored": 0,
+          "uniqueActiveApis": 6
+        },
+        "Plugin/module classloader discovery": {
+          "active": 1,
+          "ignored": 2,
+          "uniqueActiveApis": 1
+        }
+      },
+      "bySource": {
+        "src/main/kotlin/dev/boyko/aiagentswitcher/NativeRecoveryContinuation.kt": 1,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/RegistrationLifecycle.kt": 16,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/air/AirAgentPresentationService.kt": 16,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/air/AirComposerProfiles.kt": 209,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/air/AirLegacyProfilePresentation.kt": 101,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/air/AirProfileControls.kt": 7,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/air/AirSessionRowIcons.kt": 2,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/AiProfileSetupPanelProvider.kt": 9,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/InstalledAgents.kt": 0,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/LocalHistoryPresentation.kt": 1,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/ProfileAuthenticationChooser.kt": 5,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/ProfileAuthorizationRowProvider.kt": 2,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/ProfileResponseHeaderProvider.kt": 7,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/ProfileStartupStatus.kt": 1,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/ProfileToolbarIsolation.kt": 3,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/UnsentPromptGuard.kt": 2
+      }
+    },
+    {
+      "ide": "IU-263.7031.23",
+      "sha256": "db47792a65556913528a8f7d43b13523cc43d7ced752ffe1e861842206bb4b18",
+      "active": 382,
+      "ignored": 2,
+      "uniqueActiveApis": 185,
+      "byCategory": {
+        "AI Assistant native integration": {
+          "active": 22,
+          "ignored": 0,
+          "uniqueActiveApis": 17
+        },
+        "Air native integration": {
+          "active": 335,
+          "ignored": 0,
+          "uniqueActiveApis": 154
+        },
+        "Assistant split UI / RPC": {
+          "active": 6,
+          "ignored": 0,
+          "uniqueActiveApis": 5
+        },
+        "Assistant toolbar provider binding": {
+          "active": 2,
+          "ignored": 0,
+          "uniqueActiveApis": 2
+        },
+        "Plugin enable/disable lifecycle": {
+          "active": 16,
+          "ignored": 0,
+          "uniqueActiveApis": 6
+        },
+        "Plugin/module classloader discovery": {
+          "active": 1,
+          "ignored": 2,
+          "uniqueActiveApis": 1
+        }
+      },
+      "bySource": {
+        "src/main/kotlin/dev/boyko/aiagentswitcher/NativeRecoveryContinuation.kt": 1,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/RegistrationLifecycle.kt": 16,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/air/AirAgentPresentationService.kt": 16,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/air/AirComposerProfiles.kt": 209,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/air/AirLegacyProfilePresentation.kt": 101,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/air/AirProfileControls.kt": 7,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/air/AirSessionRowIcons.kt": 2,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/AiProfileSetupPanelProvider.kt": 9,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/InstalledAgents.kt": 0,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/LocalHistoryPresentation.kt": 1,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/ProfileAuthenticationChooser.kt": 5,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/ProfileAuthorizationRowProvider.kt": 2,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/ProfileResponseHeaderProvider.kt": 7,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/ProfileStartupStatus.kt": 1,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/ProfileToolbarIsolation.kt": 3,
+        "src/main/kotlin/dev/boyko/aiagentswitcher/compat/UnsentPromptGuard.kt": 2
+      }
+    }
+  ],
+  "normalizedDifferences": [
+    [],
+    []
+  ]
+}

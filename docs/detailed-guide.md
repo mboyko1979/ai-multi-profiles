@@ -109,9 +109,9 @@ $env:JAVA_HOME = 'C:\jdks\jdk-21.0.4.7-hotspot'
 .\gradlew.bat buildPlugin -PnodeExecutable='C:\Program Files\nodejs\node.exe'
 ```
 
-The Java verification suites also use Java 25 from the tested IDE runtime. For offline verification, provide `-PidePath=<IDEA-2026.2.3>` and `-Porg.gradle.java.installations.paths=<IDEA-2026.2.3>/jbr`, then run `check buildPlugin`. The distribution is `build/distributions/ai-multi-profiles-0.2.2.zip`.
+Java compilation and the platform-dependent verification suites also require Java 25 from the tested IDE runtime. Register both JDKs in your local Gradle user properties (`org.gradle.java.installations.paths=<JDK-21>,<IDEA-2026.2.3>/jbr`), or use `build-on-windows.ps1 -JavaHome <JDK-21> -IdePath <IDEA-2026.2.3>`. The script registers these paths for that invocation and runs `check buildPlugin`. The distribution is `build/distributions/ai-multi-profiles-0.2.2.zip`.
 
-To compile against an installed AI Assistant, add `-PaiAssistantPath='C:\path\to\plugins\ml-llm'`. Otherwise Gradle resolves the pinned plugin from Marketplace. Router regression tests are required by both `check` and `buildPlugin`; run them separately with `node router/test-router.js`.
+Gradle resolves both pinned compile dependencies from Marketplace: AI Assistant 262.10968.223 and Air 262.8665.497. Their runtime dependencies remain optional. For offline verification against installed plugins, add `-PaiAssistantPath=<plugins>/ml-llm` and `-PairPluginPath=<plugins>/air-plugin` together with `-PidePath=<IDEA-2026.2.3>`. The PowerShell script accepts the corresponding `-AiAssistantPath` and `-AirPluginPath` arguments. Router regression tests are required by both `check` and `buildPlugin`; run them separately with `node router/test-router.js`.
 
 `runIde` uses an isolated `build/sandbox-home` for both the IDE home and switcher files. It does not install the ZIP into your working IDEA. Avoid copying personal or company authentication data into a test sandbox.
 

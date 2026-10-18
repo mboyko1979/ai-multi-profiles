@@ -1,5 +1,21 @@
 # Development verification
 
+## 0.2.3-dev.2 — documented dependency classloading after public API recheck
+
+The [deeper review](public-api-recheck-2026-10-18.md) follows the JetBrains migration/exploration/classloader guides and inspects all declared Air/Assistant extension-point contracts in both target versions. The documented dependency classloader graph and public `PluginAwareClassLoader.pluginId` replace internal plugin-set lookup and reflective module enumeration in recovery and defaults discovery. No reported usage was hidden in reflection. A proposed public editor-document substitution returned a different native Document and was reverted.
+
+Final `check buildPlugin --offline --max-workers=2`, the combined visible/folded-agent native Air/Assistant suite and full unsuppressed Plugin Verifier 1.410 runs passed. Both exact IDE targets are Compatible with all declared native host dependencies resolved; each reports 373 Internal findings / 183 distinct elements, eleven removals and zero additions versus uploaded 0.2.2. Native tests include real client initialization metadata, class identity/owner checks, drafts and visible model/reasoning controls. Full EAP native UI coverage is not claimed. Incomplete intermediate dependency/candidate runs are not counted as passing checks.
+
+Queued for the next primary IDEA restart; readable backup `deployment-backups/20261018-195457-0.2.3-dev.2/ai-multi-profiles-before-update.zip`. Built/staged/record SHA-256 `F2923116E1B58FA9FB49374662DAE196EEA10C47D479FC761897893252B55B33`. Native queue read back; unrelated updates preserved. No primary restart, chat interruption, support message or Marketplace upload. Detailed evidence and remaining publication gaps are in the recheck.
+
+## 0.2.3-dev.1 — Marketplace Internal API audit and Air selector regression
+
+Public `UpdateSession.children` restores native dynamic Air agent/model/settings/account controls; the static `DefaultActionGroup.getChildren(ActionManager)` change in 0.2.2 had omitted them. The public Assistant ACP identity type now supplies its real content-module loader. Disabled-state queries use public `PluginDetailsService`; unsupported listener and native host integrations remain explicit.
+
+`check buildPlugin --offline --max-workers=2`, installer queue checks and the combined native Assistant/Air suite passed. Native verification includes the folded Codex launch, visible native model/reasoning controls, preserved draft/prepared sessions and project Default Profile. Plugin Verifier 1.410 reports Compatible on both IU-262.10968.63 and IU-263.7031.23 with exact compatible Assistant/Air dependencies. Each has 375 unsuppressed Internal API rows, nine fewer than the uploaded 0.2.2 inventory and zero added findings. This is not Marketplace approval. The initial EAP run missing optional Assistant is incomplete and superseded by the complete dependency run. Full EAP native UI and production-provider coverage are not claimed.
+
+0.2.3-dev.1 is queued for the next primary IDEA restart with a verified readable backup and matching built/staged/record SHA-256 `439480C305E91929D6CC42F946C4092368A46E6762E7660EACF30DBA34EABAB4`. Unrelated updates are preserved. The primary IDEA was not restarted and chats were not interrupted. See [audit, concrete remaining API inventory, validation and deployment evidence](marketplace-internal-api-2026-10-18.md). The [support draft](marketplace-support-draft-9266991.md) is unsent; no Marketplace upload was made.
+
 ## 0.2.0-dev.91 — Grok footer account email
 
 Grok's Air New Session footer now uses the same right-aligned account chip as Codex when native `chipText` is empty. Overlay: force visible/enabled, sync local `auth.json` email, drop blank native `SEGMENTS`. Native account button/menu unchanged. See [account identity](air-account-identity-2026-10-17.md).

@@ -1,13 +1,11 @@
 package dev.boyko.aiagentswitcher.compat
 
-import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.ml.llm.agents.acp.api.AcpAgentId
 import com.intellij.ml.llm.agents.acp.runtime.config.LocalAcpAgentConfig
 import com.intellij.ml.llm.agents.ChatAgent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.extensions.ExtensionPointName
-import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
 import dev.boyko.aiagentswitcher.AgentProfiles
 import dev.boyko.aiagentswitcher.GenericAutoRegistration
@@ -109,7 +107,8 @@ internal object InstalledAgents {
     }
 }
 
-/** AI Assistant class loader. Do not resolve AcpAgentsCatalog: IDEA 2026.3 may not expose that class. */
-internal fun mlPluginClassLoader(): ClassLoader =
-    PluginManagerCore.getPlugin(PluginId.getId("com.intellij.ml.llm"))?.pluginClassLoader
-        ?: throw ClassNotFoundException("com.intellij.ml.llm")
+/** ACP lives in an Assistant content module, invisible to its main plugin loader.
+ * Use the public ACP identity type's loader, preserving the native SDK class identity.
+ * Do not resolve AcpAgentsCatalog: newer hosts may not expose that optional class.
+ */
+internal fun mlPluginClassLoader(): ClassLoader = AcpAgentId::class.java.classLoader
