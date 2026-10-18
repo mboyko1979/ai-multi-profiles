@@ -13,7 +13,7 @@ Use personal and work AI profiles in IntelliJ IDEA's **AI Assistant** and **Air*
 
 ## Quick start
 
-Requires **IntelliJ IDEA 2026.2 build 262.10968 or newer**, AI Assistant or Air, Node.js and an installed ACP-compatible agent. Version **0.2.1 beta**.
+Requires **IntelliJ IDEA 2026.2 build 262.10968 or newer**, AI Assistant or Air, Node.js and an installed ACP-compatible agent. Version **0.2.2 beta**.
 
 1. **Install the plugin ZIP:** Settings > Plugins > gear menu > Install Plugin from Disk.
 2. **Create a profile:** open Settings, search **AI Multi Profiles**, click **+**, name the profile and choose an installed agent. Click **Authorize…** to sign in. Optionally check **Default Profile**, then **Apply**. Repeat for another account.

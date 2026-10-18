@@ -57,13 +57,7 @@ internal object InstalledAgents {
 
     private data class Entry(val id: AcpAgentId, val name: String, val external: Any? = null, val local: LocalAcpAgentConfig? = null)
 
-    private fun nativeType(name: String): Class<*> {
-        // Do not mention AcpAgentsCatalog in bytecode. IDEA 2026.3 no longer exposes that class to this plugin,
-        // and resolving the literal crashes route sync before Class.forName can fail softly.
-        val loader = PluginManagerCore.getPlugin(PluginId.getId("com.intellij.ml.llm"))?.pluginClassLoader
-            ?: throw ClassNotFoundException("com.intellij.ml.llm")
-        return Class.forName(name, true, loader)
-    }
+    private fun nativeType(name: String): Class<*> = Class.forName(name, true, mlPluginClassLoader())
 
     /** Calls the exact row provider used by Settings → AI Assistant → Agents, preserving its order. */
     private fun installedEntries(): List<Entry> {
@@ -114,3 +108,8 @@ internal object InstalledAgents {
         return choices.values.toList()
     }
 }
+
+/** AI Assistant class loader. Do not resolve AcpAgentsCatalog: IDEA 2026.3 may not expose that class. */
+internal fun mlPluginClassLoader(): ClassLoader =
+    PluginManagerCore.getPlugin(PluginId.getId("com.intellij.ml.llm"))?.pluginClassLoader
+        ?: throw ClassNotFoundException("com.intellij.ml.llm")

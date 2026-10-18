@@ -109,7 +109,7 @@ $env:JAVA_HOME = 'C:\jdks\jdk-21.0.4.7-hotspot'
 .\gradlew.bat buildPlugin -PnodeExecutable='C:\Program Files\nodejs\node.exe'
 ```
 
-The Java verification suites also use Java 25 from the tested IDE runtime. For offline verification, provide `-PidePath=<IDEA-2026.2.3>` and `-Porg.gradle.java.installations.paths=<IDEA-2026.2.3>/jbr`, then run `check buildPlugin`. The distribution is `build/distributions/ai-multi-profiles-0.2.1.zip`.
+The Java verification suites also use Java 25 from the tested IDE runtime. For offline verification, provide `-PidePath=<IDEA-2026.2.3>` and `-Porg.gradle.java.installations.paths=<IDEA-2026.2.3>/jbr`, then run `check buildPlugin`. The distribution is `build/distributions/ai-multi-profiles-0.2.2.zip`.
 
 To compile against an installed AI Assistant, add `-PaiAssistantPath='C:\path\to\plugins\ml-llm'`. Otherwise Gradle resolves the pinned plugin from Marketplace. Router regression tests are required by both `check` and `buildPlugin`; run them separately with `node router/test-router.js`.
 
@@ -125,7 +125,7 @@ Deployment is manual while the Plugin ID migration is pending; see the [migratio
 
 Source: https://github.com/mboyko1979/ai-multi-profiles
 
-Marketplace Plugin ID: `dev.boyko.ai-multi-profiles`. ACP registration remains `acp.ai-multi` (**AI Multi**). Version **0.2.1**, channel **beta**. The new Plugin ID is a separate plugin to IDEA; existing development installations need a separately approved [migration](plugin-id-migration-2026-10-18.md).
+Marketplace Plugin ID: `dev.boyko.ai-multi-profiles`. ACP registration remains `acp.ai-multi` (**AI Multi**). Version **0.2.2**, channel **beta**. The new Plugin ID is a separate plugin to IDEA; existing development installations need a separately approved [migration](plugin-id-migration-2026-10-18.md).
 
 Local checkout: `C:\projects\ai-multi-profiles`. Gradle root project: `ai-multi-profiles`. Existing packages, persistent state names and user storage paths are preserved for compatibility.
 

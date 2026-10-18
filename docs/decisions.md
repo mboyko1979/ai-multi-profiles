@@ -1,5 +1,9 @@
 # Product decisions
 
+## 2026-10-18 - Beta 0.2.2 drops two IDEA 2026.3 binary breaks
+
+Marketplace verification of 0.2.0 against IDEA 2026.3 EAP 263.7031.23 reported two critical binary problems. `DarculaSliderUI` is final there, so the switch-dialog slider now uses `BasicSliderUI` and paints its own track and round thumb. `AcpChatAgentExtension.contributeProcessEnv` is gone there. The Kotlin implementation copied that default method into `AiMultiAgentPresentation` and called it; the class is now Java and implements only the icon and description. Air's preference group reads `DefaultActionGroup.getChildren(ActionManager)` because `getChildren(AnActionEvent)` is override-only. A missing agent catalog still leaves saved profiles unchanged. 0.2.2 stays on the beta channel, since-build 262.10968, no until-build.
+
 ## 2026-10-18 - Beta 0.2.1 keeps startup alive without the old agent catalog
 
 Marketplace already has 0.2.0, so the same number cannot be uploaded again. 0.2.1 stays on the beta channel, with since-build 262.10968 and no until-build. Route sync no longer resolves `AcpAgentsCatalog` directly. On IDEA 2026.3 the install test loads Air and does not load AI Assistant, so that class is absent and the old reference aborted startup with `NoClassDefFoundError`. A missing catalog now leaves the installed-agent list empty and keeps saved profiles. Publishing uses the `PUBLISH_TOKEN` environment variable and does not store the token in the repository.

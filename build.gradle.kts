@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "dev.boyko.aiagentswitcher"
-version = "0.2.1"
+version = "0.2.2"
 
 repositories {
     mavenCentral()
@@ -24,6 +24,12 @@ dependencies {
 
 kotlin { jvmToolchain(21) }
 
+// AI Assistant classes are Java 25. javac from the Kotlin 21 toolchain cannot read them.
+tasks.withType<JavaCompile>().configureEach {
+    javaCompiler.set(javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(25)) })
+    options.release.set(21)
+}
+
 intellijPlatform {
     providers.gradleProperty("verificationSandbox").orNull?.let { sandboxContainer.set(file(it)) }
     // Kotlin-only sources and UI DSL; no .form bytecode instrumentation is needed.
@@ -36,8 +42,9 @@ intellijPlatform {
         }
         changeNotes = """
             <ul>
-            <li>Startup no longer fails on IDEA 2026.3 when AI Assistant's agent catalog is absent. Saved profiles stay unchanged.</li>
-            <li>The quick start includes the Switch AI Profile dialog.</li>
+            <li>IDEA 2026.3: the switch dialog slider no longer subclasses the final Darcula slider UI.</li>
+            <li>IDEA 2026.3: agent presentation no longer calls the removed process-environment method.</li>
+            <li>Startup still skips route sync when AI Assistant's agent catalog is absent. Saved profiles stay unchanged.</li>
             <li>Requires IntelliJ IDEA 2026.2 build 262.10968 or newer, with AI Assistant or Air.</li>
             </ul>
         """.trimIndent()

@@ -27,7 +27,9 @@ class AirProfilePreferencesGroup : DefaultActionGroup(), DumbAware {
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
         val manager = ActionManager.getInstance()
         val profile = manager.getAction("dev.boyko.aiagentswitcher.AirProfileSelector")
-        val children = (native.getChildren(e).toList() + super.getChildren(e)).distinct().filter { it != profile }
+        // getChildren(AnActionEvent) is override-only. DefaultActionGroup's event overload
+        // forwards to getChildren(ActionManager); call that instead.
+        val children = (native.getChildren(manager).toList() + getChildren(manager)).distinct().filter { it != profile }
         if (profile == null) return children.toTypedArray()
         val composer = e?.let { AirComposerProfiles.composer(it.dataContext) }
         var inserted = false
@@ -36,7 +38,7 @@ class AirProfilePreferencesGroup : DefaultActionGroup(), DumbAware {
                 if (action == profile) continue
                 if (action is ActionGroup && !action.isPopup) {
                     // Air's model puts the actual selectors inside a dynamic root group.
-                    val nested = arrange(action.getChildren(e).toList())
+                    val nested = arrange(expand(action, e))
                     add(object : ActionGroup(), DumbAware {
                         override fun getActionUpdateThread() = action.actionUpdateThread
                         override fun update(event: AnActionEvent) = action.update(event)
@@ -65,6 +67,13 @@ class AirProfilePreferencesGroup : DefaultActionGroup(), DumbAware {
 
         val arranged = arrange(children)
         return if (inserted) arranged else arrayOf(profile) + arranged
+    }
+
+    private fun expand(group: ActionGroup, event: AnActionEvent?): List<AnAction> {
+        if (group is DefaultActionGroup) return group.getChildren(ActionManager.getInstance()).toList()
+        val method = ActionGroup::class.java.getMethod("getChildren", AnActionEvent::class.java)
+        @Suppress("UNCHECKED_CAST")
+        return (method.invoke(group, event) as Array<AnAction>).toList()
     }
 }
 

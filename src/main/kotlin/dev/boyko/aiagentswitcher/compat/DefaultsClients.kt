@@ -3,7 +3,6 @@ package dev.boyko.aiagentswitcher.compat
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.intellij.ide.plugins.PluginManagerCore
-import com.intellij.ml.llm.agents.acp.api.AcpAgentsCatalog
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
@@ -28,7 +27,7 @@ internal object DefaultsClients {
             capabilities = native.javaClass.getMethod("getCapabilities").invoke(native)
             implementation = native.javaClass.getMethod("getImplementation").invoke(native)
         } else {
-            val loader = AcpAgentsCatalog::class.java.classLoader
+            val loader = mlPluginClassLoader()
             fun type(name: String) = Class.forName(name, true, loader)
             val eel = type("com.intellij.platform.eel.provider.EelProviderProjectUtilKt")
                 .getMethod("getEelDescriptor", Project::class.java).invoke(null, project)
