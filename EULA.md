@@ -8,6 +8,4 @@ You may not sell, sublicense, redistribute, or modify the Plugin, or create deri
 
 The Developer owns the Plugin. Third-party components included with it, including the Gradle Wrapper, remain under their own licenses.
 
-The Plugin is provided "as is" and "as available". It may contain accidental bugs, errors, interruptions, and other defects. You use the Plugin at your own risk. To the maximum extent permitted by applicable law, the Developer provides no warranty and is not liable for accidental bugs or for damage arising from use of the Plugin. This includes loss or corruption of data, incorrect or lost conversation content, account or authentication problems, unexpected model or agent behavior, unwanted project changes, and interruption or malfunction of the IDE.
-
-To that same extent, the Developer is not liable for lost profits or consequential damages, and the Developer's total liability arising from the Plugin will not exceed the amount you paid for it. For this free Plugin, that amount is zero.
+The Plugin is provided "as is" and "as available". You use it at your own risk. To the maximum extent permitted by applicable law, the Developer provides no warranty and is not liable for accidental bugs or other damage arising from use of the Plugin.
