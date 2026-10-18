@@ -2,7 +2,7 @@
 
 ## 2026-10-18 - Proprietary EULA for Marketplace
 
-The Marketplace listing uses a custom EULA, not an open-source license from the upload list. The agreement lets users install and use the free plugin at their own risk and states that, to the extent permitted by law, the Developer is not liable for accidental bugs or resulting damage. Public source still grants no right to copy, modify, or redistribute the plugin. The licensor is the sole trader operating as boyko.dev. The text is [EULA.md](../EULA.md).
+The Marketplace listing uses a custom EULA, not an open-source license from the upload list. The agreement lets users install and use the free plugin at their own risk and, to the extent permitted by law, declines liability for claims about how the plugin works and for any damage arising from its use. Public source still grants no right to copy, modify, or redistribute the plugin. The licensor is the sole trader operating as boyko.dev. The text is [EULA.md](../EULA.md).
 
 ## 2026-10-18 - Describe personal model-list management
 
