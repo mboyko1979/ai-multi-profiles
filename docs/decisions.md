@@ -1,5 +1,9 @@
 # Product decisions
 
+## 2026-10-18 - Proprietary EULA for Marketplace
+
+The Marketplace listing uses a custom EULA, not an open-source license from the upload list. The agreement lets users install and use the free plugin at their own risk and states that, to the extent permitted by law, the Developer is not liable for accidental bugs or resulting damage. Public source still grants no right to copy, modify, or redistribute the plugin. The licensor is the sole trader operating as boyko.dev. The text is [EULA.md](../EULA.md).
+
 ## 2026-10-18 - Describe personal model-list management
 
 The public description must explain that users can hide old or unused models and set a custom order, including placing their most-used model first. It must also mention Air's account information identifying the account used by the selected profile's agent. This documents existing profile model inclusion/order controls; configured filters and ordering remain policy over the bound agent's own catalog. No runtime or lifecycle behavior changes.

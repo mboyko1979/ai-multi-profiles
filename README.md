@@ -32,4 +32,4 @@ Requires **IntelliJ IDEA 2026.2 build 262.10968 or newer**, AI Assistant or Air,
 
 Independent community plugin by [boyko.dev](https://boyko.dev).
 
-License decision pending; public source availability grants no additional usage rights. Existing third-party notices retain their terms.
+Use is at your own risk under the [End User License Agreement](EULA.md). Public source availability grants no additional usage rights. Existing third-party notices retain their terms.

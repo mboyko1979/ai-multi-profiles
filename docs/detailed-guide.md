@@ -129,6 +129,6 @@ Marketplace Plugin ID: `dev.boyko.ai-multi-profiles`. ACP registration remains `
 
 Local checkout: `C:\projects\ai-multi-profiles`. Gradle root project: `ai-multi-profiles`. Existing packages, persistent state names and user storage paths are preserved for compatibility.
 
-License decision pending. No open-source license has been granted. Public source availability alone does not grant permission to copy, modify or redistribute it. Existing third-party notices, including those for the Gradle Wrapper, retain their own terms.
+The [End User License Agreement](../EULA.md) grants a free license to install and use the Plugin. No open-source license has been granted. Public source availability alone does not grant permission to copy, modify or redistribute it. Use is at your own risk: to the extent permitted by law, the Developer is not liable for accidental bugs or resulting damage. Existing third-party notices, including those for the Gradle Wrapper, retain their own terms.
 
 For isolated native checks, run `tools/VerifyClientPreferences.ps1` with explicit `-IdePath`, `-AiAssistantPath`, `-AirPluginPath` and `-JavaHome`. Use IDEA 2026.2.3 and AI Assistant 262.10968.223; the sandbox uses synthetic providers and its own home, project, registration and histories.
