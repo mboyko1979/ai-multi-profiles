@@ -37,6 +37,8 @@ intellijPlatform {
         changeNotes = """
             <ul>
             <li>First beta of AI Multi Profiles. Several ACP accounts and agents, a per-project Default Profile, and switching inside one AI Multi chat.</li>
+            <li>Hide old or unused models and set a custom order, including your most-used model first.</li>
+            <li>In Air, the selected profile shows which account its agent is using.</li>
             <li>Requires IntelliJ IDEA 2026.2 build 262.10968 or newer, with AI Assistant or Air.</li>
             </ul>
         """.trimIndent()

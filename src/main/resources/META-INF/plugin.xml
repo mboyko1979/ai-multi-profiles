@@ -3,10 +3,16 @@
     <name>AI Multi Profiles</name>
     <vendor url="https://boyko.dev">boyko.dev</vendor>
     <description><![CDATA[
-        Use multiple AI profiles for different accounts and agents. Switch profiles in the same AI Chat window
-        and carry selected conversation history forward, so you can continue working with another profile.
-        Each project has its own Default Profile; switching a chat's profile leaves that default unchanged.
-        Profiles keep separate authentication directories. Select AI Multi in AI Chat to use your profiles.
+        <p>Separate AI accounts in one chat. Use personal and work profiles in AI Assistant and Air, switch accounts or agents, and continue with the context you choose to share.</p>
+        <ul>
+            <li>Separate sign-in for each profile.</li>
+            <li>A Default Profile for each project. Switching a chat's profile leaves that default unchanged.</li>
+            <li>Continue the current chat or start a new chat with another profile.</li>
+            <li>Hide old or unused models and set your own order, with the model you use most first.</li>
+            <li>In Air, see which account the selected profile's agent is using.</li>
+        </ul>
+        <p>Requires IntelliJ IDEA 2026.2 build 262.10968 or newer, with AI Assistant or Air, Node.js, and an installed ACP-compatible agent.</p>
+        <p>Source and guide: <a href="https://github.com/mboyko1979/ai-multi-profiles">AI Multi Profiles on GitHub</a>.</p>
     ]]></description>
     <depends>com.intellij.modules.platform</depends>
     <depends optional="true" config-file="ai-assistant.xml">com.intellij.ml.llm</depends>
