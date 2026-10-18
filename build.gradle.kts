@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "dev.boyko.aiagentswitcher"
-version = "0.2.0"
+version = "0.2.1"
 
 repositories {
     mavenCentral()
@@ -36,14 +36,14 @@ intellijPlatform {
         }
         changeNotes = """
             <ul>
-            <li>First beta of AI Multi Profiles. Several ACP accounts and agents, a per-project Default Profile, and switching inside one AI Multi chat.</li>
-            <li>Hide old or unused models and set a custom order, including your most-used model first.</li>
-            <li>In Air, the selected profile shows which account its agent is using.</li>
+            <li>Startup no longer fails on IDEA 2026.3 when AI Assistant's agent catalog is absent. Saved profiles stay unchanged.</li>
+            <li>The quick start includes the Switch AI Profile dialog.</li>
             <li>Requires IntelliJ IDEA 2026.2 build 262.10968 or newer, with AI Assistant or Air.</li>
             </ul>
         """.trimIndent()
     }
     publishing {
+        token = providers.environmentVariable("PUBLISH_TOKEN")
         channels = listOf("beta")
     }
 }

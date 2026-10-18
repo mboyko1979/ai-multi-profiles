@@ -150,6 +150,10 @@ internal object GenericAutoRegistration {
                 com.intellij.openapi.diagnostic.Logger.getInstance(javaClass).warn("AI Multi configuration failed", e)
                 notify(project, "AI Multi needs attention", e.message ?: "Configuration update failed", NotificationType.WARNING)
             }
+            catch (missing: LinkageError) {
+                // The install checker treats an escaped Error as a failed startup. A missing host class must not do that.
+                com.intellij.openapi.diagnostic.Logger.getInstance(javaClass).warn("AI Multi host API is unavailable", missing)
+            }
         }
     }
     private fun notify(project: Project, title: String, message: String, type: NotificationType) {

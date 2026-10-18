@@ -109,7 +109,7 @@ $env:JAVA_HOME = 'C:\jdks\jdk-21.0.4.7-hotspot'
 .\gradlew.bat buildPlugin -PnodeExecutable='C:\Program Files\nodejs\node.exe'
 ```
 
-The Java verification suites also use Java 25 from the tested IDE runtime. For offline verification, provide `-PidePath=<IDEA-2026.2.3>` and `-Porg.gradle.java.installations.paths=<IDEA-2026.2.3>/jbr`, then run `check buildPlugin`. The distribution is `build/distributions/ai-multi-profiles-0.2.0.zip`.
+The Java verification suites also use Java 25 from the tested IDE runtime. For offline verification, provide `-PidePath=<IDEA-2026.2.3>` and `-Porg.gradle.java.installations.paths=<IDEA-2026.2.3>/jbr`, then run `check buildPlugin`. The distribution is `build/distributions/ai-multi-profiles-0.2.1.zip`.
 
 To compile against an installed AI Assistant, add `-PaiAssistantPath='C:\path\to\plugins\ml-llm'`. Otherwise Gradle resolves the pinned plugin from Marketplace. Router regression tests are required by both `check` and `buildPlugin`; run them separately with `node router/test-router.js`.
 
@@ -125,10 +125,10 @@ Deployment is manual while the Plugin ID migration is pending; see the [migratio
 
 Source: https://github.com/mboyko1979/ai-multi-profiles
 
-Marketplace Plugin ID: `dev.boyko.ai-multi-profiles`. ACP registration remains `acp.ai-multi` (**AI Multi**). Version **0.2.0**, channel **beta**. The new Plugin ID is a separate plugin to IDEA; existing development installations need a separately approved [migration](plugin-id-migration-2026-10-18.md).
+Marketplace Plugin ID: `dev.boyko.ai-multi-profiles`. ACP registration remains `acp.ai-multi` (**AI Multi**). Version **0.2.1**, channel **beta**. The new Plugin ID is a separate plugin to IDEA; existing development installations need a separately approved [migration](plugin-id-migration-2026-10-18.md).
 
 Local checkout: `C:\projects\ai-multi-profiles`. Gradle root project: `ai-multi-profiles`. Existing packages, persistent state names and user storage paths are preserved for compatibility.
 
-The [End User License Agreement](../EULA.md) grants a free license to install and use the Plugin. No open-source license has been granted. Public source availability alone does not grant permission to copy, modify or redistribute it. Use is at your own risk: to the extent permitted by law, the Developer is not liable for claims about how the Plugin works or for any damage arising from its use. Existing third-party notices, including those for the Gradle Wrapper, retain their own terms.
+The [End User License Agreement](../EULA.md) grants a free, perpetual license to install and use the Plugin for personal or commercial use, with reasonable backup copies. The license ends on a material violation. No open-source license is granted. Publishing the source on GitHub does not grant permission to copy, modify, redistribute, or commercially exploit that source. Updates, continued compatibility, and technical support are not promised. Use is at your own risk: to the extent permitted by law, the Developer is not liable for claims about how the Plugin works or for any damage arising from its use. Mandatory rights that the law does not allow to be excluded stay in force. Existing third-party notices, including those for the Gradle Wrapper, retain their own terms. JetBrains is not a party to the agreement.
 
 For isolated native checks, run `tools/VerifyClientPreferences.ps1` with explicit `-IdePath`, `-AiAssistantPath`, `-AirPluginPath` and `-JavaHome`. Use IDEA 2026.2.3 and AI Assistant 262.10968.223; the sandbox uses synthetic providers and its own home, project, registration and histories.

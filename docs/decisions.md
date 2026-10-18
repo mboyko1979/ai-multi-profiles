@@ -1,5 +1,13 @@
 # Product decisions
 
+## 2026-10-18 - Beta 0.2.1 keeps startup alive without the old agent catalog
+
+Marketplace already has 0.2.0, so the same number cannot be uploaded again. 0.2.1 stays on the beta channel, with since-build 262.10968 and no until-build. Route sync no longer resolves `AcpAgentsCatalog` directly. On IDEA 2026.3 the install test loads Air and does not load AI Assistant, so that class is absent and the old reference aborted startup with `NoClassDefFoundError`. A missing catalog now leaves the installed-agent list empty and keeps saved profiles. Publishing uses the `PUBLISH_TOKEN` environment variable and does not store the token in the repository.
+
+## 2026-10-18 - Marketplace EULA covers use, source, and liability
+
+The custom EULA stays proprietary and source-available. It grants a free, perpetual, personal and commercial license to install and use the plugin, allows reasonable backups, and withholds rights to redistribute, resell, sublicense, modify, or exploit the public source. A material violation ends the license. Updates, compatibility, and support are not promised. Warranty and liability stay limited to the extent the law allows, while mandatory consumer and other non-excludable rights remain. JetBrains is not a party and is not liable. Third-party components, including the Gradle Wrapper, keep their own licenses, and Marketplace distribution under the separate JetBrains developer agreement is not restricted. The text is [EULA.md](../EULA.md). No developer name, address, or email is added.
+
 ## 2026-10-18 - Proprietary EULA for Marketplace
 
 The Marketplace listing uses a custom EULA, not an open-source license from the upload list. The agreement lets users install and use the free plugin at their own risk and, to the extent permitted by law, declines liability for claims about how the plugin works and for any damage arising from its use. Public source still grants no right to copy, modify, or redistribute the plugin. The licensor is the sole trader operating as boyko.dev. The text is [EULA.md](../EULA.md).

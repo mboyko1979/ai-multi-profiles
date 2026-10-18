@@ -47,4 +47,5 @@ docs/mockups/*.zip
 docs/screenshots/*
 !docs/screenshots/profile-settings-personal-work.png
 !docs/screenshots/chat-work-account.png
+!docs/screenshots/switch-ai-profile.png
 !docs/screenshots/README.md

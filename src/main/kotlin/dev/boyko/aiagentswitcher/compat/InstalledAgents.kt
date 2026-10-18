@@ -1,11 +1,13 @@
 package dev.boyko.aiagentswitcher.compat
 
-import com.intellij.ml.llm.agents.acp.api.AcpAgentsCatalog
+import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.ml.llm.agents.acp.api.AcpAgentId
 import com.intellij.ml.llm.agents.acp.runtime.config.LocalAcpAgentConfig
 import com.intellij.ml.llm.agents.ChatAgent
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.extensions.ExtensionPointName
+import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
 import dev.boyko.aiagentswitcher.AgentProfiles
 import dev.boyko.aiagentswitcher.GenericAutoRegistration
@@ -19,9 +21,15 @@ internal object InstalledAgents {
     fun icon(id: String): Icon? = ExtensionPointName.create<ChatAgent>("com.intellij.ml.llm.agents.chatAgent")
         .extensionList.firstOrNull { it.id == id }?.icon
 
-    fun all(): List<Choice> {
-        return installedEntries()
-            .map { Choice(it.id.fullId, it.name) }
+    fun all(): List<Choice> = try {
+        installedEntries().map { Choice(it.id.fullId, it.name) }
+    } catch (missing: ClassNotFoundException) {
+        Logger.getInstance(javaClass).info("Installed AI agents are unavailable", missing)
+        emptyList()
+    } catch (missing: LinkageError) {
+        // NoClassDefFoundError is an Error. Route sync runs on a pooled thread whose handler only catches Exception.
+        Logger.getInstance(javaClass).info("Installed AI agents are unavailable", missing)
+        emptyList()
     }
 
     /** Called on the saving worker, never the UI thread. No binaries or account credentials are copied. */
@@ -49,7 +57,13 @@ internal object InstalledAgents {
 
     private data class Entry(val id: AcpAgentId, val name: String, val external: Any? = null, val local: LocalAcpAgentConfig? = null)
 
-    private fun nativeType(name: String) = Class.forName(name, true, AcpAgentsCatalog::class.java.classLoader)
+    private fun nativeType(name: String): Class<*> {
+        // Do not mention AcpAgentsCatalog in bytecode. IDEA 2026.3 no longer exposes that class to this plugin,
+        // and resolving the literal crashes route sync before Class.forName can fail softly.
+        val loader = PluginManagerCore.getPlugin(PluginId.getId("com.intellij.ml.llm"))?.pluginClassLoader
+            ?: throw ClassNotFoundException("com.intellij.ml.llm")
+        return Class.forName(name, true, loader)
+    }
 
     /** Calls the exact row provider used by Settings → AI Assistant → Agents, preserving its order. */
     private fun installedEntries(): List<Entry> {
