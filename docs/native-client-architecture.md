@@ -1,7 +1,6 @@
 # Native client and profile responsibilities
 
-User-confirmed contract, 2026-10-17, including the follow-up covering AI Assistant and future IDE clients. This supersedes historical implementation notes where they conflict.
-
+The shared contract applies to every supported native client.
 The same architecture applies to Air, AI Assistant and future IDE clients. Selecting a profile indirectly selects an agent and its profile-specific environment. After that resolution, the client should work with the bound agent as it does after selecting that same agent directly, wherever native integration permits. Explicit profile settings and required profile identity/routing are the intentional differences; a separate client behavior or lifecycle is not a product goal.
 
 | Responsibility | Owner |
@@ -13,7 +12,7 @@ The same architecture applies to Air, AI Assistant and future IDE clients. Selec
 
 The two execution-policy layers are profile/agent resolution and explicit default/filter application. Profile administration and existing consented history transfer remain AI Multi features. Profile attribution UI must stay a narrow addition. The agent supplies catalog metadata; the client renders the dropdowns. Profile selection never changes the project's Default Profile.
 
-Clarification after the original adapter proposal: selecting a launch profile requires no live session, cache lookup, agent discovery or protocol request. Initialize the composer's own selection from the project Default Profile. Subsequent choices belong to that composer. Agent metadata can still be loading while this selection is already complete. A global Air factory replacement is abandoned; it is not a prerequisite for this behavior. Any unavoidable native binding must be scoped to the AI Multi composer and justified separately by the need to carry its launch routing, not by profile choice itself.
+selecting a launch profile requires no live session, cache lookup, agent discovery or protocol request. Initialize the composer's own selection from the project Default Profile. Subsequent choices belong to that composer. Agent metadata can still be loading while this selection is already complete. Any unavoidable native binding must be scoped to the AI Multi composer and justified separately by the need to carry its launch routing, not by profile choice itself.
 
 ## Shared implementation and host adapters
 
@@ -21,11 +20,11 @@ Profile resolution should produce a client-independent launch description: stabl
 
 Host adapters translate that description into native launch/selection APIs, bind remembered-preference storage, and pass agent-sourced metadata through the shared overlay. They expose only functionality the client actually supports. They must not independently decide precedence, reconstruct the agent's catalog, choose substitute models, replicate a preparation/task runner, or wrap the client's metadata cache. A future client adds native bindings and contract tests, rather than another copy of profile policy. Client-specific remembered preferences remain independent.
 
-Current shared pieces are `router/profile-settings.js`, routing/virtual-session modules and `ClientPreferences.kt`/`NativeClientPreferenceStore`. Keep them shared. `ProfileLaunch.kt` provides shared launch resolution used by both clients and explicit startup staging for AI Assistant. Air binds the selected launch on its own composer instance. Cache/presentation integration is not yet unified: see the [cross-client audit](native-client-audit-2026-10-17.md) and [implementation boundaries](shared-launch-implementation-2026-10-17.md).
+Current shared pieces are `router/profile-settings.js`, routing/virtual-session modules and `ClientPreferences.kt`/`NativeClientPreferenceStore`. Keep them shared. `ProfileLaunch.kt` provides shared launch resolution used by both clients and explicit startup staging for AI Assistant. Air binds the selected launch on its own composer instance. Cache/presentation integration is not yet unified: see the [cross-client audit](native-client-audit-2026-10-17.md).
 
 ## Native startup and catalog overlays
 
-For an already prepared, unsent draft, retain the native chat/composer and the real prepared sessions across profile choices. Returning to a profile reuses its native handle and original session ID. Release unused preparations after the first message is accepted, or when the draft is abandoned. This supersedes recreating an empty Assistant chat merely to select another prepared profile; it adds no metadata cache or requirement to acquire a session before recording a local choice. See [dev.89 host bindings and verification limits](prepared-profile-sessions-2026-10-17.md).
+For an already prepared, unsent draft, retain the native chat/composer and the real prepared sessions across profile choices. Returning to a profile reuses its native handle and original session ID. Release unused preparations after the first message is accepted, or when the draft is abandoned. This adds no need to recreate an empty chat; it adds no metadata cache or requirement to acquire a session before recording a local choice. See [verification limits](verification.md).
 
 For Air New Session or AI Assistant New Chat, resolve the selected profile and its bound agent before the native client acquires the initial agent session where its APIs permit. Supply profile-scoped native launch metadata and seed selections. The common filter removes only configured exclusions from the real catalog and preserves unknown fields/groups; it never fills the list from a hand-maintained replacement. Keep newly reported agent models available unless an explicit policy excludes them. Explicit defaults are selections, not a source of models or evidence that a session is ready.
 

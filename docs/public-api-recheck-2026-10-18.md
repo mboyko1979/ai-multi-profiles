@@ -1,6 +1,6 @@
 # Public API replacement recheck — 2026-10-18
 
-Requested before sending support request 9266991. Nothing was sent. This follow-up supersedes the earlier blanket assessment of plugin/module classloader discovery in the [first audit](marketplace-internal-api-2026-10-18.md). That assessment was too broad: a documented replacement exists.
+Assessment of public alternatives for the 0.2.3-dev.2 integration boundaries, against the exact targets below.
 
 ## Method and scope
 
@@ -58,7 +58,7 @@ The remaining API inventory still supplies the exact individual signatures and s
 
 ## Evidence, checks and limits
 
-Local read-only research artifacts: `build/public-api-review/{air262,air263,assistant262,assistant263}/classes.tsv`, `descriptors.xml.txt`, `extension-points.tsv`, candidate `.javap.txt` files, launch-hook caller lists and planner/preparation bytecode. Exact platform/current-source snapshots are in the same directory. These derived artifacts were not installed in the primary IDE.
+Research inspected distributed extension declarations, class annotations, candidate signatures/consumers, preparation bytecode and exact platform source tags.
 
 `tools/ClientPreferencesProbe.java` now records:
 
@@ -66,7 +66,7 @@ Local read-only research artifacts: `build/public-api-review/{air262,air263,assi
 - `public-editor-document.txt`: `sameDocument=false`, both types `DocumentImpl`, `sameText=true` in the actual 262 composer. The initial equality assertion rejected the proposed document change; production code retains the original native document.
 - Both clients' real initialization metadata must still contain protocol version 1, client capabilities and implementation information.
 
-Native verification: `build/public-api-review/native-dev2-final-confirmed` passed both clients, visible Air model/reasoning/account controls, native document/draft handling, prepared session reuse and default isolation. The added tests check native class identities, wrong-owner/missing-class behavior and actual client initialization metadata. `check buildPlugin --offline --max-workers=2` passed on the final sources (`build/public-api-review/build-dev2-confirmed.log`); whitespace checks passed. The previously passing native installer-queue regression suite remains applicable: no installer/helper code changed in this recheck.
+Native verification: `build/public-api-review/native-dev2-final-confirmed` passed both clients, visible Air model/reasoning/account controls, native document/draft handling, prepared session reuse and default isolation. The added tests check native class identities, wrong-owner/missing-class behavior and actual client initialization metadata. `check buildPlugin --offline --max-workers=2` passed on the final sources; whitespace checks passed. The previously passing native installer-queue regression suite remains applicable: no installer/helper code changed in this recheck.
 
 Final artifact **0.2.3-dev.2**, SHA-256 `F2923116E1B58FA9FB49374662DAE196EEA10C47D479FC761897893252B55B33`, checked with Plugin Verifier 1.410, without suppression or excluded packages:
 
@@ -79,6 +79,5 @@ Compared with uploaded 0.2.2 including its ignored entries: **11 removed, zero a
 
 Final complete reports: `build/public-api-review/verifier-final-262` and `verifier-final-263`, with isolated dependency caches and both declared hosts resolved. An earlier intermediate 262 report contained only 38 findings because optional Air was unavailable; it is **incomplete**, not a successful full check. Other failed/intermediate candidate runs are retained as research evidence and are not counted as passing gates. Static EAP verification does not claim full EAP native UI coverage; the combined native run uses installed 262 hosts and controlled agents.
 
-**Deployment:** 0.2.3-dev.2 queued for the next primary IDEA restart with native queue read-back and matching built/staged/record SHA-256. Backup `deployment-backups/20261018-195457-0.2.3-dev.2/ai-multi-profiles-before-update.zip` is readable. Unrelated pending updates are preserved. The primary IDEA was not restarted and active chats were not interrupted. No Marketplace upload or support message was sent.
 
-Conclusion: **a further public classloading replacement was found and implemented**. The earlier statement that no public alternative existed for that whole category was wrong. For the remaining native integrations, the precise finding is that no equivalent public contract was established by the reviewed guides, exact-target interfaces, extension declarations and candidate consumers. This is not a proof of nonexistence in all JetBrains code, nor permission to use Internal API. A support request should ask about the concrete gaps above, and must not claim that all Air extension points are private or that no public alternatives exist anywhere.
+**A public classloading replacement was found and implemented.** For the remaining native integrations, no equivalent public contract was established by the reviewed guides, exact-target interfaces, extension declarations and candidate consumers. This is not proof of nonexistence in all JetBrains code, nor permission to use Internal API. The concrete requirements above need supported extension points or explicit guidance on permitted usage; Air/Assistant APIs are not uniformly private.

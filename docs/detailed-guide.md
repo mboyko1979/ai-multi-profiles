@@ -4,9 +4,9 @@
 
 AI Multi Profiles provides project defaults and chat-local profile selection in AI Assistant and Air. New Session keeps the native composer and draft while selecting profiles; returning to a prepared profile reuses its native session. The project's **Default Profile** stays unchanged. See the [current architecture](native-client-architecture.md) and [decision log](decisions.md).
 
-Development build **0.2.0-dev.65** uses AI Assistant/Air's native local history. AI Multi stores profile/agent identities, provider session IDs, native history references, switching boundaries and configuration/status metadata, without a second message archive. Transfers read selected native history on demand. A deleted profile offers another-profile selection or local read-only viewing; a changed agent requires explicit recovery consent. Existing sessions retain provider-owned settings. See [native history and restoration](native-history-storage.md).
+AI Multi uses AI Assistant/Air's native local history. AI Multi stores profile/agent identities, provider session IDs, native history references, switching boundaries and configuration/status metadata, without a second message archive. Transfers read selected native history on demand. A deleted profile offers another-profile selection or local read-only viewing; a changed agent requires explicit recovery consent. Existing sessions retain provider-owned settings. See [native history and restoration](native-history-storage.md).
 
-Development build **0.2.0-dev.74** provides independent **AI Assistant** and **Air** defaults. A new profile has no saved defaults: the client and agent choose their normal session settings. **Load Agent Defaults** explicitly loads concrete values for every model. The model list supports ordering, enable/disable and a single default model; disabled models stay visible in Settings, grey and struck through, and are omitted from chat choices. Selecting a model in Settings edits its parameters without making it the default. Hide old or unused models from the picker and arrange the enabled models in your preferred order, for example placing your most-used model first.
+AI Multi provides independent **AI Assistant** and **Air** defaults. A new profile has no saved defaults: the client and agent choose their normal session settings. **Load Agent Defaults** explicitly loads concrete values for every model. The model list supports ordering, enable/disable and a single default model; disabled models stay visible in Settings, grey and struck through, and are omitted from chat choices. Selecting a model in Settings edits its parameters without making it the default. Hide old or unused models from the picker and arrange the enabled models in your preferred order, for example placing your most-used model first.
 
 **Refresh Models** preserves existing order, enablement and chosen values, prepends new enabled models, and marks unavailable values **Deprecated**. Apply rejects invalid enabled model settings. If the saved default model disappeared, explicit Refresh selects the agent's current default model and reports the change. **Reset Default Model** and **Reset defaults for this model** use the last explicitly loaded agent defaults without refreshing. **Remove Defaults** clears only the selected client, returning to Load Agent Defaults. A deprecated startup setting opens the affected profile/client/model with its exact cause and holds that chat's creation pending. Apply continues the same backend session; closing Settings does not create a replacement or silently fall back. Removing defaults during correction rolls back partial profile setters to that session's original values.
 
@@ -14,17 +14,17 @@ Old chats restore their last committed profile/agent segment with the client's e
 
 Refresh starts a separate ACP connection in a temporary clean home with account authorization only, excluding existing model caches, configuration and chat history. No prompt or MCP connection is sent. The common refresh mechanism uses no agent IDs: it requires `auth.json` authorization and a newly fetched JSON model catalog with `fetched_at` and nonempty `models`. Agents with other credential or catalog formats need additional refresh support. If freshness cannot be confirmed, refresh reports an error and retains the previous profile defaults. Unsupported custom provider configuration is also reported rather than silently changing providers. Temporary authorization is removed after the probe.
 
-Optional instructions can be entered as text or loaded from Markdown for the new session's first prompt. Codex profiles also offer an editor link to their native `AGENTS.override.md` / `AGENTS.md`. Codex account identity is discovered from the profile's actual `CODEX_HOME` and explicitly distinguished from verified login. See [implementation and verification](profile-presets.md).
+Optional instructions can be entered as text or loaded from Markdown for the new session's first prompt. Codex profiles also offer an editor link to their native `AGENTS.override.md` / `AGENTS.md`. Codex account identity is discovered from the profile's actual `CODEX_HOME` and explicitly distinguished from verified login.
 
 Independent IntelliJ Platform plugin for project defaults and switching ACP profiles within an AI Multi conversation. Air also shows account information for the selected profile, so you can check which account its agent is using.
 
-Development build **0.2.0-dev.12** preserves the original chat title during profile continuation and repairs old `AI_MULTI_HANDOFF:` titles when those chats open. Conversation saves retry transient Windows sharing violations; a persistent write failure preserves the committed history and the latest pending snapshot and reports the error without crashing the router.
+AI Multi preserves the original chat title during profile continuation and repairs old `AI_MULTI_HANDOFF:` titles when those chats open. Conversation saves retry transient Windows sharing violations; a persistent write failure preserves the committed history and the latest pending snapshot and reports the error without crashing the router.
 
 **To enable automatic project-based routing, select “AI Multi” in the JetBrains AI Chat agent dropdown.** Selecting Codex or another agent directly bypasses automatic routing. The project assignment is the default profile for new chats.
 
 ## Setup
 
-Requires IntelliJ IDEA build 262.10968 or newer, AI Assistant or Air, Node.js and ACP v1-compatible agent executables. The first publication is planned for the Marketplace `beta` channel. Adapters were checked against AI Assistant 262.10968.223; a newer IDE can change those internal APIs.
+Requires IntelliJ IDEA build 262.10968 or newer, AI Assistant or Air, Node.js and ACP v1-compatible agent executables. Distribution uses the Marketplace `beta` channel. Adapters were checked against AI Assistant 262.10968.223; a newer IDE can change those internal APIs.
 
 1. Install the ZIP using Settings → Plugins → Install Plugin from Disk. Updating the plugin may require restarting IDEA; finish active work first.
 2. Open Settings → Tools → AI Assistant → AI Multi Profiles.
@@ -34,7 +34,7 @@ Requires IntelliJ IDEA build 262.10968 or newer, AI Assistant or Air, Node.js an
 
 For example, create **Codex Personal**, choose **Codex**, and click **Authorize…** on the profile page. The sign-in window lists the agent's advertised login methods and has no chat prompt input. After authorization, optionally use **Load Agent Defaults** in the desired client tab, then **Apply**. Create another profile for your company account and authorize it separately. **Refresh models…** in the chat model menu reloads the available options without changing saved profile defaults.
 
-The agent dropdown calls the same row provider as Settings → AI Assistant → Agents and includes only rows marked installed, in the screen's order. It does not add ACP registrations or profiles from CodexProjectSwitcher. Custom commands remain available through Custom ACP (Advanced). Apply uses the selected installed agent's native launch configuration to obtain the executable, arguments and runtime environment. Uninstalled or disabled agents are excluded; the list is not hardcoded. Grok receives its own `GROK_HOME`, matching the installed Grok launcher's home-directory mechanism.
+The agent dropdown calls the same row provider as Settings → AI Assistant → Agents and includes only rows marked installed, in the screen's order. It does not infer profiles from unrelated registrations. Custom commands remain available through Custom ACP (Advanced). Apply uses the selected installed agent's native launch configuration to obtain the executable, arguments and runtime environment. Uninstalled or disabled agents are excluded; the list is not hardcoded. Grok receives its own `GROK_HOME`, matching the installed Grok launcher's home-directory mechanism.
 
 On Apply, the plugin creates a separate directory under `~/.jetbrains/ai-agent-project-switcher/profiles/`. **Codex Personal** becomes `codex_personal`; existing directories cause an atomic reservation of `codex_personal_1`, etc. Renaming retains the existing directory, duplicating creates a new one, and removing a profile retains its files. Installation binaries are shared with AI Assistant; authentication files are not copied from existing accounts. Codex receives the dedicated `CODEX_HOME`. Claude receives `CLAUDE_CONFIG_DIR`; home, XDG and Windows user-data environment paths are isolated for other local agents. Agents that use a system credential store or their own fixed paths may need agent-specific isolation support; Grok receives a dedicated GROK_HOME; its ACP initialization was checked with an empty profile, while completed account login remains unverified.
 
@@ -50,7 +50,7 @@ The AI Assistant compatibility adapter uses `com.intellij.aiChatToggleProvider` 
 
 The chat menu contains configured profiles and **Manage Profiles…**. In an existing AI Multi chat it shows **Current Chat Profile**. Choosing another profile opens **Switch AI Profile** with **Continue Current Chat** or **Start a New Chat**. Both choices leave the project's **Default Profile** unchanged. Ordinary new chats still use that default. Settings Apply and the Tools → **AI Multi: <profile>** project menu control the default.
 
-The profile selector is disabled while a native task is active. Wait for its response to finish, or use the chat's Stop button before changing profiles. The switch dialog does not cancel tasks. Cancelling the dialog leaves the current profile and model unchanged. Native model and configuration controls use a separate presentation cache for each AI Multi chat.
+The profile selector is disabled while a native task is active. Wait for its response to finish, or use the chat's Stop button before changing profiles. The switch dialog does not cancel tasks. Cancelling the dialog leaves the current profile and model unchanged. Native model and configuration controls remain client-owned; catalog caching follows the bound agent.
 
 Before opening another chat from an AI Multi chat with no submitted messages and a nonempty prompt, **Unsent prompt — AI Multi** offers **Stay in This Chat** (default) or **Open New Chat**. Staying preserves the chat and its draft; opening proceeds only after that explicit choice. Nothing is sent automatically. Empty prompts and chats with submitted messages do not trigger this warning. This protects the native new-chat selector, its agent choices, the older new-chat actions, and AI Multi's profile-specific chat creation. The compatibility adapter targets AI Assistant 262.10968.223.
 
@@ -64,7 +64,7 @@ The dialog estimates context size conservatively and validates it before sending
 
 Reviewed screenshots are included in the [quick start](../README.md#quick-start). Other local development screenshots remain withheld pending privacy review.
 
-New chats have a stable virtual ACP session ID while successive backend sessions retain immutable profile/account ownership. The conversation's current profile persists across reopening and restarting IDEA. Previously saved native chats stay in legacy mode: their owner is preserved and the dialog offers a separate new chat when no complete router transcript exists. The previous agent title **AI Auto (Project Switcher)** is renamed to **AI Multi** on startup, and existing chats that used it are retargeted to `acp.ai-multi`.
+New chats have a stable virtual ACP session ID while successive backend sessions retain immutable profile/account ownership. The conversation's current profile persists across reopening and restarting IDEA. Previously saved native chats stay in legacy mode: their owner is preserved and the dialog offers a separate new chat when no complete router transcript exists.
 
 ## Session safety and limitations
 
@@ -88,7 +88,7 @@ Environment variables are stored in local IDE settings and router configuration,
 
 ## Registration and troubleshooting
 
-Since **0.2.0-dev.11**, disabling or uninstalling AI Multi removes its unchanged, manifest-owned registrations, including its previous AI Auto name. Re-enabling restores AI Multi when a project is available. Ordinary IDE shutdown and plugin updates keep registration. Cleanup saves an exact backup of `acp.json`, uses the same configuration lock and atomic replacement as registration, and leaves credentials, profiles, routes and conversation history intact. Manually modified entries are preserved.
+Disabling or uninstalling AI Multi removes its unchanged, manifest-owned registrations, including its previous AI Auto name. Re-enabling restores AI Multi when a project is available. Ordinary IDE shutdown and plugin updates keep registration. Cleanup saves an exact backup of `acp.json`, uses the same configuration lock and atomic replacement as registration, and leaves credentials, profiles, routes and conversation history intact. Manually modified entries are preserved.
 
 AI Multi also cleans up unchanged **Codex - Personal (CPS)**, **Codex - Work (CPS)** and **Codex - Auto (CPS experimental)** registrations after the older **Codex Project Switcher** is disabled, unloaded or uninstalled, or when opening a project while CPS is absent/disabled. It compares them with CPS's saved router command and profile homes; their names alone do not prove ownership. Keep AI Multi enabled for this legacy cleanup. If both plugins have already been removed, back up `~/.jetbrains/acp.json` and remove the obsolete entries manually. Authentication folders do not need to be deleted.
 
@@ -105,7 +105,7 @@ If no profile is selected, choose one; the plugin never silently selects a defau
 Use JDK 21 and the Gradle wrapper:
 
 ```powershell
-$env:JAVA_HOME = 'C:\jdks\jdk-21.0.4.7-hotspot'
+$env:JAVA_HOME = '<path-to-JDK-21>'
 .\gradlew.bat buildPlugin -PnodeExecutable='C:\Program Files\nodejs\node.exe'
 ```
 
@@ -119,15 +119,15 @@ This is an independent community plugin by boyko.dev, not an official JetBrains 
 
 AI Multi has original SVG artwork: an AI sparkle beside overlapping profile silhouettes. The plugin page uses a color logo; the agent dropdown uses a monochrome variant with light/dark theme support. Profile choices show **profile icon · installed agent icon · profile name**. Provider icons come from AI Assistant's installed agent entries by ID, without a hardcoded provider list; Custom ACP without its own icon uses the generic AI Multi icon. See [branding assets](branding/README.md).
 
-Deployment is manual while the Plugin ID migration is pending; see the [migration plan](plugin-id-migration-2026-10-18.md). Do not install both identities together.
+Do not install overlapping legacy/current plugin identities together. See [deployment requirements](deployment-policy.md).
 
 ## Source, identity and license
 
 Source: https://github.com/mboyko1979/ai-multi-profiles
 
-Marketplace Plugin ID: `dev.boyko.ai-multi-profiles`. ACP registration remains `acp.ai-multi` (**AI Multi**). Version **0.2.2**, channel **beta**. The new Plugin ID is a separate plugin to IDEA; existing development installations need a separately approved [migration](plugin-id-migration-2026-10-18.md).
+Marketplace Plugin ID: `dev.boyko.ai-multi-profiles`. ACP registration remains `acp.ai-multi` (**AI Multi**). Version **0.2.2**, channel **beta**. Existing installations with a different plugin ID are separate installations and must not be enabled together.
 
-Local checkout: `C:\projects\ai-multi-profiles`. Gradle root project: `ai-multi-profiles`. Existing packages, persistent state names and user storage paths are preserved for compatibility.
+Gradle root project: `ai-multi-profiles`. Persistent state names and user storage paths are compatibility identifiers.
 
 The [End User License Agreement](../EULA.md) grants a free, perpetual license to install and use the Plugin for personal or commercial use, with reasonable backup copies. The license ends on a material violation. No open-source license is granted. Publishing the source on GitHub does not grant permission to copy, modify, redistribute, or commercially exploit that source. Updates, continued compatibility, and technical support are not promised. Use is at your own risk: to the extent permitted by law, the Developer is not liable for claims about how the Plugin works or for any damage arising from its use. Mandatory rights that the law does not allow to be excluded stay in force. Existing third-party notices, including those for the Gradle Wrapper, retain their own terms. JetBrains is not a party to the agreement.
 

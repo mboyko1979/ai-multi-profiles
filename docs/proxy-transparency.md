@@ -1,4 +1,4 @@
-﻿# ACP proxy transparency — 0.2.0-dev.57
+# ACP proxy transparency
 
 Transparency is a foundational rule. AI Assistant and Air own their chat UI and protocol decisions; the selected profile's agent owns its capabilities and provider behavior. AI Multi adapts routing identifiers, configured profile settings and the explicitly approved cross-agent history transfer.
 
