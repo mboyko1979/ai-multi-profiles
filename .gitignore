@@ -4,6 +4,8 @@
 .kotlin/
 build/
 out/
+air-pick-result.json
+air-pick-issue.md
 .idea/
 *.iml
 deployment-backups/

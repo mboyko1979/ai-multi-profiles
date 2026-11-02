@@ -1,0 +1,44 @@
+name: Air pick
+
+on:
+  schedule:
+    # After the daily test run. Scheduled runs use the workflow on the default branch.
+    - cron: "30 6 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - tools/check-air-pick.py
+      - .github/workflows/air-pick.yml
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  pick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare Marketplace Air pick with supported shapes
+        id: probe
+        continue-on-error: true
+        run: python3 tools/check-air-pick.py
+      - name: Open an issue when the signature is new
+        if: hashFiles('air-pick-issue.md') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/check-air-pick.py --publish-issue
+      - name: Keep the probe result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: air-pick-result
+          path: |
+            air-pick-result.json
+            air-pick-issue.md
+          if-no-files-found: ignore
+      - name: Report the probe
+        if: steps.probe.outcome != 'success'
+        run: exit 1
