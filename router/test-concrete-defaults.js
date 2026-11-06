@@ -4,19 +4,19 @@ const settings=require('./profile-settings');
 const root=fs.mkdtempSync(path.join(os.tmpdir(),'ai-multi-concrete-')),configFile=path.join(root,'routes.json'),trace=path.join(root,'trace.jsonl'),backend=path.join(root,'backend.js');
 const agent='fixture';const setting=(id,value)=>({agentId:agent,operation:'config',id,value});
 const preset=host=>({agentId:agent,host,defaultModelId:'b',modelOptionId:'model',modelOperation:'config',models:[
- {modelId:'b',enabled:true,settings:[setting('effort','high'),setting('fast-mode','off')]},
+ {modelId:'b',enabled:true,settings:[setting('effort','high'),setting('fast-mode','off'),setting('collaboration_mode','default')]},
  {modelId:'a',enabled:false,settings:[setting('effort','low'),setting('fast-mode','off')]},
  {modelId:'c',enabled:true,settings:[setting('effort','low'),setting('fast-mode','off')]}]});
 fs.writeFileSync(backend,String.raw`
 const fs=require('fs'),rl=require('readline').createInterface({input:process.stdin});let count=0;const sessions=new Map();let rejectedOnce=false;
 const option=(id,values,current,category)=>({id,name:id,type:'select',category,currentValue:current,options:values.map(value=>({value,name:value,extension:true})),_meta:{native:true}});
-const options=s=>[option('model',['a','b','c'],s.model,'model'),option('effort',['low','high'],s.effort,'thought_level'),option('fast-mode',['off','on'],s.fast,'model_config')];
+const options=s=>[option('model',['a','b','c'],s.model,'model'),option('effort',['low','high'],s.effort,'thought_level'),option('fast-mode',['off','on'],s.fast,'model_config'),option('collaboration_mode',['default','plan'],s.plan || 'default','collaboration_mode')];
 rl.on('line',line=>{const m=JSON.parse(line);fs.appendFileSync(process.env.TRACE,JSON.stringify(m)+'\n');const send=result=>console.log(JSON.stringify({jsonrpc:'2.0',id:m.id,result}));
  if(m.method==='initialize')return send({protocolVersion:1,agentInfo:{name:'fixture'},agentCapabilities:{loadSession:true,sessionCapabilities:{resume:{}}}});
- if(m.method==='session/new'){const id='s'+ ++count,s={model:'a',effort:'low',fast:'off'};sessions.set(id,s);return send({sessionId:id,configOptions:options(s),_meta:{original:true}});}
+ if(m.method==='session/new'){const id='s'+ ++count,s={model:'a',effort:'low',fast:'off'};sessions.set(id,s);return send({sessionId:id,configOptions:options(s),models:{currentModelId:s.model,availableModels:['a','b','c'].map(modelId=>({modelId,name:modelId}))},_meta:{original:true}});}
  const s=sessions.get(m.params.sessionId)||{model:'b',effort:'high',fast:'off'};
  if(['session/load','session/resume'].includes(m.method))return send({configOptions:options(s),restoreExtension:m.params.extension});
- if(m.method==='session/set_config_option'){const p=m.params;if(p.configId==='fast-mode' && p.value==='on' && !rejectedOnce){rejectedOnce=true;return console.log(JSON.stringify({jsonrpc:'2.0',id:m.id,error:{code:-32602,message:'Temporarily rejected saved fast mode'}}));}if(p.configId==='model')s.model=p.value;else if(p.configId==='effort')s.effort=p.value;else s.fast=p.value;return send({configOptions:options(s),extension:'accepted',_meta:{setter:p.configId}});}
+ if(m.method==='session/set_config_option'){const p=m.params;if(p.configId==='fast-mode' && p.value==='on' && !rejectedOnce){rejectedOnce=true;return console.log(JSON.stringify({jsonrpc:'2.0',id:m.id,error:{code:-32602,message:'Temporarily rejected saved fast mode'}}));}if(p.configId==='model')s.model=p.value;else if(p.configId==='effort')s.effort=p.value;else if(p.configId==='collaboration_mode')s.plan=p.value;else s.fast=p.value;return send({configOptions:options(s),models:{currentModelId:s.model,availableModels:['a','b','c'].map(modelId=>({modelId,name:modelId}))},extension:'accepted',_meta:{setter:p.configId}});}
  send({});
 });
 `);
@@ -38,6 +38,12 @@ async function run(){
  assert((await call('initialize',{protocolVersion:1,clientInfo:{name:'JetBrains fixture'}})).result);
  const first=await call('session/new',{cwd:root});assert(first.result,JSON.stringify(first));const sid=first.result.sessionId;
  const model=o=>o.configOptions.find(x=>x.id==='model');
+ const planned=await call('session/set_config_option',{sessionId:sid,configId:'collaboration_mode',value:'plan'});assert(planned.result);
+ const repeated=await call('session/set_config_option',{sessionId:sid,configId:'model',value:'b'});
+ assert.equal(repeated.result.configOptions.find(x=>x.id==='collaboration_mode').currentValue,'plan','Native reassertion of the current model reset the manually selected Plan mode');
+ const legacyStart=events().length;
+ assert((await call('session/set_model',{sessionId:sid,modelId:'b'})).result);
+ assert.deepEqual(events().slice(legacyStart).map(x=>x.method),['session/set_model'],'Repeated legacy setter reapplied defaults when both native model surfaces are present');
  assert.equal(model(first.result).currentValue,'b');assert.deepEqual(model(first.result).options.map(x=>x.value),['b','c']);assert(model(first.result).options[0].extension);assert(first.result._meta.original);
  const before=events().filter(x=>x.method==='session/set_config_option').length;
  config.profiles.p.clientDefaults[0].defaultModelId='c';config.profiles.p.clientDefaults[0].models[0].enabled=false;save();

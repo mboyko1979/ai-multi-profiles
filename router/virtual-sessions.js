@@ -25,11 +25,17 @@ class VirtualSessions {
     return ids.length && ids.every(x=>x===ids[0])?ids[0]:null;
   }
   async initializeFor(params) {
-    const chatId=this.clientChatId(params);if(!chatId)return null;
+    const chatId=this.clientChatId(params), restoreId=this.api.restoreSession;
+    if(!chatId && !restoreId)return null;
     const cwd=this.api.normalize(process.cwd());
-    for(const file of fs.readdirSync(this.dir).filter(x=>x.endsWith('.json'))) {
+    const candidates=restoreId?[path.basename(this.file(restoreId))]:fs.readdirSync(this.dir).filter(x=>x.endsWith('.json'));
+    for(const file of candidates) {
       const s=JSON.parse(fs.readFileSync(path.join(this.dir,file),'utf8'));
-      if(s.clientChatId===chatId && s.cwd===cwd) {
+      if(restoreId?s.sessionId===restoreId:s.clientChatId===chatId && s.cwd===cwd) {
+        // Air can spawn from its process directory. A connection explicitly bound
+        // to this stored conversation must retain its original launch directory
+        // too (including profile launch fingerprints and authentication scope).
+        if(restoreId)process.chdir(s.cwd);
         this.cancelExpiredTransfer(s);
         if(this.api.fixedProfile!=null && s.profile!==this.api.fixedProfile)throw Error('Session belongs to another profile');
         const current=s.segments.find(x=>x.id===s.currentSegment);
@@ -55,6 +61,7 @@ class VirtualSessions {
           'ai-multi':{virtualSessions:true,controlVersion:1}}};
       }
     }
+    if(restoreId)throw Error('Stored conversation does not match the requested restore session');
     return null;
   }
   selectedForNewChat(params) {
@@ -373,6 +380,7 @@ class VirtualSessions {
     } catch(e) { await this.retire(backend,'session creation failed'); throw e; }
   }
   async newSession(params,selected) {
+    if(this.api.restoreSession)throw Error('This connection restores an existing conversation; it cannot create a replacement session');
     if(this.recoveryChat)return this.recoverAgent(this.read(this.recoveryChat,params.cwd),params,'session/new');
     const s={version:1,sessionId:PREFIX+crypto.randomUUID(),cwd:this.api.normalize(params.cwd),profile:selected.profile,
       revision:0,createdAt:new Date().toISOString(),updatedAt:null,segments:[],switches:[],exchanges:[],mcpServers:[]};
@@ -398,6 +406,7 @@ class VirtualSessions {
     }
   }
   async restore(params,method) {
+    if(this.api.restoreSession && params.sessionId!==this.api.restoreSession)throw Error('This connection belongs to another conversation');
     const id=params.sessionId;this.read(id,params.cwd);this.acquire(id);
     let live=this.active.get(id);const wasActive=!!live;
     try {
@@ -858,6 +867,22 @@ class VirtualSessions {
   }
   async control(msg) {
     const p=msg.params || {}, live=this.active.get(p.sessionId);
+    if(msg.method==='_ai_multi/restore_selections') {
+      if(!live || live.busy || live.s.exchanges.length || live.s.profile!==p.profile || live.segment.agentIdentity?.agentId!==p.agentId)
+        throw Error('Agent update selections do not belong to this unsent conversation');
+      const accepted=await profileSettings.applyRemembered({agentId:p.agentId,clientDefaults:[]},live.result,p.settings,
+        (method,params)=>this.api.request(live.backend,method,params));
+      this.acceptOptions(live,accepted);this.save(live.s);
+      if(accepted.configOptions)this.api.send({jsonrpc:'2.0',method:'session/update',params:{sessionId:live.s.sessionId,
+        update:{sessionUpdate:'config_option_update',configOptions:this.display(live.segment.profile,accepted).configOptions}}});
+      if(accepted.modes)this.api.send({jsonrpc:'2.0',method:'session/update',params:{sessionId:live.s.sessionId,
+        update:{sessionUpdate:'current_mode_update',currentModeId:accepted.modes.currentModeId}}});
+      return this.display(live.segment.profile,{...accepted,sessionId:live.s.sessionId});
+    }
+    if(msg.method==='_ai_multi/binding_ready') {
+      if(!live || live.busy || live.s.profile!==p.profile)throw Error('Profile binding changed');
+      live.backend.virtual.suppress=false;this.flushDisplay(live.backend);return {profile:live.s.profile};
+    }
     if(msg.method==='_ai_multi/prepared_ready') {
       if(!live || live.busy || live.s.exchanges.length || live.s.profile!==p.profile)throw Error('Prepared profile selection changed');
       this.flushDisplay(live.backend);return {profile:live.s.profile};
@@ -921,7 +946,10 @@ class VirtualSessions {
       if(previous?.virtual)previous.virtual.state=next;
       this.active.set(next.sessionId,{s:next,segment:next.segments.find(x=>x.id===next.currentSegment),backend:previous,result:next.sessionOptions || {},busy:false,mcpServers:live?.mcpServers || []});
       await this.retire(live?.backend,'handoff aborted');
-      return {aborted:true,profile:next.profile,supportsSteering:next.segments.find(x=>x.id===next.currentSegment)?.clientMeta?.steering?.supported===true};
+      if(previous?.virtual && p.deferBinding===true)previous.virtual.suppress=true;
+      return {aborted:true,profile:next.profile,supportsSteering:next.segments.find(x=>x.id===next.currentSegment)?.clientMeta?.steering?.supported===true,
+        ...(previous?{initialize:{...clone(previous.initialize),authMethods:next.segments.find(x=>x.id===next.currentSegment)?.authMethods || []},
+          session:this.display(next.profile,{...next.sessionOptions,sessionId:next.sessionId})}:{})};
     }
     if(msg.method!=='_ai_multi/switch')throw Object.assign(Error('Unsupported AI Multi extension'),{code:-32601});
     if(live?.busy)throw Error('Cancel the active task before switching profiles');
@@ -985,16 +1013,18 @@ class VirtualSessions {
         for(const item of prepared.values())if(item.backend.virtual)item.backend.virtual.state=next;
       }
       this.active.set(next.sessionId,{s:next,...made,busy:false,rollbackBackend:p.fresh?null:live?.backend,mcpServers,creationParams:live?.creationParams,...(prepared?{prepared}:{})});
+      if(p.deferBinding===true)made.backend.virtual.suppress=true;
       committed=true;
       if(!prepared && live?.prepared)await Promise.all([...live.prepared.values()].filter(x=>x.backend!==live.backend).map(x=>this.retire(x.backend,'prepared profiles abandoned')));
       if(p.fresh && !prepared)await this.retire(live?.backend,'profile switched');
-      if(!prepared && made.result.configOptions)this.api.send({jsonrpc:'2.0',method:'session/update',params:{sessionId:next.sessionId,update:{sessionUpdate:'config_option_update',configOptions:this.display(made.segment.profile,made.result).configOptions}}});
+      if(!prepared && p.deferBinding!==true && made.result.configOptions)this.api.send({jsonrpc:'2.0',method:'session/update',params:{sessionId:next.sessionId,update:{sessionUpdate:'config_option_update',configOptions:this.display(made.segment.profile,made.result).configOptions}}});
       return {profile:p.profile,token:p.fresh?null:token,supportsSteering:made.segment.clientMeta.steering.supported,
-        ...(prepared?{initialize:{...clone(made.backend.initialize),authMethods:made.segment.authMethods},session:this.display(p.profile,{...made.result,sessionId:next.sessionId})}:{})};
+        initialize:{...clone(made.backend.initialize),authMethods:made.segment.authMethods},session:this.display(p.profile,{...made.result,sessionId:next.sessionId})};
     } catch(e) {if(!committed && !reused)await this.retire(made?.backend,'profile switch failed');throw e;}
     finally {if(live)live.busy=false;}
   }
   async prompt(live,params) {
+    if(live.backend?.virtual?.suppress)throw Error('Wait for native profile binding to finish');
     if(live.busy)throw Error('A request is already active in this conversation');
     live.busy=true;
     const s=live.s, marker=(params.prompt || []).find(x=>x.type==='text' && x.text?.startsWith('AI_MULTI_HANDOFF:'))?.text;
@@ -1054,6 +1084,10 @@ class VirtualSessions {
     if(msg.id===undefined && msg.method!=='session/cancel') {
       if(msg.method.startsWith('_ai_multi/') || msg.method==='session/prompt')throw Error('This ACP method requires a request ID');
       if(!id?.startsWith(PREFIX))return false;
+      const live=this.active.get(id);if(!live)throw Error('Restore the conversation before sending a notification');
+      await this.ensureBackend(live);
+      live.backend.proc.stdin.write(JSON.stringify({...msg,params:this.backendParams(live,msg.params)})+'\n');
+      return true;
     }
     let result;
     if(msg.method.startsWith('_ai_multi/'))result=await this.control(msg);
@@ -1090,7 +1124,8 @@ class VirtualSessions {
       }
       const selectionBefore=['session/set_config_option','session/set_model','session/set_mode'].includes(msg.method)?
         profileSettings.descriptors(live.result).find(o=>msg.method==='session/set_config_option'?o.operation==='config'&&o.id===msg.params.configId:
-          o.operation===(msg.method==='session/set_model'?'model':'mode'))?.currentValue:undefined;
+          o.operation===(msg.method==='session/set_model'?'model':'mode'))?.currentValue ??
+          (msg.method==='session/set_model'?live.result.models?.currentModelId:msg.method==='session/set_mode'?live.result.modes?.currentModeId:undefined):undefined;
       let r;
       try {r=await this.api.request(live.backend,msg.method,this.backendParams(live,msg.params));}
       catch(e){if(msg.method==='session/fork')delete live.backend.forkCapture;throw e;}
@@ -1126,7 +1161,10 @@ class VirtualSessions {
       const modelConfig=descriptorsForModel(live.result);
       const chosen=msg.method==='session/set_model'?msg.params.modelId:
         msg.method==='session/set_config_option' && msg.params.configId===modelConfig?.id?msg.params.value:null;
-      if(!r.error && chosen && live.segment.modelDefaults?.models.some(x=>x.modelId===chosen && x.enabled)) {
+      // Native clients reassert the current model before prompts. Only a real
+      // model change applies its defaults; a repeat must preserve manual edits
+      // such as collaboration mode and reasoning effort in this conversation.
+      if(!r.error && chosen && chosen!==selectionBefore && live.segment.modelDefaults?.models.some(x=>x.modelId===chosen && x.enabled)) {
         const defaults={...clone(live.segment.modelDefaults),defaultModelId:chosen};
         const spec=this.profile(live.segment.profile);
         const selectedState={...live.result,...r.result,...(msg.method==='session/set_model'?{models:{...live.result.models,currentModelId:chosen}}:{})};

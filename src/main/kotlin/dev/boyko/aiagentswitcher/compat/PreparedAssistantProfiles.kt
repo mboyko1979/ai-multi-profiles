@@ -137,6 +137,19 @@ internal object PreparedAssistantProfiles {
         native.call(manager, "watchConfigOptionUpdates", session)
     }
 
+    /** The history handoff retains its native chat/task owner, but replaces the
+     * accepted SDK session and complete initialization metadata like a draft.
+     */
+    suspend fun bindCommitted(chat: ChatSessionVm, selected: JsonObject) {
+        val bridge = ChatHandoffClient(chat)
+        val current = bridge.nativeSessionOrNull() ?: error("Native profile session is unavailable")
+        val accepted = NativeSdkBinding.create(current, selected.getAsJsonObject("initialize"), selected.getAsJsonObject("session"))
+        val agent = native.call(chat.session, "getAgentSession")!!
+        install(agent, Binding(accepted.session as ClientSession, accepted.info, selected.get("supportsSteering")?.asBoolean == true))
+        ProfileCatalogPresentation.publishSelected(chat, selected.getAsJsonObject("session"), accepted.session)
+        bridge.control("_ai_multi/binding_ready", JsonObject().apply { add("profile", selected.get("profile")) })
+    }
+
     /** Before the first native task, release retained SDK references. The router closes unused providers on session/prompt. */
     fun firstPrompt(chat: Any) { synchronized(drafts) { drafts.remove(chat) } }
 }

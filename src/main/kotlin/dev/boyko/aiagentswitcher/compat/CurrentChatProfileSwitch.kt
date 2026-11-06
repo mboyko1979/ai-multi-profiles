@@ -94,13 +94,16 @@ internal object CurrentChatProfileSwitch {
             } else {
                 client.verifyTaskAdapter()
                 val p = transferParams(dialog.count).apply {
+                    addProperty("deferBinding", true)
                     addProperty("comment", dialog.comment); addProperty("consent", true); add("attachmentIds", dialog.attachmentIds)
                     add("nativeSource", JsonObject().apply { addProperty("host", "assistant"); addProperty("sessionId", chat.uid); addProperty("eventId", history.lastOrNull()?.asJsonObject?.let { it.get("lastEventId") ?: it.get("id") }?.asString.orEmpty()) })
                 }
                 val estimate = client.control("_ai_multi/estimate", p.deepCopy())
                 p.add("revision", estimate.get("revision"))
                 val switched = client.control("_ai_multi/switch", p)
-                client.updateSteeringSupport(switched.get("supportsSteering")?.asBoolean == true)
+                // Capture rollback eligibility before native SDK admission.
+                preparedClient = client; preparedToken = switched.get("token")?.takeUnless { it.isJsonNull }?.asString
+                PreparedAssistantProfiles.bindCommitted(chat, switched)
                 ApplicationManager.getApplication().messageBus.syncPublisher(ProfilesListener.TOPIC).changed()
                 if (switched.has("token") && !switched.get("token").isJsonNull) {
                     val token = switched.get("token").asString
@@ -115,9 +118,9 @@ internal object CurrentChatProfileSwitch {
             // Roll back only if no provider prompt consumed the handoff. Never undo a running/completed task.
             if (preparedToken != null) withContext(NonCancellable) {
                 runCatching {
-                    val aborted = preparedClient?.control("_ai_multi/abort_handoff", JsonObject().apply { addProperty("token", preparedToken) })
+                    val aborted = preparedClient?.control("_ai_multi/abort_handoff", JsonObject().apply { addProperty("token", preparedToken); addProperty("deferBinding", true) })
                     if (aborted?.get("aborted")?.asBoolean == true)
-                        preparedClient.updateSteeringSupport(aborted.get("supportsSteering")?.asBoolean == true)
+                        PreparedAssistantProfiles.bindCommitted(chat, aborted)
                     ApplicationManager.getApplication().messageBus.syncPublisher(ProfilesListener.TOPIC).changed()
                 }
             }

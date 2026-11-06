@@ -89,14 +89,20 @@ public class AgentRecoveryProbe extends SettingsRefreshProbe {
     Class<?> adapter=Class.forName("dev.boyko.aiagentswitcher.NativeRecoveryContinuation",true,loader);
     Method resolve=adapter.getDeclaredMethod("type",String.class,String.class);resolve.setAccessible(true);
     Object adapterInstance=adapter.getField("INSTANCE").get(null);
-    Class<?> requestType=(Class<?>)resolve.invoke(adapterInstance,"com.intellij.air.backend.session.api.SessionPromptRequest","com.intellij.air");
-    check(requestType!=null,"Air content-module loader was not resolved");
+    Class<?> manager=(Class<?>)resolve.invoke(adapterInstance,"com.intellij.air.acp.AcpSessionManager","com.intellij.air");
+    check(manager!=null,"Air session manager was not resolved");
+    Method lookup=null;
+    for(Method method:adapter.getDeclaredMethods())if(method.getName().startsWith("promptAdmission")&&method.getParameterCount()==1&&method.getParameterTypes()[0]==Class.class)lookup=method;
+    check(lookup!=null,"Air prompt admission lookup is missing");
+    lookup.setAccessible(true);
+    Method admission=(Method)lookup.invoke(adapterInstance,manager);
+    check(admission!=null,"Air task admission adapter changed");
+    Class<?> requestType=Arrays.stream(admission.getParameterTypes()).filter(type->type.getSimpleName().equals("SessionPromptRequest")).findFirst().orElse(null);
+    check(requestType!=null,"Air prompt request type was not resolved from sendPrompt");
     Method prompt=adapter.getDeclaredMethod("airPrompt",Class.class,String.class,String.class);prompt.setAccessible(true);
     Object nativePrompt=prompt.invoke(adapter.getField("INSTANCE").get(null),requestType,"AI_MULTI_HANDOFF:fixture","");
     check(call(nativePrompt,"getText").equals("AI_MULTI_HANDOFF:fixture"),"Air lost handoff token");
     check(call(nativePrompt,"getDisplayText").equals("Continue with the new agent"),"Air exposes internal token as user text");
-    Class<?> manager=(Class<?>)resolve.invoke(adapterInstance,"com.intellij.air.acp.AcpSessionManager","com.intellij.air");
-    check(Arrays.stream(manager.getMethods()).anyMatch(m->m.getName().startsWith("sendPrompt-")&&m.getName().endsWith("$default")&&m.getParameterCount()==8),"Air task admission adapter changed");
     Class<?> bridge=Class.forName("dev.boyko.aiagentswitcher.compat.ChatHandoffClient",true,loader);
     check(Arrays.stream(bridge.getMethods()).anyMatch(m->m.getName().equals("continueNow")&&m.getParameterCount()==4),"AI Assistant task adapter changed");
   }

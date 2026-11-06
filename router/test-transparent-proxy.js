@@ -42,16 +42,16 @@ const spec=(agent,resume=true)=>({name:'Same profile',agentId:'registry.'+agent,
 let config={virtualSessions:true,projects:[{root,profile:'p'}],profiles:{p:spec('one'),other:spec('other')}};
 const write=()=>fs.writeFileSync(configFile,JSON.stringify(config));write();
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
-const waitFor=async condition=>{for(let i=0;i<200 && !condition();i++)await pause(10);};
+const waitFor=async condition=>{for(let i=0;i<1000;i++){if(condition())return;await pause(10);}throw new Error('Timed out waiting for proxy event');};
 const calls=()=>fs.readFileSync(trace,'utf8').trim().split('\n').filter(Boolean).map(JSON.parse);
 const records=()=>fs.readdirSync(path.join(root,'conversations')).filter(f=>f.endsWith('.json')).map(f=>JSON.parse(fs.readFileSync(path.join(root,'conversations',f))));
 const ok=m=>{assert(m.result,JSON.stringify(m));return m.result;},bad=m=>{assert(m.error,JSON.stringify(m));return m.error;};
 const nativeHistory=new (require('./test-native-history').NativeHistoryFixture)();
-function client(uid=crypto.randomUUID()) {
- const proc=cp.spawn(process.execPath,[process.env.AI_MULTI_ROUTER_FIXTURE || path.join(__dirname,'cps-router.js'),configFile],{cwd:root,windowsHide:true,stdio:['pipe','pipe','pipe']});children.push(proc);proc.stderr.resume();
+function client(uid=crypto.randomUUID(),options={}) {
+ const proc=cp.spawn(process.execPath,[process.env.AI_MULTI_ROUTER_FIXTURE || path.join(__dirname,'cps-router.js'),configFile,...(options.restoreSession?['--restore-session',options.restoreSession]:[])],{cwd:options.cwd || root,windowsHide:true,stdio:['pipe','pipe','pipe']});children.push(proc);proc.stderr.resume();
  const messages=[],pending=new Map();let serial=0;
  rl.createInterface({input:proc.stdout}).on('line',line=>{const m=JSON.parse(line);messages.push(m);nativeHistory.notification(m);if(!m.method)pending.get(m.id)?.(m);});
- return {proc,messages,uid,async init(){return this.request('initialize',{protocolVersion:2,clientInfo:{name:'fixture'},_meta:{proxyConfig:{proxies:[{proxy:{headers:{'X-IntelliJ-Proxy-Client-Execution-ID':uid}}}]}}});},
+ return {proc,messages,uid,async init(){return this.request('initialize',{protocolVersion:2,clientInfo:{name:'fixture'},...(options.noExecutionId?{}:{_meta:{proxyConfig:{proxies:[{proxy:{headers:{'X-IntelliJ-Proxy-Client-Execution-ID':uid}}}]}}})});},
  request(method,params={}){params=nativeHistory.before(method,params);const id=++serial;return new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Timeout '+method)),15000);pending.set(id,m=>{clearTimeout(timer);pending.delete(id);nativeHistory.complete(method,params,m);resolve(m);});proc.stdin.write(JSON.stringify({jsonrpc:'2.0',id,method,params})+'\n');});},
  async close(){proc.stdin.end();if(proc.exitCode===null)await new Promise(r=>proc.once('exit',r));}};
 }
@@ -95,9 +95,12 @@ async function approval(pending,approved,selection={},expected={from:'one',to:'t
  ok(await shared.request('_fixture/schedule_status',{sessionId:sharedId,stage:'shared-fork',delay:0}));
  await waitFor(()=>shared.messages.slice(beforeShared).some(x=>x.params?.authStatus?.vendor?.stage==='shared-fork'));
  assert.equal(shared.messages.slice(beforeShared).filter(x=>x.method==='_auth/status_update').at(-1).params.authStatus.vendor.stage,'shared-fork');
- ok(await shared.request('_fixture/schedule_status',{sessionId:sharedId,stage:'while-ambiguous',delay:200}));
  const additional=ok(await shared.request('session/new',{cwd:root})).sessionId;
- const beforeAmbiguous=shared.messages.length;await pause(300);
+ const beforeAmbiguous=shared.messages.length;
+ // Establish both sessions before emitting the ambiguous account push. Agent
+ // startup under native verification can take longer than the old 200 ms timer.
+ ok(await shared.request('_fixture/schedule_status',{sessionId:sharedId,stage:'while-ambiguous',delay:200}));
+ await pause(300);
  assert(!shared.messages.slice(beforeAmbiguous).some(x=>x.method==='_auth/status_update'),'Ambiguous source published a connection identity');
  ok(await shared.request('session/close',{sessionId:additional}));
  await waitFor(()=>shared.messages.slice(beforeAmbiguous).some(x=>x.params?.authStatus?.vendor?.stage==='while-ambiguous'));
@@ -130,11 +133,11 @@ async function approval(pending,approved,selection={},expected={from:'one',to:'t
  ok(await c.request('session/close',{sessionId:id}));ok(await c.request('session/prompt',{sessionId:fork.sessionId,prompt:[{type:'text',text:'fork remains live'}]}));
  ok(await c.request('session/delete',{sessionId:fork.sessionId}));assert(!records().some(x=>x.sessionId===fork.sessionId));await c.close();
  // A changed agent never receives the previous agent's ID. Rejecting recovery creates nothing.
- config.profiles.p=spec('two');write();c=client(uid);
+ config.profiles.p=spec('two');write();c=client(uid,{restoreSession:id,cwd:os.tmpdir(),noExecutionId:true});
  const declined=await approval(c.init(),false);assert.equal(bad(declined.result).code,-32001);await c.close();
  assert.equal(records().find(x=>x.sessionId===id).currentSegment,initial.currentSegment);
  // Explicit consent starts one new backend session and preserves historical identity snapshots.
- c=client(uid);const accepted=await approval(c.init(),true);ok(accepted.result);
+ c=client(uid,{restoreSession:id,cwd:os.tmpdir(),noExecutionId:true});const accepted=await approval(c.init(),true);ok(accepted.result);
  ok(await c.request('session/load',{sessionId:id,cwd:root,mcpServers:[{name:'approved-tools',command:'fixture',args:[],env:[]}]}));
  const recovered=records().find(x=>x.sessionId===id),last=recovered.segments.find(x=>x.id===recovered.currentSegment);
  assert.equal(recovered.segments[0].agentIdentity.agentId,'registry.one');assert.equal(last.agentIdentity.agentId,'registry.two');assert.notEqual(last.sessionId,oldProviderId);
@@ -196,6 +199,26 @@ async function approval(pending,approved,selection={},expected={from:'one',to:'t
  assert.equal(restoredStatus.length,1);assert.equal(restoredStatus[0].params.authStatus.vendor.stage,'retained-source');
  assert.equal(restoredStatus[0].params.authStatus.account.email,'five@example.test');
  await isolated.close();
+ // Air restores from its process directory and has no Assistant execution UID.
+ // Explicit routing must negotiate the last committed agent before load/resume.
+ const restoreSource=client();ok(await restoreSource.init());
+ const restoreId=ok(await restoreSource.request('session/new',{cwd:root})).sessionId;
+ const restoreRecord=records().find(r=>r.sessionId===restoreId),restoreAgent=restoreRecord.segments.find(s=>s.id===restoreRecord.currentSegment).agentIdentity.implementationName;
+ await restoreSource.close();
+ const outside=path.join(root,'unmapped-process-dir');fs.mkdirSync(outside);
+ config.projects[0].profile='other';write();
+ const countNew=calls().filter(x=>x.m.method==='session/new').length;
+ const explicit=client(crypto.randomUUID(),{restoreSession:restoreId,cwd:outside,noExecutionId:true});
+ const explicitInit=ok(await explicit.init());assert.equal(explicitInit.agentInfo.name,restoreAgent);
+ assert.equal(explicitInit.agentCapabilities._future.enabled,true);
+ ok(await explicit.request('session/resume',{sessionId:restoreId,cwd:root,mcpServers:[],futureRestore:{kept:true}}));
+ const forwarded=calls().filter(x=>x.m.method==='session/resume').at(-1);
+ assert.equal(forwarded.agent,restoreAgent);assert.deepEqual(forwarded.m.params.futureRestore,{kept:true});
+ assert(!forwarded.m.params.sessionId.startsWith('aiaps-chat-'));
+ bad(await explicit.request('session/new',{cwd:root}));
+ bad(await explicit.request('session/load',{sessionId:isolatedId,cwd:root,mcpServers:[]}));
+ assert.equal(calls().filter(x=>x.m.method==='session/new').length,countNew,'Restore created a replacement agent session');
+ await explicit.close();config.projects[0].profile='p';write();
  assert.equal(config.projects[0].profile,'p');
  console.log('PASS: actual capabilities/extensions, v1 negotiation of v2 offer, exact load/resume and provider replay/errors, last segment, future content, provider pagination, fork/close/delete, agent snapshots, cancelled and consented replacement, original MCP, one native continuation and no old ID sent to a new agent');
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{

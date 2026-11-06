@@ -169,9 +169,20 @@ private object AirPreferenceStore : NativeClientPreferenceStore {
             native.call(generation, "copy", if (field == "modelId") value else native.field(generation, "modelId"), effort,
                 native.field(generation, "planReasoningEffort"), native.field(generation, "modelDisplayName"))!!
         }
-        val updated = native.call(previous, "copy", native.field(previous, "launchMode"),
-            if (field == "sessionModeId") value else native.field(previous, "sessionModeId"), updatedGeneration,
-            native.field(previous, "planMode"), native.field(previous, "agentOptionId"))!!
+        // Copy only our changed fields. Air .512 added fastMode; Kotlin's
+        // default-copy mask retains it and any later trailing native fields.
+        val copy = parameterType.methods.single { it.name == "copy\$default" }
+        val arguments = arrayOfNulls<Any>(copy.parameterCount)
+        arguments[0] = previous
+        copy.parameterTypes.forEachIndexed { index, type ->
+            if (type == Boolean::class.javaPrimitiveType) arguments[index] = false
+            if (type == Int::class.javaPrimitiveType) arguments[index] = 0
+        }
+        var mask = -1
+        if (field == "sessionModeId") { arguments[2] = value; mask = mask and (1 shl 1).inv() }
+        arguments[3] = updatedGeneration
+        arguments[arguments.size - 2] = mask and (1 shl 2).inv()
+        val updated = copy.invoke(null, *arguments)!!
         native.call(store, "recordLastUsedSessionParameters-", key, updated)
     }
 }

@@ -3,6 +3,9 @@
 // ACP stdio router. Stdout is protocol-only; account routing fails closed.
 const fs = require('fs'), path = require('path'), cp = require('child_process');
 const crypto = require('crypto'), readline = require('readline');
+const {AsyncLocalStorage}=require('async_hooks');
+const clientRequestContext=new AsyncLocalStorage();
+const cancellation=method=>method==='$/cancel_request' || method==='$/cancelRequest';
 const profileSettings = require('./profile-settings');
 const configPath = process.argv[2];
 const fixedProfileIndex = process.argv.indexOf('--profile');
@@ -11,6 +14,9 @@ if (fixedProfileIndex >= 0 && (!fixedProfile || fixedProfile.startsWith('--'))) 
 const initialProfileIndex = process.argv.indexOf('--initial-profile');
 const initialProfile = initialProfileIndex < 0 ? null : process.argv[initialProfileIndex + 1];
 if (initialProfileIndex >= 0 && (!initialProfile || initialProfile.startsWith('--'))) throw Error('Missing initial profile ID');
+const restoreSessionIndex = process.argv.indexOf('--restore-session');
+const restoreSession = restoreSessionIndex < 0 ? null : process.argv[restoreSessionIndex + 1];
+if (restoreSessionIndex >= 0 && (!restoreSession || !restoreSession.startsWith('aiaps-chat-'))) throw Error('Missing or invalid restore session ID');
 const ownerDir = path.join(path.dirname(configPath), 'session-owners');
 const parse = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 const log = (...args) => process.stderr.write('[AIAPS] ' + args.join(' ') + '\n');
@@ -291,7 +297,7 @@ function advertiseAuth(backend, conversation) {
   return {methods, bindings};
 }
 const virtual = readConfig().virtualSessions === true ? new (require('./virtual-sessions').VirtualSessions)({
-  directory:path.dirname(configPath), config:readConfig, normalize, fingerprint, launchFingerprint, restoreFingerprint, settingsSpec, backendFor, request, record, send, owner, log, fixedProfile,
+  directory:path.dirname(configPath), config:readConfig, normalize, fingerprint, launchFingerprint, restoreFingerprint, settingsSpec, backendFor, request, record, send, owner, log, fixedProfile, restoreSession,
   initialized:() => advertised, initializeParams:() => initializeParams, hash, advertiseAuth,
   stopBackend, creationSpec, configureSession, nativePreferences, flushConnectionNotifications,
   rememberAuth:(id, saved) => authentication.set(id, saved)
@@ -389,8 +395,12 @@ function request(backend, method, params, timed = true, limitMs = timeoutMs) {
     if (backend.failed) return reject(Error(backend.failed));
     if (backend.stopPromise && method !== 'session/close') return reject(Error('ACP backend is closing'));
     const id = 'aiaps:' + ++counter;
-    const timer = timed ? setTimeout(() => { pending.delete(id); reject(Error('ACP backend request timed out: ' + method)); }, limitMs) : null;
-    pending.set(id, {backend, resolve, reject, timer, method, sessionId:params?.sessionId});
+    const timer = timed ? setTimeout(() => {
+      pending.delete(id);
+      if(!backend.failed && !backend.stopPromise)backend.proc.stdin.write(JSON.stringify({jsonrpc:'2.0',method:'$/cancel_request',params:{requestId:id}})+'\n');
+      reject(Error('ACP backend request timed out: ' + method));
+    }, limitMs) : null;
+    pending.set(id, {backend, resolve, reject, timer, method, sessionId:params?.sessionId,clientId:clientRequestContext.getStore()?.id});
     try { backend.proc.stdin.write(JSON.stringify({jsonrpc:'2.0',id,method,params})+'\n'); }
     catch (e) { pending.delete(id); clearTimeout(timer); reject(e); }
   });
@@ -492,7 +502,8 @@ async function backendFor(profile, spec, isolationKey = '') {
     backend.proc.on('exit', code => backendFailed(backend, 'ACP profile ' + profile + ' exited (' + code + ')'));
     backend.lines = readline.createInterface({input:backend.proc.stdout}).on('line', line => fromBackend(backend, line));
     backend.ready = request(backend, 'initialize', initializeParams).then(response => {
-      if (response.error || !response.result) throw Error('ACP initialization failed for profile ' + profile);
+      if (response.error) throw Object.assign(Error(response.error.message),{rpcError:response.error});
+      if (!response.result) throw Error('ACP initialization failed for profile ' + profile);
       backend.initialize = response.result;
       return backend;
     }).catch(async error => {
@@ -502,17 +513,6 @@ async function backendFor(profile, spec, isolationKey = '') {
     backend.ready.catch(() => {});
   }
   return backend.ready;
-}
-function intersection(values) {
-  if (!values.length) return {};
-  const result = {};
-  for (const key of Object.keys(values[0] || {})) {
-    const items = values.map(v => v?.[key]);
-    if (items.every(v => v === true)) result[key] = true;
-    else if (items.every(v => v && typeof v === 'object' && !Array.isArray(v))) result[key] = intersection(items);
-    else if (items.every(v => JSON.stringify(v) === JSON.stringify(items[0])) && items[0] !== undefined) result[key] = items[0];
-  }
-  return result;
 }
 function authMethods(selected, backend) {
   if (!selected || !backend || backend.initialize.protocolVersion !== 1) return [];
@@ -578,7 +578,17 @@ async function fromClient(line) {
   let msg;
   try { msg=JSON.parse(line); } catch (_) { fail({id:null}, 'Invalid ACP JSON', -32700); return; }
   if (!msg || typeof msg !== 'object' || Array.isArray(msg)) { fail({id:null}, 'Invalid ACP request', -32600); return; }
+  return clientRequestContext.run({id:msg.id},()=>handleClient(msg));
+}
+async function handleClient(msg) {
   try {
+    if(cancellation(msg.method) && msg.id===undefined) {
+      // Cancellation follows the original request owner, including after a
+      // profile switch. Unknown/completed IDs cannot authorize another agent.
+      for(const [id,item] of pending)if(item.clientId!==undefined && item.clientId===msg.params?.requestId && checkAuthorization(item.backend))
+        item.backend.proc.stdin.write(JSON.stringify({...msg,params:{...msg.params,requestId:id}})+'\n');
+      return;
+    }
     if (process.argv.includes('--profile-setup') && msg.method) {
       const spec = readConfig().profiles.probe;
       if (!spec) throw Error('Selected provider is unavailable');
@@ -683,22 +693,14 @@ async function fromClient(line) {
         return;
       }
       // Without a project assignment, keep a conservative setup connection.
-      const cfg = readConfig();
-      const results = await Promise.allSettled(Object.entries(cfg.profiles).map(([id,spec]) => backendFor(id,spec)));
-      const ready = results.filter(r => r.status === 'fulfilled').map(r => r.value.initialize);
       const protocolVersion = 1;
-      const compatible = ready.filter(r => r.protocolVersion === protocolVersion);
-      const capabilities = intersection(compatible.map(r => r.agentCapabilities || {}));
-      // Unscoped listing and forked IDs need separate ownership handling. Do not
-      // advertise optional methods that the router cannot route safely.
-      delete capabilities._meta;
-      if (capabilities.sessionCapabilities) {
-        for (const key of ['list','fork','delete','_meta']) delete capabilities.sessionCapabilities[key];
-      }
+      // This is AI Multi's local setup connection, not a bound provider.
+      // Choosing a launch profile must not start every configured agent or
+      // manufacture an intersection of their capabilities.
       advertised = {
         protocolVersion,
-        agentCapabilities:capabilities,
-        authMethods:[], agentInfo:{name:'ai-agent-project-switcher', title:'AI Multi', version:'0.2.0-dev.10'}
+        agentCapabilities:{},
+        authMethods:[], agentInfo:{name:'ai-agent-project-switcher', title:'AI Multi', version:'0.2.3-dev.4'}
       };
       send({jsonrpc:'2.0', id:msg.id, result:advertised});
       return;
@@ -819,13 +821,22 @@ async function fromClient(line) {
     const backend = await selectedBackend();
     if (msg.id === undefined) backend.proc.stdin.write(JSON.stringify(msg)+'\n');
     else send({...await request(backend,msg.method,msg.params,false),id:msg.id});
-  } catch (e) { fail(msg,e.message,e.code || -32602,e.data); }
+  } catch (e) {
+    if (e.rpcError && Object.prototype.hasOwnProperty.call(msg,'id')) send({jsonrpc:'2.0',id:msg.id,error:e.rpcError});
+    else fail(msg,e.message,e.code ?? -32602,e.data);
+  }
 }
 function fromBackend(backend,line) {
   if (!checkAuthorization(backend)) return;
   let msg;
   try { msg=JSON.parse(line); } catch (_) { log('Invalid ACP output for profile',backend.profile); return; }
   if (!msg || typeof msg !== 'object' || Array.isArray(msg)) return;
+  if(cancellation(msg.method) && msg.id===undefined) {
+    for(const [id,item] of upstream)if(item.backend===backend && item.id===msg.params?.requestId) {
+      send({...msg,params:{...msg.params,requestId:id}});break;
+    }
+    return;
+  }
   if (connectionNotification(backend, msg)) return;
   if (msg.id !== undefined && !msg.method) {
     const item=pending.get(msg.id);

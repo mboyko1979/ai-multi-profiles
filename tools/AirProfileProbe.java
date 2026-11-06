@@ -7,7 +7,7 @@ import javax.swing.*;
 /** Actual Air manager/session admission + synthetic ACP router, in the isolated IDE only. */
 public class AirProfileProbe {
   static ClassLoader loader;static Object nativeBridge;
-  static Object launchContext,showingBinding;
+  static Object launchContext,showingBinding,restorationGuiRef;
   static Object call(Object o,String name,Object...args)throws Exception {
     Class<?> c=o instanceof Class<?> t?t:o.getClass();
     for(Method m:Arrays.stream(c.getMethods()).sorted(Comparator.comparing(m->!m.getName().equals(name))).toList())if(m.getName().startsWith(name)&&m.getParameterCount()==args.length){
@@ -16,6 +16,89 @@ public class AirProfileProbe {
     }throw new NoSuchMethodException(c+" "+name);
   }
   static Class<?> type(String name)throws Exception{return (Class<?>)call(nativeBridge,"type",name,"com.intellij.air");}
+  // A controlled native selector lane with an unrelated IDE source account.
+  public record Value(Object value) { public Object getValue(){return value;} }
+  public static class AccountLane {
+    public final Object agentAuthIdentityState;
+    AccountLane(Object identity){agentAuthIdentityState=new Value(identity);}
+    public Object getAiSourceState(){throw new AssertionError("Generic IDE source account must not be attributed to an ACP profile");}
+  }
+  public record Lane(Object aiSource) { public Object getAiSource(){return aiSource;} }
+  public record Facts(Object agentAuthIdentity) { public Object getAgentAuthIdentity(){return agentAuthIdentity;} }
+  public record PairValue(Object second) { public Object getSecond(){return second;} }
+  public static class ModernAccountLane {
+    public final Object agentFactsState;
+    ModernAccountLane(Object identity){agentFactsState=new Value(new PairValue(new Facts(identity)));}
+    public Object getAiSourceState(){throw new AssertionError("Generic IDE account accessed");}
+  }
+  public static class Commands { public final Object lane; Commands(Object value){lane=value;} }
+  public static class SelectorState { public final Object commandService; SelectorState(Object value){commandService=value;} }
+  public record Selector(Object state) { public Object getState(){return state;} }
+  static void verifyLaunchAndAccountAdapters(Path dir)throws Exception {
+    verifyRuntimeConstructors(dir);
+    Class<?> launchType=type("com.intellij.air.shared.prompt.AgentPromptLaunchProfile");
+    List<Field> fields=Arrays.stream(launchType.getDeclaredFields()).filter(f->!Modifier.isStatic(f.getModifiers())&&!f.isSynthetic()).toList();
+    List<Object> args=new ArrayList<>();
+    for(Field f:fields)args.add(switch(f.getName()) {
+      case "name"->"Original";case "agentId"->"acp.ai-multi";
+      case "launchMode"->type("com.intellij.air.shared.core.thread.AgentThreadLaunchMode").getField("DEFAULT").get(null);
+      case "launchTargetId"->call(type("com.intellij.air.shared.core.thread.AgentLaunchTargetIdKt"),"acpAgentLaunchTargetId","acp.ai-multi");
+      case "interactionSurfaceId"->"native";case "generationPreferences"->type("com.intellij.air.shared.prompt.AgentPromptGenerationPreferences").getConstructor().newInstance();
+      case "planMode"->false;case "prompt"->"Preserve draft";
+      case "fastMode"->construct(f.getType(),"fast_mode","fast");default->null;
+    });
+    args.add(null);Object base=construct(launchType,args.toArray());
+    Object profile=Class.forName("dev.boyko.aiagentswitcher.AgentProfiles$Entry",true,loader).getConstructor().newInstance();
+    call(profile,"setAgentId","acp.registry.grok-build");
+    Class<?> binder=Class.forName("dev.boyko.aiagentswitcher.air.AirComposerProfiles",true,loader);
+    Method seed=binder.getDeclaredMethod("seed",launchType,profile.getClass());seed.setAccessible(true);
+    Object seeded=seed.invoke(binder.getField("INSTANCE").get(null),base,profile);
+    ModelDefaultsProbe.check(Objects.equals(call(seeded,"getLaunchTargetId-"),call(type("com.intellij.air.shared.core.thread.AgentLaunchTargetIdKt"),"acpAgentLaunchTargetId","acp.registry.grok-build")),"Launch seed did not select Grok");
+    for(Field f:fields)if(!Set.of("name","agentId","launchTargetId","generationPreferences","sessionModeId","planMode").contains(f.getName())) {
+      f.setAccessible(true);ModelDefaultsProbe.check(Objects.equals(f.get(base),f.get(seeded)),"Launch seed lost native field "+f.getName());
+    }
+    Object keys=type("com.intellij.air.frontend.prompt.composer.actions.toolbar.AirPromptSelectorKeys").getField("INSTANCE").get(null);
+    Object selectorsKey=call(keys,"getSELECTORS");String keyName=String.valueOf(call(selectorsKey,"getName"));
+    Class<?> contextType=SettingsRefreshProbe.type("com.intellij.openapi.actionSystem.DataContext");
+    Class<?> presentationType=Class.forName("dev.boyko.aiagentswitcher.air.AirAccountPresentation",true,loader);
+    Field instance=presentationType.getDeclaredField("INSTANCE");instance.setAccessible(true);Object presentation=instance.get(null);
+    ModelDefaultsProbe.check(Arrays.stream(type("com.intellij.air.frontend.session.preferences.AirAiSourceViewModelImpl").getDeclaredFields()).anyMatch(f->Set.of("agentAuthIdentityState","agentFactsState").contains(f.getName())),"Unknown native account identity schema");
+    for(boolean modern:List.of(false,true))for(String email:Arrays.asList("grok@example.test",null)) {
+      Object identity=email==null?null:construct(type("com.intellij.air.shared.llm.AirAgentAuthIdentity"),"Grok",null,email);
+      Object selector=new Selector(new SelectorState(new Commands(new Lane(modern?new ModernAccountLane(identity):new AccountLane(identity)))));
+      Object context=Proxy.newProxyInstance(contextType.getClassLoader(),new Class<?>[]{contextType},(p,m,a)->m.getName().equals("getData")?Map.of("AiSource",selector):null);
+      Object actual=call(presentation,"chipText",context);
+      ModelDefaultsProbe.check(Objects.equals(email,actual),"Account caption used an unrelated source account: expected="+email+", actual="+actual+", selectorKey="+keyName);
+    }
+    Object actionPresentation=SettingsRefreshProbe.type("com.intellij.openapi.actionSystem.Presentation").getConstructor().newInstance();
+    Object segments=call(keys,"getSEGMENTS");call(actionPresentation,"putClientProperty",segments,List.of("unrelated@example.test"));
+    call(presentation,"preferPresentationText",actionPresentation);
+    ModelDefaultsProbe.check(call(actionPresentation,"getClientProperty",segments)==null,"Stale native account segments override the profile caption");
+    Files.writeString(dir.resolve("launch-account-adapters-result.txt"),"PASS: runtime Grok launch seed preserves native trailing fields/draft; lane agent identity wins, missing identity never reads generic IDE account, stale caption segments cleared.\n");
+  }
+  static void verifyLegacyCatalog(Path dir)throws Exception {
+    Object ep=call(SettingsRefreshProbe.type("com.intellij.openapi.extensions.ExtensionPointName"),"create","com.intellij.air.agentCatalogContributor");
+    List<?> contributors=(List<?>)call(ep,"getExtensionList");
+    Object nativeOwner=contributors.stream().filter(x->x.getClass().getName().equals("com.intellij.air.acp.AcpAgentCatalogContributor")).findFirst().orElseThrow();
+    Object legacy=contributors.stream().filter(x->x.getClass().getName().equals("dev.boyko.aiagentswitcher.air.AirLegacyProfilePresentation")).findFirst().orElseThrow();
+    Method declared=Arrays.stream(nativeOwner.getClass().getMethods()).filter(m->m.getName().equals("declaredSnapshot")&&m.getParameterCount()==0).findFirst().orElse(null);
+    boolean found=false;
+    for(int i=0;i<150&&!found;i++) {
+      Object source=declared==null?call(nativeOwner,"snapshot"):declared.invoke(nativeOwner);
+      List<?> descriptors=(List<?>)source.getClass().getField("agentDescriptors").get(source);
+      boolean registered=false;
+      for(Object descriptor:descriptors)if(String.valueOf(call(descriptor,"getAgentId-")).equals("acp.dynamic.6163702e61692d6d756c7469"))registered=true;
+      Object alias=call(legacy,"snapshot");
+      List<?> fallbacks=(List<?>)alias.getClass().getField("fallbackAgentDescriptors").get(alias);
+      if(registered) {
+        ModelDefaultsProbe.check(fallbacks.size()==1,"Legacy presentation did not delegate the native AI Multi descriptor");
+        ModelDefaultsProbe.check(String.valueOf(call(fallbacks.get(0),"getAgentId-")).equals("acp.ai-multi"),"Legacy alias changed its persistent identity");
+        found=true;
+      } else Thread.sleep(100);
+    }
+    ModelDefaultsProbe.check(found,"Native AI Multi catalog declaration missing");
+    Files.writeString(dir.resolve("air-legacy-catalog-result.txt"),"PASS: registered native catalog, legacy presentation alias and persistent identity; declared API="+(declared!=null)+"\n");
+  }
   static Object field(Object o,String name)throws Exception{return call(nativeBridge,"field",o,name);}
   static Object suspend(Object o,String name,Object...args)throws Exception {
     Class<?> continuation=Class.forName("kotlin.coroutines.Continuation",true,loader),empty=Class.forName("kotlin.coroutines.EmptyCoroutineContext",true,loader);
@@ -30,16 +113,47 @@ public class AirProfileProbe {
   static Object construct(Class<?> type,Object...args)throws Exception {
     for(Constructor<?> c:type.getDeclaredConstructors())if(c.getParameterCount()==args.length){boolean match=true;for(int i=0;i<args.length;i++)if(args[i]!=null&&!c.getParameterTypes()[i].isInstance(args[i])&&!c.getParameterTypes()[i].isPrimitive())match=false;if(match){c.setAccessible(true);return c.newInstance(args);}}throw new NoSuchMethodException(type.toString());
   }
+  static void verifyRuntimeConstructors(Path dir)throws Exception {
+    Class<?> binder=Class.forName("dev.boyko.aiagentswitcher.air.AirComposerProfiles",true,loader);
+    Method bind=binder.getDeclaredMethod("withNativeDefaults",Object.class,Map.class);bind.setAccessible(true);
+    for(String[] spec:List.of(new String[]{"com.intellij.air.acp.AcpSessionRuntimeAdapter","resolveLaunchableEntry"},new String[]{"com.intellij.air.backend.session.view.gui.BackendThreadGuiPreparedSessionApi","resolveAdapter"})) {
+      Class<?> adapter=type(spec[0]);Object defaults=adapter.getConstructor().newInstance();
+      Field replaced=adapter.getDeclaredField(spec[1]);replaced.setAccessible(true);
+      Object override=Proxy.newProxyInstance(adapter.getClassLoader(),new Class<?>[]{replaced.getType()},(p,m,a)->null);
+      Object routed=bind.invoke(binder.getField("INSTANCE").get(null),defaults,Map.of(spec[1],override));
+      ModelDefaultsProbe.check(replaced.get(routed)==override,"Scoped native resolver was not bound");
+      Constructor<?> primary=Arrays.stream(adapter.getConstructors()).filter(c->!c.isSynthetic()&&c.getParameterCount()>0).findFirst().orElseThrow();
+      List<Field> fields=Arrays.stream(adapter.getDeclaredFields()).filter(f->!Modifier.isStatic(f.getModifiers())&&!f.isSynthetic()).limit(primary.getParameterCount()).toList();
+      for(Field f:fields)if(!f.getName().equals(spec[1])) {
+        f.setAccessible(true);ModelDefaultsProbe.check(f.get(defaults)==f.get(routed),"Native constructor default lost: "+adapter.getName()+"."+f.getName());
+      }
+    }
+    Files.writeString(dir.resolve("runtime-constructors-result.txt"),"PASS: scoped runtime/backend resolver constructors preserve every native dependency on the running Air host.\n");
+  }
+  static Object data(Class<?> type,Map<String,Object> values)throws Exception {
+    List<Field> fields=Arrays.stream(type.getDeclaredFields()).filter(f->!Modifier.isStatic(f.getModifiers())&&!f.isSynthetic()).toList();
+    for(Constructor<?> c:type.getDeclaredConstructors()) {
+      List<Class<?>> parameters=Arrays.asList(c.getParameterTypes());
+      if(parameters.size()!=fields.size() && !(parameters.size()==fields.size()+1&&parameters.get(parameters.size()-1).getName().equals("kotlin.jvm.internal.DefaultConstructorMarker")))continue;
+      if(!parameters.subList(0,fields.size()).equals(fields.stream().map(Field::getType).toList()))continue;
+      List<Object> args=new ArrayList<>();for(Field f:fields)args.add(values.containsKey(f.getName())?values.get(f.getName()):f.getType()==boolean.class?false:null);
+      if(parameters.size()>fields.size())args.add(null);c.setAccessible(true);return c.newInstance(args.toArray());
+    }
+    throw new NoSuchMethodException(type.toString());
+  }
   static void verify(Object project,ClassLoader pluginLoader,Path dir)throws Exception {
     loader=pluginLoader;nativeBridge=Class.forName("dev.boyko.aiagentswitcher.NativeRecoveryContinuation",true,loader).getField("INSTANCE").get(null);
+    verifyLegacyCatalog(dir);
+    verifyLaunchAndAccountAdapters(dir);
     Path cwd=Path.of(String.valueOf(call(project,"getBasePath"))),backend=dir.resolve("air-chat-backend.js"),trace=dir.resolve("air-chat-trace.txt");Files.deleteIfExists(trace);
     Files.writeString(backend,"""
       const fs=require('fs'),rl=require('readline');let reasoning='medium',model='a';
-      const options=()=>[{id:'model',name:'Model',category:'model',type:'select',currentValue:model,options:['a','b','c'].map(value=>({value,name:'Model '+value.toUpperCase()}))},{id:'reasoning',name:'Reasoning',category:'thought_level',type:'select',currentValue:reasoning,options:['low','medium','high'].map(value=>({value,name:value}))}];
+      const options=()=>[{id:'model',name:'Model',category:'model',type:'select',currentValue:model,options:['a','b','c'].map(value=>({value,name:'Model '+value.toUpperCase()+' '+(process.env.PROFILE==='Work'?'Grok':'Codex')}))},{id:'reasoning',name:'Reasoning',category:'thought_level',type:'select',currentValue:reasoning,options:['low','medium','high'].map(value=>({value,name:value}))}];
       rl.createInterface({input:process.stdin}).on('line',line=>{const m=JSON.parse(line);fs.appendFileSync(process.env.TRACE,m.method+'\\n');fs.appendFileSync(process.env.TRACE+'.sessions',JSON.stringify({method:m.method,profile:process.env.PROFILE,pid:process.pid,sessionId:m.params?.sessionId})+'\\n');const send=result=>console.log(JSON.stringify({jsonrpc:'2.0',id:m.id,result}));
-      if(m.method==='initialize'){send({protocolVersion:1,agentInfo:{name:'native-air-fixture',version:'1'},agentCapabilities:{loadSession:true,sessionCapabilities:{resume:{},close:{}},providers:{},_meta:{authStatus:{}}},authMethods:[]});console.log(JSON.stringify({jsonrpc:'2.0',method:'_auth/status_update',params:{authStatus:{kind:'account',label:'Fixture account',account:{email:process.env.PROFILE.toLowerCase()+'@example.test'},vendor:{fixture:process.env.PROFILE}}}}));}
+      if(m.method==='initialize'){send({protocolVersion:1,agentInfo:{name:'native-air-fixture',version:'1'},agentCapabilities:{loadSession:true,promptCapabilities:{image:process.env.PROFILE==='Personal'},sessionCapabilities:{resume:{},close:{}},_meta:{authStatus:{}}},_meta:{steering:{supported:process.env.PROFILE==='Personal'}},authMethods:[]});console.log(JSON.stringify({jsonrpc:'2.0',method:'_auth/status_update',params:{authStatus:{kind:'account',label:'Fixture account',account:{email:process.env.PROFILE.toLowerCase()+'@example.test'},vendor:{fixture:process.env.PROFILE}}}}));}
       else if(m.method==='providers/list'){send({providers:[{providerId:'fixture',supported:['openai'],required:false,current:{apiType:'openai',baseUrl:'https://fixture.example.test/v1'}}]});}
       else if(m.method==='session/new'){const result={sessionId:'fixture-'+process.env.PROFILE+'-'+require('crypto').randomUUID(),configOptions:options()};if(fs.existsSync(process.env.TRACE+'.slow'))setTimeout(()=>send(result),3000);else send(result);}
+      else if(m.method==='session/load'||m.method==='session/resume'){send({configOptions:options()});}
       else if(m.method==='session/set_config_option'){if(m.params.configId==='model')model=m.params.value;else reasoning=m.params.value;send({configOptions:options()});}
       else if(m.method==='session/prompt'){console.log(JSON.stringify({jsonrpc:'2.0',method:'session/update',params:{sessionId:m.params.sessionId,update:{sessionUpdate:'agent_message_chunk',content:{type:'text',text:'fixture response'}}}}));send({stopReason:'end_turn'});}else send({});});
       """);
@@ -50,22 +164,42 @@ public class AirProfileProbe {
     Object gson=Class.forName("com.google.gson.Gson",true,loader).getConstructor().newInstance();
     Object root=call(call(Class.forName("com.google.gson.JsonParser",true,loader),"parseString",Files.readString(nativeConfig)),"getAsJsonObject");
     Object fixtureConfig=call(Class.forName("com.google.gson.JsonParser",true,loader),"parseString",call(gson,"toJson",Map.of("command","C:/Program Files/nodejs/node.exe","args",List.of(backend.toString()),"env",Map.of("PROFILE","Native","TRACE",trace.toString()))));
-    call(call(root,"getAsJsonObject","agent_servers"),"add","Fixture Air",fixtureConfig);Files.writeString(nativeConfig,root.toString());
-    Object fixtureId=call(type("com.intellij.air.acp.api.AcpAgentId").getField("Companion").get(null),"parse","acp.fixture-air");
-    for(int i=0;i<150&&call(realCatalog,"get",fixtureId)==null;i++)Thread.sleep(100);
-    ModelDefaultsProbe.check(call(realCatalog,"get",fixtureId)!=null,"Controlled native agent did not enter Air's catalog");
+    call(call(root,"getAsJsonObject","agent_servers"),"add","Fixture Air",fixtureConfig);
+    call(call(root,"getAsJsonObject","agent_servers"),"add","Fixture Grok",fixtureConfig);Files.writeString(nativeConfig,root.toString());
+    call(call(SettingsRefreshProbe.type("com.intellij.openapi.vfs.LocalFileSystem"),"getInstance"),"refreshAndFindFileByNioFile",nativeConfig);
+    Object fixtureId=null,grokId=null;
+    for(int i=0;i<150&&(fixtureId==null||grokId==null);i++) {
+      for(Object candidate:(List<?>)call(call(realCatalog,"getAgentsFlow"),"getValue")) {
+        if("Fixture Air".equals(call(candidate,"getDisplayName")))fixtureId=call(candidate,"getId");
+        if("Fixture Grok".equals(call(candidate,"getDisplayName")))grokId=call(candidate,"getId");
+      }
+      if(fixtureId==null||grokId==null)Thread.sleep(100);
+    }
+    ModelDefaultsProbe.check(fixtureId!=null,"Controlled native agent did not enter Air's catalog: "+call(call(realCatalog,"getAgentsFlow"),"getValue"));
     Class<?> entryClass=Class.forName("dev.boyko.aiagentswitcher.AgentProfiles$Entry",true,loader),profilesClass=Class.forName("dev.boyko.aiagentswitcher.AgentProfiles",true,loader);
-    String boundAgent=Files.exists(dir.resolve("folded-agent"))?"acp.registry.codex-acp":"acp.fixture-air";
+    String boundAgent=Files.exists(dir.resolve("folded-agent"))?"acp.registry.codex-acp":String.valueOf(call(fixtureId,"getFullId"));
+    String workAgent=Files.exists(dir.resolve("folded-agent"))?boundAgent:String.valueOf(call(Objects.requireNonNull(grokId),"getFullId"));
+    AutoCloseable folded=Files.exists(dir.resolve("folded-agent"))?NativeAgentUpdatesProbe.prepareFoldedFixture():()->{};
+    try {
     List<Object> entries=new ArrayList<>();for(String name:List.of("Personal","Work")){
-      Object p=entryClass.getConstructor().newInstance();call(p,"setId","air-"+name);call(p,"setName",name);call(p,"setAgentId",boundAgent);call(p,"setDefaultsAgentId",boundAgent);call(p,"setAdvancedOverrides",true);
+      String profileAgent=name.equals("Work")?workAgent:boundAgent;
+      Object p=entryClass.getConstructor().newInstance();call(p,"setId","air-"+name);call(p,"setName",name);call(p,"setAgentId",profileAgent);call(p,"setDefaultsAgentId",profileAgent);call(p,"setAdvancedOverrides",true);
       call(p,"setCommand","C:/Program Files/nodejs/node.exe");call(p,"setArguments",backend.toString());call(p,"setWorkingDirectory",cwd.toString());call(p,"setEnvironment","PROFILE="+name+"\nTRACE="+trace);entries.add(p);
       if(name.equals("Work")&&Boolean.getBoolean("aiaps.verifyNativePreferences")) {
         String preset="{\"host\":\"air\",\"agentId\":\"fixture.air\",\"defaultModelId\":\"b\",\"modelOptionId\":\"model\",\"modelOperation\":\"config\",\"models\":[{\"modelId\":\"b\",\"enabled\":true,\"settings\":[{\"agentId\":\"fixture.air\",\"id\":\"reasoning\",\"operation\":\"config\",\"value\":\"high\"}]}]}";
-        Object defaults=call(gson,"fromJson",preset.replace("fixture.air",boundAgent),Class.forName("dev.boyko.aiagentswitcher.AgentProfiles$ClientDefaults",true,loader));call(p,"setClientDefaults",new ArrayList<>(List.of(defaults)));
+        Object defaults=call(gson,"fromJson",preset.replace("fixture.air",profileAgent),Class.forName("dev.boyko.aiagentswitcher.AgentProfiles$ClientDefaults",true,loader));call(p,"setClientDefaults",new ArrayList<>(List.of(defaults)));
       }
     }
     Object profiles=call(SettingsRefreshProbe.app,"getService",profilesClass);call(profiles,"replace",entries);
     Object registration=Class.forName("dev.boyko.aiagentswitcher.GenericAutoRegistration",true,loader).getField("INSTANCE").get(null);call(registration,"assignNow",project,"air-Personal");
+    if(Files.exists(dir.resolve("composer-only"))) {
+      Object bridge=Class.forName("dev.boyko.aiagentswitcher.AirProfileBridge",true,loader).getField("INSTANCE").get(null);
+      visibleChat(project,null,null,cwd,dir,bridge);
+      Files.writeString(dir.resolve("air-result.txt"),Files.exists(dir.resolve("routing-only"))?
+        "PASS: native launch, saved transport/namespace repair, cold restoration and resumed continuation. Full visible model/profile switching excluded from this targeted run.\n":
+        "PASS: native composer cross-agent launch/profile/model switching, prepared handles, first prompt and cold restoration. History-bearing handoffs excluded from this targeted run.\n");
+      return;
+    }
     Path routerHome=Path.of(System.getProperty("aiaps.home"),".jetbrains","ai-agent-project-switcher");
     Object catalogId=call(type("com.intellij.air.acp.api.AcpAgentId").getField("Companion").get(null),"parse",type("com.intellij.air.acp.api.AcpAgentId").getField("CUSTOM_PREFIX").get(null)+"ai-multi");
     Class<?> configType=type("com.intellij.air.acp.api.AcpAgentStartConfig");
@@ -77,7 +211,7 @@ public class AirProfileProbe {
     Object launchTarget=call(type("com.intellij.air.shared.core.thread.AgentLaunchTargetIdKt"),"acpAgentLaunchTargetId",call(catalogId,"getFullId"));
     Object route=construct(type("com.intellij.air.shared.session.AgentLaunchRoute"),call(catalogId,"getFullId"),launchTarget,surface,null);
     Object launchMode=type("com.intellij.air.shared.core.thread.AgentThreadLaunchMode").getField("DEFAULT").get(null);
-    Object facts=construct(type("com.intellij.air.acp.AcpLaunchFacts"),route,entry,cwd,false,launchMode,List.of(),null,true);
+    Object facts=data(type("com.intellij.air.acp.AcpLaunchFacts"),Map.of("route",route,"entry",entry,"workingDir",cwd,"launchMode",launchMode,"promptPreferences",List.of(),"published",true));
     Object input=construct(type("com.intellij.air.acp.AcpPrepareInput$NewSession"),facts);
     Object ref=construct(type("com.intellij.air.backend.session.api.SessionRef"),cwd.toString().replace('\\','/'),UUID.randomUUID().toString(),null);
     Object manager=call(type("com.intellij.air.acp.AcpSessionManager").getField("Companion").get(null),"getInstance");
@@ -100,12 +234,19 @@ public class AirProfileProbe {
     if(!Boolean.getBoolean("aiaps.verifyNativePreferences")) {
       Method popup=action.getClass().getDeclaredMethod("createPopupActionGroup",JComponent.class,dataContext);popup.setAccessible(true);
       final Object[] menu={null};SettingsRefreshProbe.edt(()->menu[0]=popup.invoke(action,new JPanel(),context));
-      Object[] choices=(Object[])menu[0].getClass().getMethod("getChildren",actionEvent).invoke(menu[0],(Object)null);ModelDefaultsProbe.check(choices.length>=4,"Profile menu missing choices");
+      Object[] choices=(Object[])call(menu[0],"getChildActionsOrStubs");ModelDefaultsProbe.check(choices.length>=4,"Profile menu missing choices");
     }
     if(Boolean.getBoolean("aiaps.verifyNativePreferences")) {
-      Object request=construct(type("com.intellij.air.acp.AcpConnectionRequest"),entry,cwd,false,true,null,false);
+      Class<?> requestType=type("com.intellij.air.acp.AcpConnectionRequest");
+      boolean modern=Arrays.stream(requestType.getConstructors()).anyMatch(c->c.getParameterCount()==4);
+      Object request=modern?construct(requestType,entry,cwd,construct(type("com.intellij.air.acp.AcpRuntimeTarget$Local"),entry),type("com.intellij.air.acp.AcpConnectionPurpose$Open").getField("INSTANCE").get(null)):
+        construct(requestType,entry,cwd,false,true,null,false);
       Object connection=suspend(field(manager,"connectionExecutor"),"connect",runtime,request);
       Files.writeString(dir.resolve("air-native-connection-result.txt"),String.valueOf(connection));
+      if(modern) {
+        ModelDefaultsProbe.check(Boolean.TRUE.equals(call(manager,"rehydrateOwnership",ref)),"Native fixture could not finish preparation");
+        for(int i=0;i<300&&!Boolean.TRUE.equals(call(manager,"isReadyForPrompt",ref));i++)Thread.sleep(100);
+      }
     }
     binding=suspend(bridge,"connect",binding,false);
     awaitReady(bridge,binding);
@@ -123,6 +264,15 @@ public class AirProfileProbe {
       suspend(bridge,"control",binding,"session/set_config_option",params);
     }
     suspend(bridge,"choose",project,binding,"air-Work");
+    {
+      Object owners=field(manager,"owners"),owner=call(owners,"get",ref),snapshot=call(field(owner,"connectionSnapshotState"),"getValue");
+      Object admitted=suspend(owners,"admitCurrentProtocolSession-",ref,call(snapshot,"getGeneration-"));
+      Object protocol=admitted.getClass().getField("session").get(admitted),sdk=call(field(protocol,"resources"),"getClientSession");
+      Object info=call(call(sdk,"getClient"),"getAgentInfo"),caps=call(info,"getCapabilities"),prompt=call(caps,"getPromptCapabilities");
+      ModelDefaultsProbe.check(Boolean.FALSE.equals(call(prompt,"getImage")),"Air handoff kept source image capability");
+      ModelDefaultsProbe.check(Boolean.FALSE.equals(call(snapshot,"getSteeringSupported")),"Air handoff kept source steering capability");
+      Files.writeString(dir.resolve("air-bound-capabilities.txt"),"PASS: native Air SDK and connection snapshot replace source image/steering capabilities with the bound target values.\n");
+    }
     result=suspend(bridge,"control",binding,"_ai_multi/describe",Class.forName("com.google.gson.JsonObject",true,loader).getConstructor().newInstance());ModelDefaultsProbe.check(result.toString().contains("air-Work"),"Air dropdown selection did not switch chat");
     verifyAccount(binding,"work@example.test");
     if(Boolean.getBoolean("aiaps.verifyNativePreferences")) {Object record=call(bridge,"record",binding);ModelDefaultsProbe.check(record.toString().contains("\"currentValue\":\"b\"")&&record.toString().contains("\"currentValue\":\"high\""),"Configured Air defaults lost to remembered preferences: "+record);}
@@ -131,10 +281,11 @@ public class AirProfileProbe {
     if(Files.exists(dir.resolve("verify-visible"))) {
       visibleChat(project,ref,thread,cwd,dir,bridge);
       ModelDefaultsProbe.check(call(bridge,"record",binding).toString().contains("\"profile\":\"air-Work\""),"New Air chat changed the previous chat's profile");
-      ModelDefaultsProbe.check(Files.readAllLines(trace).stream().filter(x->x.equals("session/prompt")).count()==1,"Unexpected provider prompt during profile selection");
+      ModelDefaultsProbe.check(Files.readAllLines(trace).stream().filter(x->x.equals("session/prompt")).count()==3,"Unexpected provider prompt during profile selection or history handoffs");
     }
     Files.writeString(dir.resolve("air-result.txt"),Boolean.getBoolean("aiaps.verifyNativePreferences")?"PASS: actual Air admission, inherited native reasoning, accepted explicit selection, profile model/reasoning defaults override conflicting native preferences, switch with unchanged project default and no provider prompt.\n":"PASS: actual Air prepare before first prompt, native session admission and raw extension; registered dropdown in native Preferences toolbar; Personal/Work menu, switching the bound empty chat, unchanged project default, no provider prompt.\n");
     suspend(manager,"closeAllRuntimes");
+    } finally { folded.close(); }
   }
   static void visibleChat(Object project,Object ref,String thread,Path cwd,Path dir,Object bridge)throws Exception {
     Object editors=call(SettingsRefreshProbe.type("com.intellij.openapi.fileEditor.FileEditorManager"),"getInstance",project);
@@ -146,7 +297,8 @@ public class AirProfileProbe {
     final boolean[] visible={false};SettingsRefreshProbe.edt(()->{for(java.awt.Window w:java.awt.Window.getWindows())if(w.isShowing()&&containsProfileButton(w))visible[0]=true;});
     ModelDefaultsProbe.check(!visible[0],"Profile selector leaks into the native Junie composer");
     selectNativeAgent("AI Multi");
-    Thread.sleep(2000);
+    awaitComposerProfile(bridge,"air-Personal");
+    chooseFixtureAccount();
     StringBuilder selectedContext=new StringBuilder();
     SettingsRefreshProbe.edt(()->{for(java.awt.Window w:java.awt.Window.getWindows())if(w.isShowing())inspect(w,selectedContext,bridge);});
     Files.writeString(dir.resolve("selected-agent-context.txt"),selectedContext);
@@ -155,15 +307,17 @@ public class AirProfileProbe {
     selectNativeAgent("Fixture Air");
     for(int i=0;i<150;i++) {
       visible[0]=false;
-      SettingsRefreshProbe.edt(()->{for(java.awt.Window w:java.awt.Window.getWindows())if(w.isShowing()){inspect(w,new StringBuilder(),bridge);if(containsProfileButton(w))visible[0]=true;}});
+      SettingsRefreshProbe.edt(()->{StringBuilder report=new StringBuilder();for(java.awt.Window w:java.awt.Window.getWindows())if(w.isShowing()){inspect(w,report,bridge);if(containsProfileButton(w))visible[0]=true;}Files.writeString(dir.resolve("standard-agent-context.txt"),report);});
       if(!visible[0])break;
       Thread.sleep(100);
     }
     ModelDefaultsProbe.check(!visible[0],"Profile selector remains visible after switching to Codex");
     selectNativeAgent("AI Multi");
-    Thread.sleep(2000);
-    SettingsRefreshProbe.edt(()->{for(java.awt.Window w:java.awt.Window.getWindows())if(w.isShowing())inspect(w,new StringBuilder(),bridge);});
-    Files.writeString(dir.resolve("new-session-contexts.txt"),launchReport);
+    awaitComposerProfile(bridge,"air-Personal");
+    chooseFixtureAccount();
+    StringBuilder currentReport=new StringBuilder();
+    SettingsRefreshProbe.edt(()->{for(java.awt.Window w:java.awt.Window.getWindows())if(w.isShowing())inspect(w,currentReport,bridge);});
+    Files.writeString(dir.resolve("new-session-contexts.txt"),currentReport);
     Object catalog=call(type("com.intellij.air.acp.api.AcpAgentsCatalog").getField("Companion").get(null),"getInstance");
     Object configLoader=type("com.intellij.air.acp.runtime.config.AcpConfigurationLoader").getField("INSTANCE").get(null);
     Object configPath=call(configLoader,"getConfigFilePath");
@@ -171,6 +325,20 @@ public class AirProfileProbe {
     Files.writeString(dir.resolve("catalog-diagnostic.txt"),"path="+configPath+"\nloaded="+call(configLoader,"loadFromPath",configPath)+"\nservice="+call(call(configService,"getLocalAgentConfigsFlow"),"getValue")+"\ncatalog="+call(call(catalog,"getAgentsFlow"),"getValue"));
     captureAir(dir.resolve("new-session.png"));
     ModelDefaultsProbe.check(launchContext!=null,"No actual New Session toolbar context");
+    if(Files.exists(dir.resolve("routing-only"))) {
+      Thread.sleep(3000); // Native account selection can replace its prepared child.
+      awaitComposerProfile(bridge,"air-Personal");
+      Object composerProfiles=Class.forName("dev.boyko.aiagentswitcher.air.AirComposerProfiles",true,loader).getField("INSTANCE").get(null);
+      Object composer=call(composerProfiles,"composer",launchContext);
+      Object host=call(call(composer,"getPreferences"),"getPreferences");
+      Object ready=call(call(host,"getPreferencesState"),"getValue");
+      Object source=field(call(ready,"getViewModel"),"source");
+      restorationGuiRef=field(source,"ref");
+      Object first=construct(type("com.intellij.air.shared.session.view.gui.ThreadGuiSendPromptRequest"),"Routing restore fixture","Routing restore fixture",UUID.randomUUID().toString(),null,List.of(),List.of(),List.of(),List.of(),List.of());
+      ModelDefaultsProbe.check(Boolean.TRUE.equals(call(suspend(source,"sendPrompt",first),"getAccepted")),"Native routing fixture prompt was not admitted");
+      verifyPreparedRestore(showingBinding,bridge,dir);
+      return;
+    }
     verifyVisibleModelSettings();
     verifyVisibleAccount("personal@example.test");
     Object actions=call(SettingsRefreshProbe.type("com.intellij.openapi.actionSystem.ActionManager"),"getInstance");
@@ -206,7 +374,7 @@ public class AirProfileProbe {
     Files.writeString(dir.resolve("air-chat-trace.txt.slow"),"Delay the controlled backend to inspect switching feedback");
     SettingsRefreshProbe.edt(()->{
       Object menu=popup.invoke(selector,new JPanel(),launchContext);
-      Object[] choices=(Object[])menu.getClass().getMethod("getChildren",eventType).invoke(menu,(Object)null);
+      Object[] choices=(Object[])call(menu,"getChildActionsOrStubs");
       Object selected=null;for(Object choice:choices)if(String.valueOf(call(call(choice,"getTemplatePresentation"),"getText")).equals("Work"))selected=choice;
       ModelDefaultsProbe.check(selected!=null,"Actual New Session menu omits profile");
       Object event=call(eventType,"createFromAnAction",selected,null,"Air.Prompt.Preferences",launchContext);call(selected,"actionPerformed",event);
@@ -251,7 +419,7 @@ public class AirProfileProbe {
     captureAir(dir.resolve("bottom-profile.png"));
     ModelDefaultsProbe.check(bottomProfile[0],"Acquired chat omits visible profile selector beside the agent selector");
     boolean[] nativeModel={false};
-    SettingsRefreshProbe.edt(()->{for(java.awt.Window w:java.awt.Window.getWindows())if(w.isShowing()&&containsText(w,"Model B"))nativeModel[0]=true;});
+    SettingsRefreshProbe.edt(()->{for(java.awt.Window w:java.awt.Window.getWindows())if(w.isShowing()&&containsText(w,"Model B Grok"))nativeModel[0]=true;});
     ModelDefaultsProbe.check(nativeModel[0],"Acquired chat retains settings skeleton instead of native model selector");
     verifyVisibleAccount("work@example.test");
     ModelDefaultsProbe.check(call(bridge,"record",created).toString().contains("\"profile\":\"air-Work\""),"Air creator ignored explicit profile");
@@ -288,16 +456,20 @@ public class AirProfileProbe {
       source[0]=field(call(ready,"getViewModel"),"source");
     });
     Object firstRequest=construct(type("com.intellij.air.shared.session.view.gui.ThreadGuiSendPromptRequest"),"First prepared prompt","First prepared prompt",UUID.randomUUID().toString(),null,List.of(),List.of(),List.of(),List.of(),List.of());
+    restorationGuiRef=field(source[0],"ref");
     Object admitted=suspend(source[0],"sendPrompt",firstRequest);
     ModelDefaultsProbe.check(Boolean.TRUE.equals(call(admitted,"getAccepted")),"Air refused the first native prompt");
     for(int i=0;i<150;i++){if(Files.readAllLines(dir.resolve("air-chat-trace.txt.sessions")).stream().filter(x->x.contains("session/close")&&x.contains("\"sessionId\":"+unusedNativeId)).count()>closesBefore)break;Thread.sleep(100);}
     ModelDefaultsProbe.check(Files.readAllLines(dir.resolve("air-chat-trace.txt.sessions")).stream().filter(x->x.contains("session/close")&&x.contains("\"sessionId\":"+unusedNativeId)).count()>closesBefore,"Air did not close unused Work after first prompt");
     Files.writeString(dir.resolve("air-prepared-result.txt"),"PASS: native composer preserved, same Personal/Work session IDs reused, no repeated session/new, native first prompt admitted, unused prepared Work session closed.\n");
+    reusedPersonal=verifyPreparedRestore(reusedPersonal,bridge,dir);
+    if(Files.exists(dir.resolve("composer-only")))return;
+    verifyCommittedAir(project,reusedPersonal,bridge,dir);
     Files.writeString(dir.resolve("visible-result.txt"),"PASS: project default initializes composer selection; profile choice completes while native agent preparation is delayed and remains enabled; AI Multi agent/route IDs are preserved; native launches use the selected profile with exactly one segment, native model/default controls, unchanged tabs/composer and project default, no provider prompt, independent acquired chat.\n");
     if(Files.exists(dir.resolve("cache-audit"))) auditNativeCache(project,dir,bridge,selector,eventType);
     String workspace=cwd.toString().replace('\\','/');
     Object launchTarget=call(type("com.intellij.air.shared.core.thread.AgentLaunchTargetIdKt"),"acpAgentLaunchTargetId","acp.ai-multi");
-    Object launch=construct(type("com.intellij.air.shared.prompt.AgentPromptLaunchProfile"),"AI Multi","acp.ai-multi",type("com.intellij.air.shared.core.thread.AgentThreadLaunchMode").getField("DEFAULT").get(null),launchTarget,"native",null,type("com.intellij.air.shared.prompt.AgentPromptGenerationPreferences").getConstructor().newInstance(),false,null,null,"",null);
+    Object launch=data(type("com.intellij.air.shared.prompt.AgentPromptLaunchProfile"),Map.of("name","AI Multi","agentId","acp.ai-multi","launchMode",type("com.intellij.air.shared.core.thread.AgentThreadLaunchMode").getField("DEFAULT").get(null),"launchTargetId",launchTarget,"interactionSurfaceId","native","generationPreferences",type("com.intellij.air.shared.prompt.AgentPromptGenerationPreferences").getConstructor().newInstance(),"prompt",""));
     Object spec=construct(type("com.intellij.air.thread.view.AgentSessionViewOpenSpec"),
       construct(type("com.intellij.air.shared.session.AgentThreadViewSurfaceKey"),"air-visible-fixture"),
       construct(type("com.intellij.air.shared.core.identity.SessionWorkspaceId"),workspace),workspace,"acp.ai-multi:"+thread,launchTarget,thread,"Air profile verification",null,
@@ -320,6 +492,93 @@ public class AirProfileProbe {
     diagnoseAcquiredAccount(manager,ref,dir);
     verifyVisibleAccount("work@example.test");
     Files.writeString(dir.resolve("account-result.txt"),"PASS: real Air account identity from agent's one-time post-initialize notification; native account control shows the selected composer account and retains the acquired chat's account independently of project default.\n");
+  }
+  static Object verifyPreparedRestore(Object binding,Object bridge,Path dir)throws Exception {
+    awaitReady(bridge,binding);
+    long creations=Files.readAllLines(dir.resolve("air-chat-trace.txt")).stream().filter(x->x.equals("session/new")).count();
+    Object runtime=call(binding,"getRuntime"),ref=call(binding,"getRef");
+    Object projection=call(field(runtime,"projectionHandle"),"getProjection");
+    Object durable=call(projection,"getRuntimeBinding");
+    Object expected=call(type("com.intellij.air.shared.core.thread.AgentLaunchTargetIdKt"),"acpAgentLaunchTargetId","acp.ai-multi");
+    ModelDefaultsProbe.check(Objects.equals(call(durable,"getLaunchTargetId-"),expected),"Prepared chat persisted a direct provider route with an AI Multi session ID: "+durable);
+    Object adapter=call(type("com.intellij.air.backend.session.api.AgentSessionRuntimeAdapters").getField("INSTANCE").get(null),"resolvedOrNull-",expected);
+    // Kotlin Duration stores finite nanoseconds shifted left by one bit.
+    ModelDefaultsProbe.check(Boolean.TRUE.equals(suspend(adapter,"closeRuntimeAndAwait-",ref,20_000_000_000L)),"Native runtime did not close for restoration test");
+    verifyLegacyRouteRepair(ref,dir);
+    Class<?> reopen=type("com.intellij.air.acp.AcpSessionLifecycleCommand$ReopenClosedSurface");
+    if(reopen!=null) {
+      Class<?> fn=Class.forName("kotlin.jvm.functions.Function1",true,loader);
+      Object factory=Proxy.newProxyInstance(fn.getClassLoader(),new Class<?>[]{fn},(p,m,a)->reopen.getConstructors()[0].newInstance(a[0]));
+      ModelDefaultsProbe.check(Boolean.TRUE.equals(suspend(field(call(binding,"getManager"),"owners"),"request",ref,factory)),"Native surface did not reopen after releasing its runtime");
+    }
+    call(adapter,"runtimeRetained",ref);
+    for(int i=0;i<100&&call(field(call(binding,"getManager"),"runtimeStore"),"get",ref)==null;i++)Thread.sleep(100);
+    if(call(field(call(binding,"getManager"),"runtimeStore"),"get",ref)==null) {
+      // Older Air retains ownership separately from scheduling materialization.
+      call(adapter,"connectOnRestore",ref);
+      for(int i=0;i<100&&call(field(call(binding,"getManager"),"runtimeStore"),"get",ref)==null;i++)Thread.sleep(100);
+    }
+    Object r=call(field(call(binding,"getManager"),"runtimeStore"),"get",ref);
+    ModelDefaultsProbe.check(r!=null,"Native restore did not materialize its runtime");
+    Class<?> repair=Class.forName("dev.boyko.aiagentswitcher.air.AirChatRoutingRepair",true,loader);
+    suspend(repair.getField("INSTANCE").get(null),"restoreWhenFailed",call(binding,"getManager"),ref,r);
+    for(int i=0;i<100&&!Boolean.TRUE.equals(call(adapter,"acceptsPrompt",ref));i++)Thread.sleep(100);
+    Object api=suspend(type("com.intellij.air.shared.session.view.gui.ThreadGuiApi").getField("Companion").get(null),"getInstance");
+    Object continued=construct(type("com.intellij.air.shared.session.view.gui.ThreadGuiSendPromptRequest"),"Continue restored chat","Continue restored chat",UUID.randomUUID().toString(),null,List.of(),List.of(),List.of(),List.of(),List.of());
+    ModelDefaultsProbe.check(Boolean.TRUE.equals(call(suspend(api,"sendPrompt",restorationGuiRef,continued),"getAccepted")),"Native continuation after restore was not admitted");
+    for(int i=0;i<100&&!Boolean.TRUE.equals(call(adapter,"isReadyForPrompt",ref));i++)Thread.sleep(100);
+    Files.writeString(dir.resolve("restored-presentation.txt"),String.valueOf(call(call(call(binding,"getManager"),"presentationState",ref),"getValue")));
+    ModelDefaultsProbe.check(Boolean.TRUE.equals(call(adapter,"isReadyForPrompt",ref))&&Boolean.TRUE.equals(call(adapter,"acceptsPrompt",ref)),"Committed prepared chat did not restore through its native lifecycle");
+    Object restoredRuntime=call(field(call(binding,"getManager"),"runtimeStore"),"get",ref);
+    Object restored=construct(binding.getClass(),call(binding,"getManager"),ref,restoredRuntime,call(binding,"getSessionId"),call(binding,"getCwd"));
+    Object record=suspend(bridge,"control",restored,"_ai_multi/describe",ClientPreferencesProbe.json("{}"));
+    ModelDefaultsProbe.check(record.toString().contains("air-Personal"),"Restore did not retain the committed profile");
+    ModelDefaultsProbe.check(Files.readAllLines(dir.resolve("air-chat-trace.txt")).stream().filter(x->x.equals("session/new")).count()==creations,"Restore created a replacement provider session");
+    ModelDefaultsProbe.check(Files.readAllLines(dir.resolve("air-chat-trace.txt")).contains("session/resume"),"Native restore did not resume the provider session");
+    Files.writeString(dir.resolve("air-prepared-restore.txt"),"PASS: durable AI Multi transport and identity, native runtime released/restored without composer resolver, same profile/session resumed, no session/new, native continuation admitted/completed.\n");
+    return restored;
+  }
+  static void chooseFixtureAccount()throws Exception {
+    final java.awt.Point[] point={null};
+    SettingsRefreshProbe.edt(()->{
+      for(java.awt.Window w:java.awt.Window.getWindows())if(w.isShowing())findFixtureAccount(w,point);
+    });
+    if(point[0]!=null){java.awt.Robot robot=new java.awt.Robot();robot.mouseMove(point[0].x,point[0].y);robot.mousePress(java.awt.event.InputEvent.BUTTON1_DOWN_MASK);robot.mouseRelease(java.awt.event.InputEvent.BUTTON1_DOWN_MASK);Thread.sleep(1000);}
+  }
+  static void findFixtureAccount(java.awt.Component c,java.awt.Point[] point) {
+    if(c.isShowing()&&c instanceof javax.swing.JLabel label&&String.valueOf(label.getText()).contains("Fixture account")) {
+      java.awt.Point p=c.getLocationOnScreen();point[0]=new java.awt.Point(p.x+c.getWidth()/2,p.y+c.getHeight()/2);
+    }
+    if(c instanceof java.awt.Container parent)for(java.awt.Component child:parent.getComponents())findFixtureAccount(child,point);
+  }
+  static void verifyLegacyRouteRepair(Object ref,Path dir)throws Exception {
+    Class<?> logs=type("com.intellij.air.backend.session.log.SessionLogService");
+    ModelDefaultsProbe.check(logs!=null,"Native session log API is unavailable");
+    String path=String.valueOf(call(ref,"getPathKey-"));
+    Object local=call(call(ref,"getLocalSessionId"),"getValue");
+    String thread=String.valueOf(local);
+    Object log=call(call(logs.getField("Companion").get(null),"getInstance"),"log-",path);
+    List<?> events=(List<?>)call(log,"readEvents-",thread);
+    Object payload=null;
+    for(int i=events.size()-1;i>=0;i--){Object e=events.get(i);if(String.valueOf(call(e,"getType")).equals("RuntimeSessionBound")){payload=call(e,"getPayload");break;}}
+    ModelDefaultsProbe.check(payload!=null,"Missing native runtime binding event");
+    Object wrongTarget=call(type("com.intellij.air.shared.core.thread.AgentLaunchTargetIdKt"),"acpAgentLaunchTargetId","acp.registry.codex-acp");
+    Object broken=call(payload,"withString","launchTargetId",String.valueOf(wrongTarget));
+    broken=call(broken,"withString","agentId","codex");
+    broken=call(broken,"withString","futureRouteField","preserve-me");
+    String eventsPackage=payload.getClass().getPackageName();
+    Class<?> draft=type(eventsPackage+".SessionEventDraft");
+    Object entry=construct(draft,type(eventsPackage+".EventSource").getField("Ide").get(null),type(eventsPackage+".SessionEventType").getField("RuntimeSessionBound").get(null),call(broken,"jsonObject"),type(eventsPackage+".EventVisibility").getField("AuditOnly").get(null),null,null,null);
+    call(log,"append-",thread,List.of(entry));
+    Class<?> repair=Class.forName("dev.boyko.aiagentswitcher.air.AirChatRoutingRepair",true,loader);
+    Object helper=repair.getField("INSTANCE").get(null);
+    ModelDefaultsProbe.check(Boolean.TRUE.equals(call(helper,"repair",path,thread)),"Existing damaged AI Multi chat was not repaired");
+    ModelDefaultsProbe.check(Boolean.FALSE.equals(call(helper,"repair",path,thread)),"Route repair is not idempotent");
+    events=(List<?>)call(log,"readEvents-",thread);
+    Object corrected=call(events.getLast(),"getPayload");
+    ModelDefaultsProbe.check(Objects.equals(call(corrected,"string","agentSessionId"),call(payload,"string","agentSessionId")),"Repair changed the virtual session ID");
+    ModelDefaultsProbe.check(Objects.equals(call(corrected,"string","futureRouteField"),"preserve-me"),"Repair dropped unknown native fields");
+    Files.writeString(dir.resolve("air-legacy-route-repair.txt"),"PASS: damaged provider route repaired through native append-only log; same session ID, unknown fields, idempotence.\n");
   }
   static void diagnoseAcquiredAccount(Object manager,Object ref,Path dir)throws Exception {
     StringBuilder report=new StringBuilder();
@@ -363,22 +622,56 @@ public class AirProfileProbe {
     if(binding==null)return false;
     try{return call(bridge,"record",binding).toString().contains("\"profile\":\""+profile+"\"");}catch(Exception unavailable){return false;}
   }
+  static void verifyCommittedAir(Object project,Object binding,Object bridge,Path dir)throws Exception {
+    Object binder=Class.forName("dev.boyko.aiagentswitcher.air.AirProfileBinding",true,loader).getField("INSTANCE").get(null);
+    for(String target:List.of("air-Work","air-Personal")){
+      awaitReady(bridge,binding);
+      Object state=suspend(bridge,"control",binding,"_ai_multi/describe",ClientPreferencesProbe.json("{}"));
+      Object params=ClientPreferencesProbe.json("{\"profile\":\""+target+"\",\"revision\":"+call(state,"get","revision")+",\"exchanges\":0,\"history\":[],\"consent\":true,\"deferBinding\":true}");
+      Object selected=suspend(bridge,"control",binding,"_ai_multi/switch",params);
+      suspend(binder,"bind",binding,selected);
+      Object manager=call(binding,"getManager"),ref=call(binding,"getRef"),owners=field(manager,"owners"),owner=call(owners,"get",ref),snapshot=call(field(owner,"connectionSnapshotState"),"getValue");
+      Object admitted=suspend(owners,"admitCurrentProtocolSession-",ref,call(snapshot,"getGeneration-"));
+      Object protocol=admitted.getClass().getField("session").get(admitted),sdk=call(field(protocol,"resources"),"getClientSession");
+      boolean expected=target.equals("air-Personal");
+      Object info=call(call(sdk,"getClient"),"getAgentInfo"),caps=call(info,"getCapabilities"),prompt=call(caps,"getPromptCapabilities");
+      ModelDefaultsProbe.check(Boolean.valueOf(expected).equals(call(prompt,"getImage")),"Committed Air handoff retained source image support");
+      ModelDefaultsProbe.check(Boolean.valueOf(expected).equals(call(snapshot,"getSteeringSupported")),"Committed Air handoff retained source steering support");
+      String token=String.valueOf(call(call(selected,"get","token"),"getAsString"));
+      Object request=ClientPreferencesProbe.json("{\"sessionId\":\""+call(binding,"getSessionId")+"\",\"cwd\":"+call(Class.forName("com.google.gson.Gson",true,loader).getConstructor().newInstance(),"toJson",call(binding,"getCwd"))+"}");
+      suspend(nativeBridge,"continueSession",project,request,token,"");
+      awaitReady(bridge,binding);
+      ModelDefaultsProbe.check(!call(bridge,"record",binding).toString().contains("pendingHandoff"),"Air native continuation did not consume handoff");
+    }
+    Files.writeString(dir.resolve("air-committed-bindings.txt"),"PASS: real history chat switched both capability directions; SDK image and native steering metadata rebound; both continuations admitted and completed by Air.\n");
+  }
   static void verifyAccount(Object binding,String email)throws Exception {
     Object manager=call(binding,"getManager"),ref=call(binding,"getRef");
     Object identity=call(manager,"agentAuthIdentity",ref);
     ModelDefaultsProbe.check(identity!=null&&email.equals(identity.getClass().getField("email").get(identity)),"Native Air account identity missing or belongs to another profile: "+identity+"; expected "+email);
   }
   static void verifyVisibleModelSettings()throws Exception {
+    boolean requireEffort=!Files.exists(ClientPreferencesProbe.dir.resolve("composer-only"));
     Set<String> visible=new HashSet<>();
     for(int i=0;i<150;i++){
       visible.clear();SettingsRefreshProbe.edt(()->{
         for(java.awt.Window w:java.awt.Window.getWindows())if(w.isShowing())collectVisibleModelSettings(w,visible);
+        // .512 renders thought-level settings through generic Config chips.
+        Object keys=type("com.intellij.air.frontend.prompt.composer.actions.toolbar.AirPromptSelectorKeys").getField("INSTANCE").get(null);
+        Map<?,?> selectors=(Map<?,?>)call(call(keys,"getSELECTORS"),"getData",launchContext);
+        for(var entry:selectors.entrySet())if(String.valueOf(entry.getKey()).startsWith("Config")) {
+          Object popup=call(entry.getValue(),"createPopupForTest");
+          if(popup!=null) {
+            String rows=String.valueOf(call(popup,"rowTexts")).toLowerCase(Locale.ROOT);
+            if(rows.contains("low")&&rows.contains("medium")&&rows.contains("high"))visible.add("AirPromptEffortAction");
+          }
+        }
       });
-      if(visible.contains("AirPromptModelAction")&&visible.contains("AirPromptEffortAction"))break;
+      if(visible.contains("AirPromptModelAction")&&(!requireEffort||visible.contains("AirPromptEffortAction")))break;
       Thread.sleep(100);
     }
     Files.writeString(ClientPreferencesProbe.dir.resolve("visible-model-settings.txt"),visible.toString());
-    ModelDefaultsProbe.check(visible.contains("AirPromptModelAction")&&visible.contains("AirPromptEffortAction"),
+    ModelDefaultsProbe.check(visible.contains("AirPromptModelAction")&&(!requireEffort||visible.contains("AirPromptEffortAction")),
       "New Session lost visible native model/reasoning controls: "+visible);
   }
   static void collectVisibleModelSettings(java.awt.Component c,Set<String> visible)throws Exception {
@@ -430,6 +723,12 @@ public class AirProfileProbe {
       report.append("tab=").append(call(key,"getData",context)).append('\n');
       Object keys=type("com.intellij.air.frontend.prompt.composer.actions.toolbar.AirPromptSelectorKeys").getField("INSTANCE").get(null);
       report.append("selectors=").append(call(call(keys,"getSELECTORS"),"getData",context)).append('\n');
+      Map<?,?> selectors=(Map<?,?>)call(call(keys,"getSELECTORS"),"getData",context);
+      if(selectors!=null)for(var entry:selectors.entrySet())if(String.valueOf(entry.getKey()).equals("Agent")) {
+        Object commands=field(call(entry.getValue(),"getState"),"commandService");
+        Object draft=field(field(commands,"selection"),"draft");
+        report.append("draft=").append(call(call(draft,"getState"),"getValue")).append('\n');
+      }
     }
     if(c instanceof java.awt.Container container)for(java.awt.Component child:container.getComponents())inspect(child,report,bridge);
   }
@@ -550,7 +849,7 @@ public class AirProfileProbe {
   static void chooseComposerProfile(Object selector,Method popup,Class<?> eventType,Class<?> dataContext,String name)throws Exception{
     SettingsRefreshProbe.edt(()->{
       Object menu=popup.invoke(selector,new JPanel(),launchContext);
-      Object[] choices=(Object[])menu.getClass().getMethod("getChildren",eventType).invoke(menu,(Object)null);
+      Object[] choices=(Object[])call(menu,"getChildActionsOrStubs");
       Object selected=null;for(Object choice:choices)if(String.valueOf(call(call(choice,"getTemplatePresentation"),"getText")).equals(name))selected=choice;
       ModelDefaultsProbe.check(selected!=null,"Native composer menu omits "+name);
       call(selected,"actionPerformed",call(eventType,"createFromAnAction",selected,null,"Air.Prompt.Preferences",launchContext));

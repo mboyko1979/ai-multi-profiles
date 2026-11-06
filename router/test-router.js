@@ -47,6 +47,7 @@ let config={projects:[{root:path.join(root,'A'),profile:'alpha'},{root:path.join
 const write = () => fs.writeFileSync(cfg, '\uFEFF'+JSON.stringify(config));
 write();
 function client(extraEnv={},cwd) {
+ if(cwd)fs.mkdirSync(cwd,{recursive:true});
  const proc=cp.spawn(process.execPath,[path.join(__dirname,'cps-router.js'),cfg],{cwd,env:{...process.env,AIAPS_REQUEST_TIMEOUT_MS:'400',...extraEnv},stdio:['pipe','pipe','pipe']});
  children.push(proc);
  const messages=[],waiters=new Map(); let errors=''; let serial=0;
@@ -71,10 +72,7 @@ const rejected = response => { assert(response.error,JSON.stringify(response)); 
 (async()=>{
  let c=client();
  const init=ok(await c.request('initialize',{protocolVersion:1}));
- assert.strictEqual(init.agentCapabilities.loadSession,true);
- assert(!init.agentCapabilities.promptCapabilities.image); // intersection, never first-response wins
- assert(!('list' in init.agentCapabilities.sessionCapabilities));
- assert(!('fork' in init.agentCapabilities.sessionCapabilities));
+ assert.deepStrictEqual(init.agentCapabilities,{}); // Local unassigned setup never starts providers or borrows their capabilities.
  const alpha=ok(await c.request('session/new',{cwd:path.join(root,'A')})).sessionId;
  const beta=ok(await c.request('session/new',{cwd:path.join(root,'B')})).sessionId;
  // Direct legacy routing keeps forwarding the admitted backend's unscoped
@@ -119,7 +117,7 @@ const rejected = response => { assert(response.error,JSON.stringify(response)); 
  rejected(await c.request('session/load',{cwd:path.join(root,'A'),sessionId:alpha}));
  await c.close();
  config={projects:[{root:path.join(root,'A'),profile:'alpha'}],profiles:{alpha:spec('alpha'),bad:{command:path.join(root,'does-not-exist')},badArgs:{command:process.execPath,args:'invalid'},badCwd:{...spec('beta'),cwd:42},badEnv:{...spec('beta'),env:{INVALID:42}},hang:spec('hang',{HANG:'yes'})}};write();
- c=client();ok(await c.request('initialize',{protocolVersion:1}));
+ c=client({},path.join(root,'A'));ok(await c.request('initialize',{protocolVersion:1}));
  const sid=ok(await c.request('session/new',{cwd:path.join(root,'A')})).sessionId;
  rejected(await c.request('session/crash',{sessionId:sid}));
  config.profiles.beta=spec('beta');config.projects.push({root:path.join(root,'B'),profile:'beta'});write();
@@ -144,7 +142,7 @@ const rejected = response => { assert(response.error,JSON.stringify(response)); 
  c=client({AIAPS_TEST_ACCOUNT:'changed'});ok(await c.request('initialize',{protocolVersion:1}));
  assert.strictEqual(ok(await c.request('session/load',{cwd:path.join(root,'A'),sessionId:isolated})).profile,'alpha');await c.close();
  config={projects:[{root:path.join(root,'A'),profile:'gamma'}],profiles:{gamma:spec('gamma',{RESUME:'yes'})}};write();
- c=client();const resumeInit=ok(await c.request('initialize',{protocolVersion:1}));
+ c=client({},path.join(root,'A'));const resumeInit=ok(await c.request('initialize',{protocolVersion:1}));
  assert.deepStrictEqual(resumeInit.agentCapabilities.sessionCapabilities.resume,{});
  config.profiles.beta=spec('beta');config.projects.push({root:path.join(root,'B'),profile:'beta'});write();
  rejected(await c.request('session/new',{cwd:path.join(root,'B')})); // {} advertises support; absent means unsupported
@@ -169,7 +167,7 @@ const rejected = response => { assert(response.error,JSON.stringify(response)); 
  assert.strictEqual(ok(await c.request('session/prompt',{sessionId:emptySetup,prompt:[{type:'text',text:'must never reach alpha'}]})).stopReason,'end_turn');
  c.send({method:'session/cancel',params:{sessionId:emptySetup}});
  await c.close();
- assert.deepStrictEqual(fs.readFileSync(trace,'utf8').trim().split('\n').map(line=>JSON.parse(line).method),['initialize']);
+ assert(!fs.existsSync(trace),'Unassigned local setup started a provider');
  config={projects:[{root:path.join(root,'A'),profile:'alpha'},{root:path.join(root,'B'),profile:'beta'}],profiles:{alpha:spec('alpha',{FIXED_ID:'collision'}),beta:spec('beta',{FIXED_ID:'collision'})}};write();
  const first=client(),second=client();
  ok(await first.request('initialize',{protocolVersion:1}));ok(await second.request('initialize',{protocolVersion:1}));

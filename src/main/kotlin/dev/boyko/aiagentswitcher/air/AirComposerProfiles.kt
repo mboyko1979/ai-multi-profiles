@@ -91,8 +91,24 @@ internal object AirComposerProfiles {
     /** Toolbar updates can run off the EDT; Air's draft pick must not. */
     fun bind(project: Project, composer: Composer) {
         val app = ApplicationManager.getApplication()
-        if (app.isDispatchThread) apply(project, composer)
-        else app.invokeLater { if (!project.isDisposed) apply(project, composer) }
+        val applySafely = {
+            if (!project.isDisposed) {
+                try {
+                    apply(project, composer)
+                } catch (error: Exception) {
+                    val cause = (error as? java.lang.reflect.InvocationTargetException)?.targetException ?: error
+                    if (cause is com.intellij.openapi.diagnostic.ControlFlowException || cause is java.util.concurrent.CancellationException) throw cause
+                    val unsupported = cause is NoSuchElementException || cause is ClassCastException || cause is ReflectiveOperationException ||
+                        ((cause is IllegalStateException || cause is IllegalArgumentException) && cause.message?.startsWith("Unsupported ") == true)
+                    if (!unsupported) throw error
+                    if (reportedUnsupportedApi.compareAndSet(false, true))
+                        com.intellij.openapi.diagnostic.Logger.getInstance(AirComposerProfiles::class.java)
+                            .warn("Air composer profile binding is unavailable", cause)
+                }
+            }
+        }
+        if (app.isDispatchThread) applySafely()
+        else app.invokeLater(applySafely)
     }
 
     private fun apply(project: Project, composer: Composer) {
@@ -110,6 +126,7 @@ internal object AirComposerProfiles {
         val base = native.call(snapshot, "getProfile") as AgentPromptLaunchProfile
         val bound = launch.profile.agentId
         if (origin == PROFILE_ORIGIN + id && (bound.isBlank() || base.agentId == catalogAgentId(bound))) return
+        // Trailing null is Air 497's optional Long. Air 521 removed that parameter.
         native.call(composer.draft, "pick-", seed(base, launch.profile), PROFILE_ORIGIN + id,
             AirSessionPreferencesSeedKind.Preset, false, null)
         native.call(composer.preferences, "requestChildStart")
@@ -119,19 +136,33 @@ internal object AirComposerProfiles {
     private fun catalogAgentId(agent: String) = FOLDED_ACP_AGENTS[agent] ?: acpCatalogAgentId(agent)
 
     private fun seed(base: AgentPromptLaunchProfile, profile: AgentProfiles.Entry): AgentPromptLaunchProfile {
-        val prefs = AgentPromptGenerationPreferences()
         val agent = profile.agentId
-        if (agent.isBlank()) return base.copy(generationPreferences = prefs, sessionModeId = null, planMode = false)
-        return base.copy(
-            name = GenericAutoRegistration.AGENT,
-            // Air folds registry agents such as Codex into its native catalog ID.
-            // A synthesized dynamic ID is absent from the launch catalog for those agents.
-            agentId = catalogAgentId(agent) ?: error("The profile's native ACP agent ID is invalid"),
-            launchTargetId = acpAgentLaunchTargetId(agent),
-            generationPreferences = prefs,
-            sessionModeId = null,
-            planMode = false,
+        val changes = mutableMapOf<String, Any?>(
+            "generationPreferences" to AgentPromptGenerationPreferences(),
+            "sessionModeId" to null, "planMode" to false,
         )
+        if (agent.isNotBlank()) {
+            changes["name"] = GenericAutoRegistration.AGENT
+            changes["agentId"] = catalogAgentId(agent) ?: error("The profile's native ACP agent ID is invalid")
+            changes["launchTargetId"] = acpAgentLaunchTargetId(agent)
+        }
+        // Kotlin data-class copy has a different binary signature when Air adds a
+        // property. Bind to the runtime copy and carry all its untouched fields forward.
+        val fields = base.javaClass.declaredFields.filter { !java.lang.reflect.Modifier.isStatic(it.modifiers) && !it.isSynthetic }
+        val copy = base.javaClass.declaredMethods.single { method ->
+            method.name.startsWith("copy-") && !method.name.endsWith("\$default") &&
+                method.parameterTypes.toList() == fields.map { it.type }
+        }
+        require(changes.keys.all { key -> fields.any { it.name == key } }) { "Unsupported Air launch profile fields" }
+        val args = fields.map { field ->
+            field.isAccessible = true
+            val value = if (changes.containsKey(field.name)) changes[field.name] else field.get(base)
+            if (value != null && field.type == String::class.java && value !is String)
+                value.javaClass.getDeclaredMethod("unbox-impl").invoke(value)
+            else value
+        }.toTypedArray()
+        return try { copy.invoke(base, *args) as AgentPromptLaunchProfile }
+        catch (failure: java.lang.reflect.InvocationTargetException) { throw failure.targetException }
     }
 
     /** Air's own lease/state machine, with only this request's ACP launch arguments bound. */
@@ -161,33 +192,45 @@ internal object AirComposerProfiles {
             val launch = ProfileLaunch.resolve(selection.profile)
             // Native owner scopes remain alive across child replacement. These
             // entries retain real leases, never metadata or substitute readiness.
-            val key = launch.profileId + ":" + ProfileConfiguration.digest(com.google.gson.Gson().toJson(launch.profile)) + ":" + request.route + ":" + request.destination + ":" + request.sourceId + ":" + request.projectDirectory + ":" + request.source
+            val key = launch.profileId + ":" + ProfileConfiguration.digest(com.google.gson.Gson().toJson(launch.profile)) + ":" + request
             synchronized(prepared) {
                 prepared[key]?.takeIf { it.scope.isActive && it.lease.value !is PreparedSessionLease.Failed }?.let { return it.lease }
                 prepared.remove(key)?.scope?.cancel()
             }
             val retained = Retained(CoroutineScope(owner.coroutineContext + SupervisorJob(owner.coroutineContext[Job])), scope.coroutineContext[Job])
-            val ordinary = AcpSessionRuntimeAdapter()
+            val ordinary = AcpSessionRuntimeAdapter::class.java.getConstructor().newInstance()
             @Suppress("UNCHECKED_CAST")
             val resolve = native.field(ordinary, "resolveLaunchableEntry") as suspend (AcpAgentsCatalog, AcpAgentId) -> AcpCatalogEntry?
-            val routed = AcpSessionRuntimeAdapter(resolveLaunchableEntry = { catalog, requestedAgent ->
+            val resolveProfile: suspend (AcpAgentsCatalog, AcpAgentId) -> AcpCatalogEntry? = resolver@ { catalog, requestedAgent ->
                 val entry = resolve(catalog, AcpAgentId.parse("acp.ai-multi"))
                     ?: resolve(catalog, AcpAgentId.parse("acp.dynamic.6163702e61692d6d756c7469"))
-                    ?: return@AcpSessionRuntimeAdapter null
-                object : AcpCatalogEntry by entry {
+                    ?: return@resolver null
+                // Native admission/consent and generation metadata belong to
+                // the bound agent. AI Multi replaces only its process launch.
+                val bound = if (launch.profile.advancedOverrides) entry else
+                    resolve(catalog, AcpAgentId.parse(launch.profile.agentId)) ?: return@resolver null
+                object : AcpCatalogEntry by bound {
                     // Native launch admission validates entry identity against
                     // the bound agent's route. Only the process launch is Multi.
                     override val id = requestedAgent
                     override suspend fun resolveStartConfig(project: Project): AcpAgentStartConfig {
-                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { GenericAutoRegistration.syncRoutesNow(project) }
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            AirProfileAgentUpdates.beforeLaunch(launch.profile)
+                            val current = ProfileLaunch.resolve(launch.profileId).profile
+                            check(current.agentId == launch.profile.agentId) { "Profile agent changed while preparing the launch" }
+                            GenericAutoRegistration.syncRoutesNow(project)
+                        }
                         val config = entry.resolveStartConfig(project)
-                        return config.withAcpArgs(config.acpArgs + listOf("--initial-profile", launch.profileId))
+                        return withInitialProfile(config, launch.profileId)
                     }
                 }
-            })
-            val backend = BackendThreadGuiPreparedSessionApi(resolveAdapter = { target ->
+            }
+            val routed = withNativeDefaults(ordinary, mapOf("resolveLaunchableEntry" to resolveProfile))
+            val resolveAdapter: (com.intellij.air.shared.core.thread.AgentLaunchTargetId) -> com.intellij.air.backend.session.api.AgentSessionRuntimeAdapter? = { target ->
                 if (target == request.route.targetId) routed else AgentSessionRuntimeAdapters.resolvedOrNull(target)
-            })
+            }
+            val backend = withNativeDefaults(BackendThreadGuiPreparedSessionApi::class.java.getConstructor().newInstance(),
+                mapOf("resolveAdapter" to resolveAdapter))
             retained.lease = ThreadGuiPreparedSessionLeaseServiceImpl(
                 preparedSessionApi = { backend }, threadGuiApi = {
                     val api = ThreadGuiApi.getInstance()
@@ -195,6 +238,23 @@ internal object AirComposerProfiles {
                         override suspend fun sendPrompt(ref: ThreadGuiRef, request: ThreadGuiSendPromptRequest): ThreadGuiSendPromptResult {
                             val result = api.sendPrompt(ref, request)
                             if (result.accepted) {
+                                // The native composer has now handed over this
+                                // preparation. Persist its actual transport owner
+                                // without changing the bound agent's catalog lane.
+                                withContext(Dispatchers.IO) {
+                                    try {
+                                        AirChatRoutingRepair.commit(ref.projectDirectory.replace('\\', '/'), ref.threadId)
+                                    } catch (error: Exception) {
+                                        if (error is CancellationException) throw error
+                                        com.intellij.openapi.diagnostic.Logger.getInstance(AirComposerProfiles::class.java)
+                                            .warn("Could not persist AI Multi chat transport ownership", error)
+                                        com.intellij.notification.NotificationGroupManager.getInstance()
+                                            .getNotificationGroup("AI Agent Project Switcher")
+                                            .createNotification("AI Multi chat routing was not saved",
+                                                "The prompt was accepted. Chat restoration may need Reconnect chat. See the IDE log for details.",
+                                                com.intellij.notification.NotificationType.ERROR).notify(selection.project)
+                                    }
+                                }
                                 val unused = synchronized(prepared) {
                                     prepared.values.filter { it !== retained }.also { prepared.clear() }
                                 }
@@ -212,4 +272,38 @@ internal object AirComposerProfiles {
             return retained.lease
         }
     }
+
+    /** Pinned Air constructor binding. Keep every host default, including newly
+     * added services; Kotlin's compiled default-constructor descriptor is not stable. */
+    private fun <T : Any> withNativeDefaults(defaults: T, changes: Map<String, Any>): T {
+        val fields = defaults.javaClass.declaredFields.filter { !java.lang.reflect.Modifier.isStatic(it.modifiers) && !it.isSynthetic }
+        val constructor = defaults.javaClass.constructors.single { ctor ->
+            !ctor.isSynthetic && ctor.parameterCount > 0 && ctor.parameterCount <= fields.size &&
+                ctor.parameterTypes.toList() == fields.take(ctor.parameterCount).map { it.type }
+        }
+        val parameters = fields.take(constructor.parameterCount)
+        require(changes.keys.all { key -> parameters.any { it.name == key } }) { "Unsupported Air constructor fields" }
+        val args = parameters.map { field ->
+            field.isAccessible = true
+            changes[field.name] ?: field.get(defaults)
+        }.toTypedArray()
+        @Suppress("UNCHECKED_CAST")
+        return try { constructor.newInstance(*args) as T }
+        catch (failure: java.lang.reflect.InvocationTargetException) { throw failure.targetException }
+    }
+
+    // Air .512 removed withAcpArgs. Delegate all native configuration and only
+    // append our routing arguments, including after native environment overlays.
+    private fun withInitialProfile(config: AcpAgentStartConfig, profileId: String): AcpAgentStartConfig =
+        java.lang.reflect.Proxy.newProxyInstance(AcpAgentStartConfig::class.java.classLoader,
+            arrayOf(AcpAgentStartConfig::class.java)) { _, method, arguments ->
+            try {
+                when (method.name) {
+                    "getAcpArgs" -> config.acpArgs + listOf("--initial-profile", profileId)
+                    "getArgs" -> config.args + listOf("--initial-profile", profileId)
+                    "withEnv" -> withInitialProfile(method.invoke(config, *(arguments ?: emptyArray())) as AcpAgentStartConfig, profileId)
+                    else -> method.invoke(config, *(arguments ?: emptyArray()))
+                }
+            } catch (failure: java.lang.reflect.InvocationTargetException) { throw failure.targetException }
+        } as AcpAgentStartConfig
 }

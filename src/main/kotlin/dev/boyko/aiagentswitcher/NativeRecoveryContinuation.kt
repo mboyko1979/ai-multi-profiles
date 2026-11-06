@@ -33,8 +33,42 @@ internal object NativeRecoveryContinuation {
     }
     internal fun call(value: Any, name: String, vararg args: Any?): Any? {
         val cls = value as? Class<*> ?: value.javaClass
-        return cls.methods.sortedBy { it.name != name }.first { it.name.startsWith(name) && it.parameterCount == args.size }
-            .apply { isAccessible = true }.invoke(if (value is Class<*>) null else value, *args)
+        fun matches(method: java.lang.reflect.Method, count: Int) =
+            method.name.startsWith(name) && method.parameterCount == count &&
+                method.parameterTypes.withIndex().all { (index, type) ->
+                    args[index] == null || type.isPrimitive || type.isInstance(args[index])
+                }
+        // Exact arity stays first. A removed optional tail (Air 521 dropped pick's Long)
+        // is still passed as null by older call sites and must not miss the shorter method.
+        val exact = cls.methods.filter { matches(it, args.size) }
+        val candidates = if (exact.isNotEmpty()) exact else {
+            (args.size - 1 downTo 0).firstNotNullOfOrNull { count ->
+                cls.methods.filter { matches(it, count) }.takeIf { it.isNotEmpty() && args.drop(count).all { it == null } }
+            }.orEmpty()
+        }
+        val method = candidates.sortedBy { it.name != name }.firstOrNull()
+            ?: error(unsupportedCall(cls, name, args))
+        return method.apply { isAccessible = true }
+            .invoke(if (value is Class<*>) null else value, *args.copyOf(method.parameterCount))
+    }
+    internal fun promptAdmission(managerType: Class<*>): java.lang.reflect.Method {
+        val methods = managerType.methods.filter { it.name.startsWith("sendPrompt-") && it.name.endsWith("\$default") }
+        return methods.singleOrNull { method ->
+            method.parameterCount == 8 && method.parameterTypes.any { it.simpleName == "SessionPromptRequest" }
+        } ?: error(unsupportedPromptAdmission(managerType, methods))
+    }
+    private fun unsupportedPromptAdmission(managerType: Class<*>, methods: List<java.lang.reflect.Method>): String {
+        val available = methods.joinToString { method ->
+            "${method.name}(${method.parameterTypes.joinToString { it.typeName }})"
+        }.ifEmpty { "none" }
+        return "Unsupported Air prompt admission on ${managerType.name}. Candidates: $available"
+    }
+    private fun unsupportedCall(cls: Class<*>, name: String, args: Array<out Any?>): String {
+        val given = args.joinToString { it?.javaClass?.name ?: "null" }
+        val available = cls.methods.filter { it.name.startsWith(name) }
+            .joinToString { "${it.name}(${it.parameterTypes.joinToString { type -> type.typeName }})" }
+            .ifEmpty { "none" }
+        return "Unsupported native call $name on ${cls.name} with [$given]. Candidates: $available"
     }
     internal suspend fun suspendCall(value: Any, name: String, vararg args: Any?): Any? =
         suspendCoroutineUninterceptedOrReturn { continuation ->
@@ -96,15 +130,15 @@ internal object NativeRecoveryContinuation {
             val binding = call(projection, "getRuntimeBinding") ?: continue
             if (call(binding, "getAgentSessionId") != request.get("sessionId").asString) continue
             if (call(manager, "isReadyForPrompt", ref) != true || call(manager, "acceptsPrompt", ref) != true) continue
-            val requestType = Class.forName("com.intellij.air.backend.session.api.SessionPromptRequest", true, managerType.classLoader)
-            val prompt = airPrompt(requestType, token, comment)
+            // Air 521 moved SessionPromptRequest to shared.session.events. Take the type from
+            // the installed sendPrompt bridge so a renamed package still matches the method.
+            val admission = promptAdmission(managerType)
+            val prompt = airPrompt(admission.parameterTypes.first { it.simpleName == "SessionPromptRequest" }, token, comment)
             // Use the host's normal admission, cancellation, tools and response renderer.
             // Submit once. A failed/ambiguous admission must never automatically resend.
             suspendCoroutineUninterceptedOrReturn<Any?> { continuation ->
-                try {
-                    managerType.methods.single { it.name.startsWith("sendPrompt-") && it.name.endsWith("\$default") }
-                        .invoke(null, manager, ref, prompt, 0L, false, continuation, 12, null)
-                } catch (error: InvocationTargetException) { throw error.targetException }
+                try { admission.invoke(null, manager, ref, prompt, 0L, false, continuation, 12, null) }
+                catch (error: InvocationTargetException) { throw error.targetException }
             }
             return true
         }

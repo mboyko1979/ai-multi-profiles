@@ -203,7 +203,7 @@ class ProfileToolbarIsolation : Disposable {
                             }
                         }.toMap()
                         config.announceConfigOptions(id, acceptedOptions, values)
-                        config.setSessionSelectedValuesOverride(chat.uid, values)
+                        if(!ProfileAgentUpdates.isRestoring(chat.uid))config.setSessionSelectedValuesOverride(chat.uid, values)
                         val recorded = dev.boyko.aiagentswitcher.ChatProfiles.conversationRecord(chat.uid)?.getAsJsonObject("sessionOptions")
                         if (recorded != null && (recorded.has("models") || recorded.has("modes"))) ProfileCatalogPresentation.publishLegacy(chat, recorded)
                         else {

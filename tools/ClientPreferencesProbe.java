@@ -31,8 +31,19 @@ public class ClientPreferencesProbe {
   System.setProperty("idea.trust.all.projects","true");new Thread(()->{try{
    for(int i=0;i<100;i++){Thread.sleep(1000);try{project=ChatStartupSupport.project();if(project!=null)break;}catch(Exception ignored){}}
    check(project!=null,"No sandbox project");loader=SettingsRefreshProbe.type("dev.boyko.aiagentswitcher.AgentProfiles").getClassLoader();app=call(type("com.intellij.openapi.application.ApplicationManager"),"getApplication");
+   if(Files.exists(dir.resolve("catalog-only"))) {
+    service=call(app,"getService",type("dev.boyko.aiagentswitcher.ClientPreferences"));NativeAgentUpdatesProbe.isolateStorage();nativeStores();
+    AirProfileProbe.loader=loader;AirProfileProbe.nativeBridge=singleton("NativeRecoveryContinuation");AirProfileProbe.verifyLegacyCatalog(dir);
+    AirProfileProbe.verifyLaunchAndAccountAdapters(dir);
+    javax.swing.SwingUtilities.invokeAndWait(()->{try {
+     Object selector=type("dev.boyko.aiagentswitcher.AirProfileSelector").getConstructor().newInstance();
+     Object button=call(selector,"createCustomComponent",call(selector,"getTemplatePresentation"),"probe");
+     check(button.getClass().getName().endsWith("AirProfileButton"),"Air profile button was not created");
+    } catch(Exception e){throw new RuntimeException(e);}});
+    Files.writeString(dir.resolve("result.txt"),"PASS: Air startup, profile button, native catalog alias and native preference stores.\n");System.exit(0);
+   }
    service=call(app,"getService",type("dev.boyko.aiagentswitcher.ClientPreferences"));call(service,"start");
-   installedLaunchRefresh();nativeStores();if(!Files.exists(dir.resolve("air-only")))nativeChat();else Thread.sleep(15000);nativeAir();Files.writeString(dir.resolve("result.txt"),"PASS: native client preference verification. See stores-result.txt, air-result.txt and optional Assistant/steering artifacts.\n");System.exit(0);
+   NativeAgentUpdatesProbe.isolateStorage();installedLaunchRefresh();NativeAgentUpdatesProbe.verify();nativeStores();if(!Files.exists(dir.resolve("air-only")))nativeChat();else Thread.sleep(15000);nativeAir();Files.writeString(dir.resolve("result.txt"),"PASS: native client preference verification. See stores-result.txt, air-result.txt and optional Assistant/steering artifacts.\n");System.exit(0);
   }catch(Throwable e){try{var out=new java.io.StringWriter();e.printStackTrace(new java.io.PrintWriter(out));Files.writeString(dir.resolve("error.txt"),out.toString());}catch(Exception ignored){}System.exit(1);}},"client-preferences-probe").start();
  }
  static final String OPTIONS="[{\"id\":\"model\",\"operation\":\"config\",\"category\":\"model\",\"type\":\"select\"},{\"id\":\"effort\",\"operation\":\"config\",\"category\":\"thought_level\",\"type\":\"select\"},{\"id\":\"mode\",\"operation\":\"mode\",\"category\":\"mode\",\"type\":\"select\"}]";
@@ -58,14 +69,33 @@ public class ClientPreferencesProbe {
   Object serializer=call(stateType.getField("Companion").get(null),"serializer");Class<?> jsonType=Class.forName("kotlinx.serialization.json.Json",true,stateType.getClassLoader());Object codec=jsonType.getField("Default").get(null);
   String encoded=(String)call(codec,"encodeToString",serializer,state);Object restored=call(codec,"decodeFromString",serializer,encoded);call(airStore,"loadState",restored);
   check(exchange(request("air","personal","fixture","read",null)).toString().contains("\"value\":\"high\""),"Air discarded preference identity during persistence round trip");Files.writeString(dir.resolve("air-native-state.json"),encoded);
+  // A newly added native field must survive writes of our unrelated settings.
+  if(Arrays.stream(((Class<?>)AirProfileProbe.call(bridge,"type","com.intellij.air.shared.prompt.AgentSessionParameters","com.intellij.air")).getFields()).anyMatch(f->f.getName().equals("fastMode"))) {
+   String key=(String)call(singleton("ClientPreferencePolicy"),"key","personal","fixture");
+   Object stateJson=json(encoded),entries=call(stateJson,"getAsJsonObject","lastUsedSessionParametersByAgentId"),parameters=call(entries,"getAsJsonObject",key);
+   call(parameters,"add","fastMode",json("{\"optionId\":\"fast_mode\",\"value\":\"fast\"}"));
+   call(airStore,"loadState",call(codec,"decodeFromString",serializer,stateJson.toString()));
+   for(String[] setting:List.of(new String[]{"model","a","config"},new String[]{"effort","low","config"},new String[]{"mode","default","mode"}))
+    exchange(request("air","personal","fixture","write","{\"id\":\""+setting[0]+"\",\"value\":\""+setting[1]+"\",\"operation\":\""+setting[2]+"\"}"));
+   String after=(String)call(codec,"encodeToString",serializer,call(airStore,"getState"));
+   Object actual=call(call(call(json(after),"getAsJsonObject","lastUsedSessionParametersByAgentId"),"getAsJsonObject",key),"getAsJsonObject","fastMode");
+   check(actual.toString().contains("\"value\":\"fast\""),"Native fast mode was lost by an unrelated preference write");
+   Files.writeString(dir.resolve("air-fast-mode-result.txt"),"PASS: native fastMode survives model, reasoning and mode preference writes.\n");
+  }
   call(app,"saveSettings");Files.writeString(dir.resolve("stores-result.txt"),"PASS: actual native stores read/write under stable profile+agent keys, independent clients/profiles/agents.\n");
  }
  static void nativeChat()throws Exception{
   Files.copy(Path.of(System.getProperty("aiaps.project.root", System.getProperty("user.dir")), "tools", "preferences-fixture.js"),dir.resolve("backend.js"),StandardCopyOption.REPLACE_EXISTING);
   ChatStartupSupport.run("seed");
   Object profiles=call(app,"getService",type("dev.boyko.aiagentswitcher.AgentProfiles"));List<?> entries=(List<?>)call(profiles,"all");
-  exchange(request("assistant","codex","fixture","write","{\"id\":\"model\",\"operation\":\"config\",\"value\":\"b\"}"));
-  for(Object entry:entries){call(entry,"setAgentId","fixture");call(entry,"setAdvancedOverrides",true);}
+  exchange(request("assistant","codex","acp.registry.fixture","write","{\"id\":\"model\",\"operation\":\"config\",\"value\":\"b\"}"));
+  for(Object entry:entries){call(entry,"setAgentId","acp.registry.fixture");call(entry,"setAdvancedOverrides",true);
+   if(call(entry,"getId").equals("codex")){
+    String preset="{\"host\":\"assistant\",\"agentId\":\"fixture\",\"defaultModelId\":\"b\",\"modelOptionId\":\"model\",\"modelOperation\":\"config\",\"models\":[{\"modelId\":\"b\",\"enabled\":true,\"settings\":[{\"agentId\":\"fixture\",\"id\":\"collaboration_mode\",\"operation\":\"config\",\"value\":\"default\"}]}]}";
+    Object gson=type("com.google.gson.Gson").getConstructor().newInstance();
+    call(entry,"setClientDefaults",List.of(call(gson,"fromJson",preset.replace("fixture","acp.registry.fixture"),type("dev.boyko.aiagentswitcher.AgentProfiles$ClientDefaults"))));
+   }
+  }
   call(profiles,"replace",entries);call(singleton("GenericAutoRegistration"),"assignNow",project,"codex");call(singleton("GenericAutoRegistration"),"ensureAsync",project);
   for(int i=0;i<200&&!Files.exists(dir.resolve("home/.jetbrains/acp.json"));i++)Thread.sleep(100);
   check(Files.exists(dir.resolve("home/.jetbrains/acp.json")),"Sandbox registration missing");
@@ -76,9 +106,24 @@ public class ClientPreferencesProbe {
   Object agent=null;for(int i=0;i<150;i++){agent=call(chat,"getAgentSession");if(agent!=null&&((java.util.concurrent.atomic.AtomicReference<?>)field(field(agent,"lifecycleManager"),"clientSessionRef")).get()!=null)break;Thread.sleep(100);}
   check(agent!=null,"No native agent");
   chat=nativeLaunchSelection(chat);agent=call(chat,"getAgentSession");Object nativeAgent=agent;
+  Object modeSession=call(type("dev.boyko.aiagentswitcher.compat.ChatHandoffClient").getConstructor(Object.class).newInstance(chat),"nativeSessionOrNull");
+  Object plan=type("com.agentclientprotocol.model.SessionConfigOptionValue$StringValue").getConstructor(String.class).newInstance("plan");
+  suspend(modeSession,"setConfigOption-","collaboration_mode",plan,null);
+  Thread.sleep(1000);
+  nativeUpdateReload(chat,nativeAgent);
   sendInput(chat,"hold");
-  for(int i=0;i<150;i++){if(Files.exists(dir.resolve("backend-trace.jsonl"))&&Files.readString(dir.resolve("backend-trace.jsonl")).contains("session/prompt"))break;Thread.sleep(100);}
-  check(Files.readAllLines(dir.resolve("backend-trace.jsonl")).stream().anyMatch(x->x.contains("session/close")&&x.contains("\"profile\":\"grok\"")),"First prompt did not close unused Grok session");
+  for(int i=0;i<450;i++){if(Files.exists(dir.resolve("backend-trace.jsonl"))&&Files.readString(dir.resolve("backend-trace.jsonl")).contains("session/prompt"))break;Thread.sleep(100);}
+  List<String> providerTrace=Files.readAllLines(dir.resolve("backend-trace.jsonl"));
+  check(providerTrace.stream().anyMatch(x->x.contains("session/prompt")),"Native update resubmission never reached the provider: "+providerTrace);
+  boolean grokReleased=providerTrace.stream().anyMatch(x->x.contains("session/close")&&x.contains("\"profile\":\"grok\""));
+  if(!grokReleased){
+   grokReleased=true;
+   for(String line:providerTrace)if(line.contains("\"profile\":\"grok\"")){
+    long pid=((Number)call(call(json(line),"get","pid"),"getAsLong")).longValue();
+    if(ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false))grokReleased=false;
+   }
+  }
+  check(grokReleased,"First prompt/update reload did not release unused Grok process");
   check(((Number)call(call(call(singleton("ChatProfiles"),"conversationRecord",call(chat,"getUid")),"getAsJsonArray","segments"),"size")).intValue()==1,"Unused prepared segments survived the first prompt");
   check(call(nativeAgent,"isTaskActive").equals(true),"No active task before cancellation");suspend(nativeAgent,"cancel");
   Object active=field(nativeAgent,"activeTask");Files.writeString(dir.resolve("after-cancel.txt"),"activeTask="+active+"\n");
@@ -86,9 +131,14 @@ public class ClientPreferencesProbe {
   for(int i=0;i<150;i++){Thread.sleep(100);if(Files.readAllLines(dir.resolve("backend-trace.jsonl")).stream().filter(x->x.contains("session/prompt")||x.contains("_session/steering")).count()>=2&&!call(nativeAgent,"isTaskActive").equals(true))break;}
   if(call(nativeAgent,"isTaskActive").equals(true))Files.writeString(dir.resolve("hang.txt"),"activeTask="+field(nativeAgent,"activeTask")+"\n"+Files.readString(dir.resolve("backend-trace.jsonl")));
   check(call(nativeAgent,"isTaskActive").equals(false),"Native task stuck after completed response");
-  check(exchange(request("assistant","codex","fixture","read",null)).toString().contains("\"value\":\"b\""),"Acquisition or before-prompt setup overwrote the native preference");
+  modeSession=call(type("dev.boyko.aiagentswitcher.compat.ChatHandoffClient").getConstructor(Object.class).newInstance(chat),"nativeSessionOrNull");
+  check(selectedValues(call(call(modeSession,"getConfigOptions"),"getValue")).get("collaboration_mode").equals("plan"),"Selected Plan reverted after native prompt: "+Files.readString(dir.resolve("backend-trace.jsonl")));
+  Files.writeString(dir.resolve("assistant-plan-result.txt"),"PASS: manually selected Plan survives native same-model reassertions, cancellation and subsequent completed turn with a configured Default collaboration mode.\n");
+  boundAgentUpdates(chat);
+  check(exchange(request("assistant","codex","acp.registry.fixture","read",null)).toString().contains("\"value\":\"b\""),"Acquisition or before-prompt setup overwrote the native preference");
   Object filterSession=call(type("dev.boyko.aiagentswitcher.compat.ChatHandoffClient").getConstructor(Object.class).newInstance(chat),"nativeSessionOrNull");
   liveModelFilters("assistant","codex",()->call(call(filterSession,"getConfigOptions"),"getValue"),dir.resolve("backend-trace.jsonl"));
+  committedBindings(chat,nativeAgent);
   nativeSteeringRepro(chat,nativeAgent,"routed");
   // The same native fixture without AI Multi's router isolates the host/adapter contract.
   Path direct=dir.resolve("direct-fixture.js"),directTrace=dir.resolve("direct-trace.jsonl");
@@ -212,10 +262,74 @@ public class ClientPreferencesProbe {
   exchange(request("air","air-Work",boundAgent,"write","{\"id\":\"model\",\"operation\":\"config\",\"value\":\"a\"}"));
   exchange(request("air","air-Work",boundAgent,"write","{\"id\":\"effort\",\"operation\":\"config\",\"value\":\"low\"}").replace("effort","reasoning"));
   SettingsRefreshProbe.app=app;System.setProperty("aiaps.verifyNativePreferences","true");AirProfileProbe.verify(project,loader,dir);
+  if(Files.exists(dir.resolve("composer-only")))return; // The targeted path makes no explicit low-reasoning write.
   check(exchange(request("air","air-Personal",boundAgent,"read",null).replace("effort","reasoning")).toString().contains("\"value\":\"low\""),"Air explicit selection was not persisted to its native store");
   check(exchange(request("air","air-Work",boundAgent,"read",null).replace("effort","reasoning")).toString().contains("\"value\":\"low\""),"Air profile defaults overwrote remembered preferences");
  }
  interface OptionsRead {Object get()throws Exception;}
+ static void committedBindings(Object chat,Object agent)throws Exception{
+  Object bridge=type("dev.boyko.aiagentswitcher.compat.ChatHandoffClient").getConstructor(Object.class).newInstance(chat);
+  Object binder=type("dev.boyko.aiagentswitcher.compat.PreparedAssistantProfiles").getField("INSTANCE").get(null);
+  StringBuilder report=new StringBuilder();
+  for(String target:List.of("grok","codex")){
+   Object state=suspend(bridge,"control","_ai_multi/describe",json("{}"));
+   String revision=String.valueOf(call(call(state,"get","revision"),"getAsInt"));
+   Object selected=suspend(bridge,"control","_ai_multi/switch",json("{\"profile\":\""+target+"\",\"revision\":"+revision+",\"exchanges\":0,\"history\":[],\"consent\":true,\"deferBinding\":true}"));
+   suspend(binder,"bindCommitted",chat,selected);
+   Object sdk=call(bridge,"nativeSessionOrNull"),info=call(call(sdk,"getClient"),"getAgentInfo");
+   check(call(sdk,"getConfigOptionsSupported").equals(target.equals("codex")),"Committed handoff retained source config capability");
+   check(call(sdk,"getModelsSupported").equals(target.equals("grok")),"Committed handoff retained source legacy capability");
+   check(call(call(call(info,"getCapabilities"),"getPromptCapabilities"),"getImage").equals(target.equals("codex")),"Committed handoff retained source image capability");
+   String token=String.valueOf(call(call(selected,"get","token"),"getAsString"));
+   Object started=Proxy.newProxyInstance(loader,new Class<?>[]{type("kotlin.jvm.functions.Function1")},(p,m,a)->m.getName().equals("invoke")?type("kotlin.Unit").getField("INSTANCE").get(null):null);
+   suspend(bridge,"continueNow",token,"",started);
+   for(int wait=0;wait<150&&Boolean.TRUE.equals(call(agent,"isTaskActive"));wait++)Thread.sleep(100);
+   check(!Boolean.TRUE.equals(call(agent,"isTaskActive")),"Native handoff task did not finish");
+   report.append(target).append(": actual SDK capabilities and native continuation passed\n");
+  }
+  Files.writeString(dir.resolve("committed-bindings.txt"),report);
+ }
+ static void nativeUpdateReload(Object chat,Object agent)throws Exception{
+  Object manager=field(agent,"lifecycleManager"),updates=type("dev.boyko.aiagentswitcher.compat.ProfileAgentUpdates").getField("INSTANCE").get(null);
+  Object profiles=call(app,"getService",type("dev.boyko.aiagentswitcher.AgentProfiles"));List<?> saved=(List<?>)call(profiles,"all"),entries=(List<?>)call(profiles,"all");
+  try{
+   for(Object profile:entries)if(call(profile,"getId").equals("codex"))call(profile,"setAdvancedOverrides",false);
+   call(profiles,"replace",entries);
+   NativeAgentUpdatesProbe.verifyTerms(chat,manager);
+   check(suspend(updates,"beforePrompt",chat,manager,new HashSet<>()).equals(false),"Native updater unexpectedly installed a missing fixture distribution");
+   Files.writeString(dir.resolve("native-updater-service.txt"),"PASS: committed registry fixture reaches the real native updater with its native chooser and returns NoUpdate without acquiring a provider.\n");
+  }finally{call(profiles,"replace",saved);}
+  Field actions=type("com.intellij.ml.llm.agents.acp.client.AcpSessionLifecycleManager").getDeclaredField("beforePromptActions");actions.setAccessible(true);
+  List<Object> callbacks=new ArrayList<>((List<?>)actions.get(manager));
+  var once=new java.util.concurrent.atomic.AtomicBoolean();
+  Object callback=Proxy.newProxyInstance(loader,new Class<?>[]{type("kotlin.jvm.functions.Function1")},(p,m,a)->{
+   if(!m.getName().equals("invoke"))return null;
+   boolean reload=once.compareAndSet(false,true);
+   if(reload){suspend(updates,"reloadAfterUpdate",chat,manager);Files.writeString(dir.resolve("native-update-reload.txt"),"Native update callback requested reload and resubmission. No distribution downloaded by this fixture.\n");}
+   return type("com.intellij.ml.llm.agents.acp.client.BeforePromptResult$"+(reload?"Resubmitting":"Proceed")).getField("INSTANCE").get(null);
+  });
+  callbacks.add(callback);actions.set(manager,callbacks);
+ }
+ static void boundAgentUpdates(Object chat)throws Exception{
+  Object profiles=call(app,"getService",type("dev.boyko.aiagentswitcher.AgentProfiles"));
+  List<?> saved=(List<?>)call(profiles,"all");List<?> entries=(List<?>)call(profiles,"all");
+  Object profile=entries.stream().filter(p->{try{return call(p,"getId").equals("codex");}catch(Exception e){throw new RuntimeException(e);}}).findFirst().orElseThrow();
+  Object updates=type("dev.boyko.aiagentswitcher.compat.ProfileAgentUpdates").getField("INSTANCE").get(null);
+  List<String> ids=new ArrayList<>();Class<?> function=type("kotlin.jvm.functions.Function2");
+  Object checker=Proxy.newProxyInstance(loader,new Class<?>[]{function},(p,m,a)->{if(m.getName().equals("invoke")){ids.add(String.valueOf(call(a[0],"getFullId")));return true;}return null;});
+  String trace=Files.readString(dir.resolve("backend-trace.jsonl"));Set<String> checked=new HashSet<>();
+  try{
+   check(suspend(updates,"checkBoundAgent",chat,checked,checker).equals(false),"Advanced launch unexpectedly updated registry agent");
+   call(profile,"setAdvancedOverrides",false);call(profiles,"replace",entries);
+   check(suspend(updates,"checkBoundAgent",chat,checked,checker).equals(true),"Bound updater did not refresh native routes");
+   check(ids.equals(List.of("acp.registry.fixture")),"Updater checked AI Multi or another agent: "+ids);
+   check(suspend(updates,"checkBoundAgent",chat,checked,checker).equals(false)&&ids.size()==1,"Duplicate update check for the same segment");
+   call(profile,"setAgentId","replacement");call(profiles,"replace",entries);
+   check(suspend(updates,"checkBoundAgent",chat,new HashSet<>(),checker).equals(false)&&ids.size()==1,"Updated replacement without recovery consent");
+   check(Files.readString(dir.resolve("backend-trace.jsonl")).equals(trace),"Checking native updates acquired or altered a provider session");
+  }finally{call(profiles,"replace",saved);call(singleton("GenericAutoRegistration"),"syncRoutesNow",project);}
+  Files.writeString(dir.resolve("bound-update-result.txt"),"PASS: native update callback receives the committed bound ID, once per segment; refreshed routes, advanced launch and replacement identity protected, no provider requests.\n");
+ }
  static List<String> modelIds(Object options)throws Exception {
   for(Object option:(List<?>)options)if(String.valueOf(AirProfileProbe.call(option,"getId-")).equals("model")){
    List<String> ids=new ArrayList<>();for(Object item:(List<?>)call(call(option,"getOptions"),"getOptions"))ids.add(String.valueOf(AirProfileProbe.call(item,"getValue-")));return ids;

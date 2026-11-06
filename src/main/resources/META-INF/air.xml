@@ -3,6 +3,8 @@
         <applicationService serviceInterface="com.intellij.air.frontend.launch.AgentLaunchTargetPresentationService"
                             serviceImplementation="dev.boyko.aiagentswitcher.air.AirAgentPresentationService" overrides="true"/>
         <air.agentCatalogContributor implementation="dev.boyko.aiagentswitcher.air.AirLegacyProfilePresentation"/>
+        <air.thread.view.sessionBannerContributor implementation="dev.boyko.aiagentswitcher.air.AirSetupProfileBanner"/>
+        <fileIconProvider implementation="dev.boyko.aiagentswitcher.air.AirSessionTabIconProvider" order="first"/>
         <postStartupActivity implementation="dev.boyko.aiagentswitcher.air.AirSessionRowIconActivity"/>
     </extensions>
     <projectListeners>

@@ -118,7 +118,16 @@ internal object AirProfileBridge {
         }
         val requestType = native.type("com.intellij.air.acp.AcpConnectionRequest", "com.intellij.air") ?: error("Unsupported Air connection API")
         val entry = native.call(binding.runtime, "getEntry")!!
-        val request = requestType.constructors.single { it.parameterCount == 6 }.newInstance(entry, java.nio.file.Path.of(binding.cwd), false, true, null, false)
+        val modern = requestType.constructors.singleOrNull { it.parameterCount == 4 }
+        val request = if (modern == null) {
+            requestType.constructors.single { it.parameterCount == 6 && it.parameterTypes[2] == Boolean::class.javaPrimitiveType }
+                .newInstance(entry, java.nio.file.Path.of(binding.cwd), false, true, null, false)
+        } else {
+            val target = native.type("com.intellij.air.acp.AcpRuntimeTarget\$Local", "com.intellij.air")!!
+                .constructors.single().newInstance(entry)
+            val purpose = native.type("com.intellij.air.acp.AcpConnectionPurpose\$Open", "com.intellij.air")!!.getField("INSTANCE").get(null)
+            modern.newInstance(entry, java.nio.file.Path.of(binding.cwd), target, purpose)
+        }
         native.suspendCall(native.field(binding.manager, "connectionExecutor")!!, "connect", binding.runtime, request)
         // The connection executor acquires ACP resources only. Let Air's owner finish
         // preparation through RehydrateCompleted, including its native ready event.
@@ -156,6 +165,7 @@ internal object AirProfileBridge {
         }
         var binding = original
         var token: String? = null
+        var rollbackProfile: String? = null
         try {
             binding = connect(binding)
             val state = control(binding, "_ai_multi/describe")
@@ -163,7 +173,9 @@ internal object AirProfileBridge {
             check(state.get("virtual").asBoolean && !state.get("busy").asBoolean) { "This Air chat is not ready for profile switching" }
             val params = JsonObject().apply { addProperty("profile", profile); add("revision", state.get("revision")) }
             var comment = ""
-            if (state.get("exchanges").asInt == 0) params.addProperty("fresh", true)
+            if (state.get("exchanges").asInt == 0) {
+                params.addProperty("fresh", true);params.addProperty("retainPrepared", true)
+            }
             else {
                 val history = NativeHistory.air(binding.runtime)
                 val estimates = (0..20).associateWith { count -> control(binding, "_ai_multi/estimate", JsonObject().apply {
@@ -181,16 +193,38 @@ internal object AirProfileBridge {
                 params.add("history", history)
                 params.add("nativeSource", JsonObject().apply { addProperty("host", "air"); addProperty("sessionId", native.call(binding.runtime, "getThreadId-").toString()); addProperty("eventId", history.lastOrNull()?.asJsonObject?.let { it.get("lastEventId") ?: it.get("id") }?.asString.orEmpty()) })
             }
+            params.addProperty("deferBinding", true)
+            val target = service<AgentProfiles>().find(profile) ?: error("Profile was removed")
+            withContext(Dispatchers.IO) {
+                dev.boyko.aiagentswitcher.air.AirProfileAgentUpdates.beforeSwitch(target, binding.cwd)
+                GenericAutoRegistration.syncRoutesNow(project)
+            }
             val switched = control(binding, "_ai_multi/switch", params)
+            if(params.get("fresh")?.asBoolean == true)rollbackProfile=state.get("profile").asString
             token = switched.get("token")?.takeUnless { it.isJsonNull }?.asString
+            dev.boyko.aiagentswitcher.air.AirProfileBinding.bind(binding, switched)
             if (token != null) NativeRecoveryContinuation.continueSession(project, JsonObject().apply {
                 addProperty("sessionId", binding.sessionId); addProperty("cwd", binding.cwd)
             }, token, comment)
         } catch (error: Exception) {
             if (token != null) withContext(NonCancellable) {
-                runCatching { control(binding, "_ai_multi/abort_handoff", JsonObject().apply { addProperty("token", token) }) }
+                runCatching {
+                    val restored = control(binding, "_ai_multi/abort_handoff", JsonObject().apply { addProperty("token", token); addProperty("deferBinding", true) })
+                    if(restored.get("aborted")?.asBoolean == true)dev.boyko.aiagentswitcher.air.AirProfileBinding.bind(binding, restored)
+                }
+            }
+            else if(rollbackProfile != null)withContext(NonCancellable) {
+                runCatching {
+                    val revision=control(binding,"_ai_multi/describe").get("revision")
+                    val restored=control(binding,"_ai_multi/switch",JsonObject().apply {
+                        addProperty("profile",rollbackProfile);addProperty("fresh",true);addProperty("retainPrepared",true)
+                        addProperty("deferBinding",true);add("revision",revision)
+                    })
+                    dev.boyko.aiagentswitcher.air.AirProfileBinding.bind(binding,restored)
+                }
             }
             if (error is CancellationException) throw error
+            com.intellij.openapi.diagnostic.Logger.getInstance(AirProfileBridge::class.java).warn("Could not bind the selected Air profile", error)
             val target = service<AgentProfiles>().find(profile)
             if (target != null && ProfileSettingsPrompt.explains(error)) ProfileSettingsPrompt.open(project, target)
             else withContext(Dispatchers.EDT) { com.intellij.openapi.ui.Messages.showErrorDialog(project,
@@ -242,8 +276,10 @@ class AirProfileSelector : ComboBoxAction(), DumbAware {
             e.presentation.isEnabledAndVisible = true
             e.presentation.icon = MultiIcons.Profile
             e.presentation.disabledIcon = MultiIcons.Profile
-            e.presentation.text = service<AgentProfiles>().find(profile)?.name ?: "Select profile…"
+            val named = service<AgentProfiles>().find(profile)
+            e.presentation.text = named?.name ?: "Select profile…"
             e.presentation.description = "Select this composer's launch profile. Project Default Profile stays unchanged."
+            dev.boyko.aiagentswitcher.air.AirSettingsLink.show(e.getData(PlatformDataKeys.CONTEXT_COMPONENT), e.project, named == null)
             return
         }
         val creating = e.place == "Air.Prompt.Preferences" && e.project != null && newChat(e.dataContext)

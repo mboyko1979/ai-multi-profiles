@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "dev.boyko.aiagentswitcher"
-version = "0.2.3-dev.2"
+version = "0.2.3-dev.17"
 
 repositories {
     mavenCentral()
@@ -44,6 +44,14 @@ intellijPlatform {
         }
         changeNotes = """
             <ul>
+            <li>Air 262.8665.521: continue a profile handoff with the SessionPromptRequest type accepted by the installed sendPrompt bridge.</li>
+            <li>Air: retain AI Multi transport ownership when restoring a committed profile chat; repair saved routes without replacing sessions or history.</li>
+            <li>Air: the new-chat composer explains that the project has no profile, then offers Open Settings.</li>
+            <li>Air 262.8665.521: pass the runtime policy into the native agent sweep before launch.</li>
+            <li>Air 262.8665.521: bind a composer profile when native pick no longer takes the optional Long.</li>
+            <li>Air 262.8665.512: preserve native runtime/backend constructor defaults when preparing a selected profile.</li>
+            <li>Preserve manually selected Plan mode and other settings when the client reasserts the current model.</li>
+            <li>AI Assistant: check updates for the profile's bound agent through the native updater and chat UI.</li>
             <li>Air: restore native agent, model and settings controls through the platform action update session.</li>
             <li>Resolve AI Assistant ACP classes through their native content module.</li>
             <li>Use public plugin-state queries; remaining internal integrations are under Marketplace review preparation.</li>
@@ -65,6 +73,12 @@ val routerTest = tasks.register<Exec>("routerTest") {
     description = "Run ACP routing, ownership and failure regression tests"
     commandLine(providers.gradleProperty("nodeExecutable").getOrElse("node"), "router/test-router.js")
 }
+val protocolTransparencyTest = tasks.register<Exec>("protocolTransparencyTest") {
+    group = "verification"
+    commandLine(providers.gradleProperty("nodeExecutable").getOrElse("node"), "router/test-protocol-transparency.js")
+}
+tasks.named("check") { dependsOn(protocolTransparencyTest) }
+tasks.named("buildPlugin") { dependsOn(protocolTransparencyTest) }
 val clientPreferencesTest = tasks.register<Exec>("clientPreferencesTest") {
     group = "verification"
     commandLine(providers.gradleProperty("nodeExecutable").getOrElse("node"), "router/test-client-preferences.js")
@@ -155,6 +169,16 @@ val profilePresetsTest = tasks.register<JavaExec>("profilePresetsTest") {
 }
 tasks.named("check") { dependsOn(profilePresetsTest) }
 tasks.named("buildPlugin") { dependsOn(profilePresetsTest) }
+val nativeCallCompatibilityTest = tasks.register<JavaExec>("nativeCallCompatibilityTest") {
+    group = "verification"
+    description = "Verify native call binding when a host drops a trailing nullable parameter"
+    dependsOn(tasks.named(credentialsVerification.classesTaskName), tasks.named("classes"))
+    classpath = credentialsVerification.runtimeClasspath + sourceSets.main.get().runtimeClasspath + sourceSets.main.get().compileClasspath
+    mainClass.set("dev.boyko.aiagentswitcher.NativeCallCompatibilityChecks")
+    javaLauncher.set(javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(25)) })
+}
+tasks.named("check") { dependsOn(nativeCallCompatibilityTest) }
+tasks.named("buildPlugin") { dependsOn(nativeCallCompatibilityTest) }
 val profileCredentialsTest = tasks.register<JavaExec>("profileCredentialsTest") {
     group = "verification"
     description = "Verify physical profile credential deletion and filesystem boundaries"

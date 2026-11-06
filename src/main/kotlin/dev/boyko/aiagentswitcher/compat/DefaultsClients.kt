@@ -17,7 +17,13 @@ internal object DefaultsClients {
             val type = dev.boyko.aiagentswitcher.NativeRecoveryContinuation.type(
                 "com.intellij.air.acp.pool.AcpInitializedClientFactoryKt", "com.intellij.air"
             ) ?: error("Air's native ACP module is not installed or enabled.")
-            val native = type.getDeclaredMethod("acpClientInfo").apply { isAccessible = true }.invoke(null)
+            val factory = type.declaredMethods.single { it.name == "acpClientInfo" }
+            val arguments = if (factory.parameterCount == 0) emptyArray() else {
+                val eel = Class.forName("com.intellij.platform.eel.provider.EelProviderProjectUtilKt", true, type.classLoader)
+                    .getMethod("getEelDescriptor", Project::class.java).invoke(null, project)
+                arrayOf(eel)
+            }
+            val native = factory.apply { isAccessible = true }.invoke(null, *arguments)
             capabilities = native.javaClass.getMethod("getCapabilities").invoke(native)
             implementation = native.javaClass.getMethod("getImplementation").invoke(native)
         } else {

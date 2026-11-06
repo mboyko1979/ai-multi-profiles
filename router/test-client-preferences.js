@@ -45,10 +45,11 @@ const ok=m=>{assert(!m.error,JSON.stringify(m));return m.result;},values=r=>Obje
   fs.writeFileSync(response,JSON.stringify({nonce:req.nonce,settings:saved}));
  }},5);
  for(const host of ['assistant','air']){
+  const writesAtStart=writes.length;
   const name=host==='air'?'air-plugin:fixture':'JetBrains fixture',client=start(host);
   ok(await client.call('initialize',{protocolVersion:1,clientInfo:{name}}));
   const key=JSON.stringify([host,'personal','fixture']);stores.set(key,[preference('model','b'),preference('effort','high'),preference('flag','true')]);
-  let chat=ok(await client.call('session/new',{cwd:root}));assert.deepEqual(values(chat),{model:'b',effort:'high',flag:true});assert.equal(writes.length,host==='assistant'?0:2);
+  let chat=ok(await client.call('session/new',{cwd:root}));assert.deepEqual(values(chat),{model:'b',effort:'high',flag:true});assert.equal(writes.length,writesAtStart);
   const sid=chat.sessionId;
   const initialWrites=writes.length;
   ok(await client.call('session/set_config_option',{sessionId:sid,configId:'model',value:'b'}));
@@ -64,6 +65,9 @@ const ok=m=>{assert(!m.error,JSON.stringify(m));return m.result;},values=r=>Obje
   assert.equal(ok(await client.call('session/prompt',{sessionId:sid,prompt:[{type:'text',text:'after cancellation'}]})).stopReason,'end_turn');
   config.profiles.personal.clientDefaults=[{host,agentId:'fixture',modelOptionId:'model',modelOperation:'config',defaultModelId:'b',models:[{modelId:'b',enabled:true,settings:[preference('effort','high')]}]}];save();
   chat=ok(await client.call('session/new',{cwd:root}));assert.deepEqual(values(chat),{model:'b',effort:'high',flag:true});assert.equal(writes.length,count);
+  ok(await client.call('session/set_config_option',{sessionId:chat.sessionId,configId:'effort',value:'low'}));
+  const repeated=ok(await client.call('session/set_config_option',{sessionId:chat.sessionId,configId:'model',value:'b'}));
+  assert.equal(values(repeated).effort,'low',host+' same-model preparation reapplied profile defaults over a manual choice');
   config.profiles.personal.clientDefaults=[];save();chat=ok(await client.call('session/new',{cwd:root}));assert.deepEqual(values(chat),{model:'a',effort:'low',flag:true});
   config.projects[0].profile='work';save();chat=ok(await client.call('session/new',{cwd:root}));assert.deepEqual(values(chat),{model:'a',effort:'low',flag:false});config.projects[0].profile='personal';save();
   config.profiles.personal.agentId='other';save();chat=ok(await client.call('session/new',{cwd:root}));assert.deepEqual(values(chat),{model:'a',effort:'low',flag:false});config.profiles.personal.agentId='fixture';save();

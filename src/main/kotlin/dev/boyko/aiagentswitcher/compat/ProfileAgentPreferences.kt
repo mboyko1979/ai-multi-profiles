@@ -74,17 +74,23 @@ internal object ProfileAgentPreferences {
      * toolbar has not rendered yet. Existing validation/actions keep their order.
      */
     fun beforePrompt(chat: ChatSession, manager: AcpSessionLifecycleManager) {
+        val owner = dev.boyko.aiagentswitcher.NativeRecoveryContinuation.field(manager, "coroutineScope") as kotlinx.coroutines.CoroutineScope
+        owner.coroutineContext[kotlinx.coroutines.Job]?.invokeOnCompletion { ProfileAgentUpdates.forget(chat.uid) }
         val field = AcpSessionLifecycleManager::class.java.getDeclaredField("beforePromptActions").apply { isAccessible = true }
         @Suppress("UNCHECKED_CAST")
         // BeforePromptResult is package-private in the pinned host. Keep the
         // callback erased across plugin classloaders and return its real singleton.
         val actions = field.get(manager) as List<suspend () -> Any>
+        val updateChecks = mutableSetOf<String>()
         fun result(name: String): Any = Class.forName(
             "com.intellij.ml.llm.agents.acp.client.BeforePromptResult\$$name", true, manager.javaClass.classLoader
         ).getDeclaredField("INSTANCE").apply { isAccessible = true }.get(null)
         val bridge: suspend () -> Any = {
             if (PreparedAssistantProfiles.selected(chat) != null) result("Declined")
+            else if (!ProfileAgentUpdates.ensureTerms(chat, manager)) result("Declined")
+            else if (ProfileAgentUpdates.beforePrompt(chat, manager, updateChecks)) result("Resubmitting")
             else {
+                ProfileAgentUpdates.restoreSelections(chat)
                 ChatHandoffClient(chat as Any).nativeSessionOrNull()?.let { synchronize(chat, it) }
                 PreparedAssistantProfiles.firstPrompt(chat)
                 result("Proceed")

@@ -112,9 +112,20 @@ private object AirAccountPresentation {
         val commands = native.field(state, "commandService") ?: return@compatible null
         val lane = native.field(commands, "lane") ?: return@compatible null
         val account = native.call(lane, "getAiSource") ?: return@compatible null
-        val accountState = native.call(native.call(account, "getAiSourceState")!!, "getValue") ?: return@compatible null
-        val source = native.call(accountState, "getPresentationOrNull") ?: return@compatible null
-        native.call(source, "getChipText") as? String
+        // The source presentation can describe the IDE's JCP/BYOK account even
+        // when this ACP agent has reported no identity. Read only the native
+        // agent identity for this lane; never attribute the IDE account to it.
+        val identity = if (account.javaClass.declaredFields.any { it.name == "agentAuthIdentityState" }) {
+            native.call(native.field(account, "agentAuthIdentityState")!!, "getValue")
+        } else {
+            // .512 groups the native identity with the lane's provider facts.
+            val facts = native.call(native.field(account, "agentFactsState")!!, "getValue")
+                ?: return@compatible null
+            native.call(native.call(facts, "getSecond")!!, "getAgentAuthIdentity")
+        } ?: return@compatible null
+        listOf("email", "label").firstNotNullOfOrNull { name ->
+            (identity.javaClass.getField(name).get(identity) as? String)?.takeIf { it.isNotBlank() }
+        }
     }
 
     fun chipIcon(): javax.swing.Icon? = compatible {
@@ -123,7 +134,7 @@ private object AirAccountPresentation {
         native.call(type, "getAIR_AI_SOURCE_CHIP_ICON") as? javax.swing.Icon
     }
 
-    /** Empty native segments win over presentation.text; drop them so the local caption can paint. */
+    /** Native segments override text and may still contain the generic source's account. */
     fun preferPresentationText(presentation: Presentation) {
         compatible {
             val keys = native.type(
@@ -134,9 +145,7 @@ private object AirAccountPresentation {
 
             @Suppress("UNCHECKED_CAST")
             val key = native.call(keys, "getSEGMENTS") as com.intellij.openapi.util.Key<List<*>>
-            val segments = presentation.getClientProperty(key) ?: return@compatible
-            if (segments.all { native.call(it!!, "getText")?.toString().isNullOrBlank() })
-                presentation.putClientProperty(key, null)
+            presentation.putClientProperty(key, null)
         }
     }
 
@@ -178,7 +187,7 @@ private class AirAccountAction(private val delegate: AnAction) : AnAction(),
         val composer = AirComposerProfiles.composer(e.dataContext)
         if (composer == null && !AirAccountPresentation.acquiredAiMulti(e.dataContext)) return
         val nativeText = AirAccountPresentation.chipText(e.dataContext)?.takeIf { it.isNotBlank() }
-        val caption = nativeText ?: AirAccountPresentation.localEmail(e.project, composer, e.dataContext) ?: return
+        val caption = nativeText ?: AirAccountPresentation.localEmail(e.project, composer, e.dataContext) ?: "Account unknown"
         e.presentation.text = caption
         e.presentation.isVisible = true
         e.presentation.isEnabled = true
@@ -242,7 +251,20 @@ class AirProfileButton(action: AnAction, presentation: Presentation, place: Stri
         val style = NativeRecoveryContinuation.type(
             "com.intellij.air.frontend.prompt.composer.actions.toolbar.AirPromptActionButtonStyle", "com.intellij.air"
         )!!.getField("INSTANCE").get(null)
-        NativeRecoveryContinuation.call(style, "apply", this)
+        val singleArgument = style.javaClass.methods.firstOrNull {
+            it.name == "apply" && it.parameterCount == 1 && it.parameterTypes[0].isInstance(this)
+        }
+        if (singleArgument != null) {
+            singleArgument.invoke(style, this)
+        } else {
+            // Air 262.8665.512 added an optional foreground parameter. Invoke
+            // Kotlin's default-argument bridge so Air chooses its own default.
+            val defaultApply = style.javaClass.methods.single {
+                it.name == "apply\$default" && it.parameterCount == 5 &&
+                    it.parameterTypes[1].isInstance(this)
+            }
+            defaultApply.invoke(null, style, this, null, 2, null)
+        }
     }
 
     override fun shallPaintDownArrow() = false
