@@ -33,6 +33,11 @@ class AirProfilePreferencesGroup : DefaultActionGroup(), DumbAware {
         val children = (expand(native, e) + getChildren(manager)).distinct().filter { it != profile }
         if (profile == null) return children.toTypedArray()
         val composer = e?.let { AirComposerProfiles.composer(it.dataContext) }
+        if (e?.project != null) try {
+            AirNewSessionTabIcon.update(e.dataContext, e.project!!, composer != null)
+        } catch (_: ReflectiveOperationException) {
+            // Unsupported Air versions keep their native tab icon.
+        }
         var inserted = false
         fun arrange(actions: List<AnAction>): Array<AnAction> = buildList {
             for (action in actions) {

@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "dev.boyko.aiagentswitcher"
-version = "0.2.3-dev.17"
+version = "0.2.3-dev.18"
 
 repositories {
     mavenCentral()
@@ -44,6 +44,7 @@ intellijPlatform {
         }
         changeNotes = """
             <ul>
+            <li>Air: show the AI Multi icon on a new session tab while retaining native activity and access badges.</li>
             <li>Air 262.8665.521: continue a profile handoff with the SessionPromptRequest type accepted by the installed sendPrompt bridge.</li>
             <li>Air: retain AI Multi transport ownership when restoring a committed profile chat; repair saved routes without replacing sessions or history.</li>
             <li>Air: the new-chat composer explains that the project has no profile, then offers Open Settings.</li>
