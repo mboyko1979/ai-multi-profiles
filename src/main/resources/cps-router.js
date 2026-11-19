@@ -7,6 +7,7 @@ const {AsyncLocalStorage}=require('async_hooks');
 const clientRequestContext=new AsyncLocalStorage();
 const cancellation=method=>method==='$/cancel_request' || method==='$/cancelRequest';
 const profileSettings = require('./profile-settings');
+const grokPermission = require('./grok-permission-mode');
 const configPath = process.argv[2];
 const fixedProfileIndex = process.argv.indexOf('--profile');
 const fixedProfile = fixedProfileIndex < 0 ? null : process.argv[fixedProfileIndex + 1];
@@ -256,9 +257,12 @@ async function configureSession(profile,spec,result,backend,cwd) {
             .map(x=>({agentId:spec.agentId,id:x.id,operation:x.operation,value:String(x.currentValue)}))}]};
         current=(await profileSettings.applyConcrete({...selected,clientDefaults:[initial]},current,(method,params)=>request(backend,method,params))).result;
       }
-      const applied=await profileSettings.apply(selected,current,(method,params)=>request(backend,method,params));
+      const sessionCall=(method,params)=>grokPermission.owns(current) && method==='session/set_mode'
+        ? grokPermission.handleSetMode(selected,(call,args)=>request(backend,call,args),{sessionId:current.sessionId,cwd,mcpServers:[]},params.modeId)
+        : request(backend,method,params);
+      const applied=await profileSettings.apply(selected,current,sessionCall);
       const remembered=await nativePreferences('read',profile,spec.agentId,applied.result);
-      applied.result=await profileSettings.applyRemembered(selected,applied.result,remembered,(method,params)=>request(backend,method,params));
+      applied.result=await profileSettings.applyRemembered(selected,applied.result,remembered,sessionCall);
       return {...applied,clientDefaults:profileSettings.concrete(selected),
         preferenceIds:profileSettings.preferences(selected).saved.filter(x=>x.operation==='config').map(x=>x.id),instructions:profileSettings.instructions(spec)};
     }
@@ -487,10 +491,25 @@ async function backendFor(profile, spec, isolationKey = '') {
   }
   if (!backend) {
     backend = {profile, spec, fingerprint:revision, authRevision:authRevision(spec), sessionIds:new Set(), authKey:hash(key).slice(0,20),
+      startedAt:Date.now(),
       purpose:isolationKey.startsWith('catalog:') ? 'catalog' : isolationKey.startsWith('attachment-preview:') ? 'preview' : isolationKey ? 'session' : 'negotiate'};
     const cwd = spec.cwd || process.cwd();
     const launched = directLaunch(spec.command, spec.args || [], cwd);
     const env = applyRuntime(environmentFor(spec), launched.runtimeDir);
+    // Codex disables the thread's saved model when resume config names one,
+    // then uses the account default. A restore process supplies the committed
+    // session model so that default does not replace it.
+    const pinned = spec.env?.CODEX_HOME ? virtual?.committedCodexConfig?.(profile) : null;
+    if (pinned) {
+      let base = {};
+      if (typeof env.CODEX_CONFIG === 'string' && env.CODEX_CONFIG) {
+        try {
+          const parsed = JSON.parse(env.CODEX_CONFIG);
+          base = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+        } catch { base = null; }
+      }
+      if (base) env.CODEX_CONFIG = JSON.stringify({...base, ...pinned});
+    }
     backend.proc = cp.spawn(launched.command, launched.args, {
       cwd, env, stdio:['pipe','pipe','pipe'], windowsHide:true, shell:false, detached:process.platform !== 'win32'
     });
@@ -629,6 +648,7 @@ async function handleClient(msg) {
         try {
           const response=await request(backend,'session/new',{cwd:msg.params?.cwd || process.cwd(),mcpServers:[]});
           if(response.error)throw Error('Authorization is required or expired. Authorize this profile, then refresh session options.');
+          if(grokPermission.needsCustom(spec,response.result))response.result=grokPermission.advertise(response.result,grokPermission.savedMode(spec));
           result={options:spec.discoverModels?profileSettings.modelDefaults(response.result):profileSettings.descriptors(response.result),observedAt:Date.now(),warnings:[],
             models:spec.discoverModels?await profileSettings.discoverModels(spec,response.result,(method,params)=>request(backend,method,params),
               values=>log('Model-default metadata '+JSON.stringify({agentId:spec.agentId,agentVersion:backend.initialize.agentInfo?.version || '',
@@ -650,6 +670,7 @@ async function handleClient(msg) {
       try {
         const response = await request(backend,'session/new',{cwd:msg.params.cwd,mcpServers:[]});
         if (response.error) throw Error('Could not obtain provider defaults. Check this profile\'s authorization and try again.');
+        if(grokPermission.needsCustom(spec,response.result))response.result=grokPermission.advertise(response.result,grokPermission.savedMode(spec));
         result={options:profileSettings.descriptors(response.result),observedAt:Date.now(),warnings:[]};
       } finally { await stopBackend(backend, 'defaults probe finished'); }
       send({jsonrpc:'2.0',id:msg.id,result});

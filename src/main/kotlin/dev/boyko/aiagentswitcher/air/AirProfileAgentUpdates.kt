@@ -42,7 +42,8 @@ internal object AirProfileAgentUpdates {
             .filter { native.call(it, "getId") == id }
         if (agents.isEmpty()) return
         // Scope the native sweep to the actually launched profile's agent.
-        val selectedRegistry = native.call(registry, "copy", native.call(registry, "getVersion"), agents)!!
+        // Air 263 adds AcpRegistryEnvironments to copy. Keep the registry's own value.
+        val selectedRegistry = copyRegistry(registry, native.call(registry, "getVersion"), agents)
         val updaterType = type("AcpAgentAutoUpdater")
         // Air 521 inserts AgentRuntimePolicyState before the continuation. Air 497 does not.
         val sweep = mutableListOf<Any?>(app.getService(updaterType), selectedRegistry)
@@ -59,5 +60,23 @@ internal object AirProfileAgentUpdates {
         // Join that coordinator before resolving a distribution it may replace.
         val ready: suspend () -> Unit = {}
         native.suspendCall(app.getService(type("AcpAgentInstallCoordinator")), "withAgent", id, ready)
+    }
+
+    private fun copyRegistry(registry: Any, version: Any?, agents: List<*>): Any {
+        val native = NativeRecoveryContinuation
+        val copies = registry.javaClass.methods.filter { it.name == "copy" && !java.lang.reflect.Modifier.isStatic(it.modifiers) }
+        val legacy = copies.firstOrNull { it.parameterCount == 2 }
+        if (legacy != null) return native.call(registry, "copy", version, agents)!!
+        val copy = copies.maxByOrNull { it.parameterCount } ?: error("Air registry has no copy method")
+        val values = ArrayList<Any?>(copy.parameterCount)
+        val supplied = listOf(version, agents).iterator()
+        var mask = 0
+        copy.parameterTypes.forEachIndexed { index, type ->
+            if (type.name.endsWith("AcpRegistryEnvironments") || !supplied.hasNext()) {
+                values += null
+                mask = mask or (1 shl index)
+            } else values += supplied.next()
+        }
+        return native.call(registry, "copy\$default", registry, *values.toTypedArray(), mask, null)!!
     }
 }

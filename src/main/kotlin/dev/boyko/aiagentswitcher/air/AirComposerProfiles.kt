@@ -132,6 +132,11 @@ internal object AirComposerProfiles {
         native.call(composer.preferences, "requestChildStart")
     }
 
+    /** Drop a prepared Grok session so the next preparation starts with the saved permission mode. */
+    fun restartPreparation(composer: Composer) {
+        native.call(composer.preferences, "requestChildStart")
+    }
+
     /** Air keys its metadata cache by agent/route. Use the bound agent; do not add a plugin cache. */
     private fun catalogAgentId(agent: String) = FOLDED_ACP_AGENTS[agent] ?: acpCatalogAgentId(agent)
 

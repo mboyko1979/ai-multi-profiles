@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "dev.boyko.aiagentswitcher"
-version = "0.2.3-dev.18"
+version = "0.3.0"
 
 repositories {
     mavenCentral()
@@ -44,6 +44,15 @@ intellijPlatform {
         }
         changeNotes = """
             <ul>
+            <li>0.3.0: Grok gets Ask, Auto-review, and Always approve beside the model. The standard Grok composer in Air does not include this switch. The choice is saved for the profile and applied to the open chat by stopping that session and starting it again.</li>
+            <li>A chat that is already connected does not show a Reconnect panel.</li>
+            <li>A new Grok composer restarts preparation instead of an open session.</li>
+            <li>IDEA 2026.3: load ACP classes from the enabled module intellij.ml.llm.agents.acp. Refresh Models can then follow the installed Codex package.</li>
+            <li>IDEA 2026.3: load ACP classes from PluginMainDescriptor.getContentModules(). Saving a profile can follow the installed Codex package, so Refresh Models sees models that package advertises.</li>
+            <li>IDEA 2026.3: Refresh Models loads ACP classes from the AI Assistant content module. A missing class is reported in words, and the previous settings message stays visible.</li>
+            <li>A saved model is not marked Deprecated until a loaded catalog omits it or the agent rejects that value.</li>
+            <li>Air: an owned chat keeps the native composer. The reconnect notice no longer replaces the input.</li>
+            <li>Air: resume a Codex chat on the model and reasoning effort last saved in that chat.</li>
             <li>Air: show the AI Multi icon on a new session tab while retaining native activity and access badges.</li>
             <li>Air 262.8665.521: continue a profile handoff with the SessionPromptRequest type accepted by the installed sendPrompt bridge.</li>
             <li>Air: retain AI Multi transport ownership when restoring a committed profile chat; repair saved routes without replacing sessions or history.</li>
@@ -128,6 +137,14 @@ tasks.named("buildPlugin") { dependsOn(automaticDefaultsTest) }
 tasks.named("check") { dependsOn(profileSettingsTest) }
 tasks.named("buildPlugin") { dependsOn(profileSettingsTest) }
 
+val grokPermissionModeTest = tasks.register<Exec>("grokPermissionModeTest") {
+    group = "verification"
+    description = "Verify the custom Grok permission-mode dropdown and stop/resume apply"
+    commandLine(providers.gradleProperty("nodeExecutable").getOrElse("node"), "router/test-grok-permission-mode.js")
+}
+tasks.named("check") { dependsOn(grokPermissionModeTest) }
+tasks.named("buildPlugin") { dependsOn(grokPermissionModeTest) }
+
 val virtualSessionsTest = tasks.register<Exec>("virtualSessionsTest") {
     group = "verification"
     description = "Verify virtual ACP conversations and provider handoff with mock backends"
@@ -151,6 +168,14 @@ val restoreDefaultClientsTest = tasks.register<Exec>("restoreDefaultClientsTest"
 tasks.named("check") { dependsOn(restoreDefaultClientsTest) }
 tasks.named("buildPlugin") { dependsOn(restoreDefaultClientsTest) }
 
+val resumeModelTest = tasks.register<Exec>("resumeModelTest") {
+    group = "verification"
+    description = "Verify a restored Codex chat keeps its committed model and reasoning effort"
+    commandLine(providers.gradleProperty("nodeExecutable").getOrElse("node"), "router/test-resume-model.js")
+}
+tasks.named("check") { dependsOn(resumeModelTest) }
+tasks.named("buildPlugin") { dependsOn(resumeModelTest) }
+
 val conversationStorageTest = tasks.register<Exec>("conversationStorageTest") {
     group = "verification"
     description = "Verify Windows sharing violations and conversation snapshot recovery"
@@ -160,6 +185,16 @@ tasks.named("check") { dependsOn(conversationStorageTest) }
 tasks.named("buildPlugin") { dependsOn(conversationStorageTest) }
 
 val credentialsVerification = sourceSets.create("verification")
+val grokPermissionConfigTest = tasks.register<JavaExec>("grokPermissionConfigTest") {
+    group = "verification"
+    description = "Verify the composer writes Grok's permission_mode without dropping other settings"
+    dependsOn(tasks.named(credentialsVerification.classesTaskName), tasks.named("classes"))
+    classpath = credentialsVerification.runtimeClasspath + sourceSets.main.get().runtimeClasspath + sourceSets.main.get().compileClasspath
+    mainClass.set("dev.boyko.aiagentswitcher.GrokPermissionModeChecks")
+    javaLauncher.set(javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(25)) })
+}
+tasks.named("check") { dependsOn(grokPermissionConfigTest) }
+tasks.named("buildPlugin") { dependsOn(grokPermissionConfigTest) }
 val profilePresetsTest = tasks.register<JavaExec>("profilePresetsTest") {
     group = "verification"
     dependsOn(tasks.named(credentialsVerification.classesTaskName), tasks.named("classes"))

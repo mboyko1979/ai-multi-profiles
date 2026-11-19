@@ -121,6 +121,13 @@ internal class ProfilePresetPanel(private val project: Project) : JPanel(BorderL
         textScroll.isVisible = source.selectedIndex == 1; fileRow.isVisible = source.selectedIndex == 2
         instructionNote.isVisible = source.selectedIndex != 0; revalidate(); repaint()
     }
+    private fun readableRefreshFailure(error: Throwable): String {
+        val linkage = generateSequence(error) { it.cause }.any { it is LinkageError || it is ClassNotFoundException }
+        if (linkage) return "Could not load AI Assistant ACP classes on this IDE build. Saved model settings were kept."
+        val message = error.message?.takeIf { it.isNotBlank() } ?: return "Could not load agent defaults. Previous settings were retained."
+        if (message.startsWith("com/") || message.startsWith("com.")) return "Could not load agent defaults. Previous settings were retained."
+        return message
+    }
     private fun refreshOptions(client: String) {
         val entry = profile ?: return
         val revision = ++generation
@@ -150,7 +157,12 @@ internal class ProfilePresetPanel(private val project: Project) : JPanel(BorderL
                         ProfileSettingsPrompt.clearIssues(entry.id, client)
                         profileChanged()
                     }
-                    result.exceptionOrNull()?.let { messages["${entry.id}:$client"] = it.message ?: "Could not load agent defaults. Previous settings were retained." }
+                    result.exceptionOrNull()?.let { error ->
+                        val detail = readableRefreshFailure(error)
+                        val prior = ProfileSettingsPrompt.failure(entry.id, client)?.message
+                            ?: ProfileSettingsPrompt.peek()?.takeIf { it.profileId == entry.id && it.host == client }?.message
+                        messages["${entry.id}:$client"] = listOfNotNull(prior?.takeIf { it.isNotBlank() }, detail).distinct().joinToString("\n")
+                    }
                     loading = null; refreshing = false; loadingChanged(false)
                     hostControls.keys.forEach { render(entry, it) }
                 }
@@ -217,7 +229,7 @@ internal class ProfilePresetPanel(private val project: Project) : JPanel(BorderL
     }
     private fun renderModels(entry: AgentProfiles.Entry, client: String, defaults: AgentProfiles.ClientDefaults, controls: JPanel, updateStatus: () -> Unit) {
         val c = ProfileModelDefaults.validationCatalog(entry.id, defaults)
-        val available = c?.let { ProfileModelDefaults.modelOption(it)?.values?.map { v -> v.value } ?: listOf("") }.orEmpty()
+        val published = c?.let { ProfileModelDefaults.modelOption(it)?.values?.map { v -> v.value } }?.filter { it.isNotEmpty() }.orEmpty()
         val listModel = DefaultListModel<AgentProfiles.ModelPreset>().apply { defaults.models.forEach { addElement(it) } }
         val list = JBList(listModel).apply {
             selectionMode = ListSelectionModel.SINGLE_SELECTION
@@ -226,7 +238,8 @@ internal class ProfilePresetPanel(private val project: Project) : JPanel(BorderL
                 SimpleColoredComponent().apply {
                     isOpaque = true
                     background = if (selected) UIUtil.getListSelectionBackground(true) else UIUtil.getListBackground()
-                    val invalid = value.modelId !in available || ProfileSettingsPrompt.isInvalid(entry.id, client, value.modelId, defaults.modelOptionId, value.modelId)
+                    val invalid = (published.isNotEmpty() && value.modelId !in published) ||
+                        ProfileSettingsPrompt.isInvalid(entry.id, client, value.modelId, defaults.modelOptionId, value.modelId)
                     val color = if (invalid) UIUtil.getErrorForeground() else if (!value.enabled) UIUtil.getInactiveTextColor() else if (selected) UIUtil.getListSelectionForeground(true) else UIUtil.getListForeground()
                     val style = (if (!value.enabled) SimpleTextAttributes.STYLE_STRIKEOUT else SimpleTextAttributes.STYLE_PLAIN) or
                         (if (value.modelId == defaults.defaultModelId) SimpleTextAttributes.STYLE_BOLD else SimpleTextAttributes.STYLE_PLAIN)
@@ -243,7 +256,7 @@ internal class ProfilePresetPanel(private val project: Project) : JPanel(BorderL
             var row = 0
             fun full(component: JComponent) { details.add(component, GridBagConstraints().apply { gridx = 0; gridy = row++; gridwidth = 2; weightx = 1.0; fill = GridBagConstraints.HORIZONTAL; anchor = GridBagConstraints.NORTHWEST; insets = JBUI.insets(4) }) }
             val default = JCheckBox("Default", defaults.defaultModelId == m.modelId).apply {
-                isEnabled = m.modelId in available && defaults.defaultModelId != m.modelId
+                isEnabled = (published.isEmpty() || m.modelId in published) && defaults.defaultModelId != m.modelId
                 addActionListener { m.enabled = true; defaults.defaultModelId = m.modelId; profileChanged(); list.repaint(); updateDetails() }
             }
             full(default)
@@ -252,7 +265,7 @@ internal class ProfilePresetPanel(private val project: Project) : JPanel(BorderL
                     .onSuccess { profileChanged(); updateDetails() }
                     .onFailure { messages["${entry.id}:$client"] = it.message.orEmpty(); render(entry, client) }
             }.apply {
-                isEnabled = m.modelId in available
+                isEnabled = m.modelId in published || published.isEmpty()
                 toolTipText = "Restore this model's parameter values from the last load or refresh. Keep the model list and the other client's defaults. Click Apply to save."
             })
             full(JBLabel("Reset to this model's agent defaults from the last load or refresh.").apply { foreground = UIUtil.getContextHelpForeground() })
@@ -264,8 +277,9 @@ internal class ProfilePresetPanel(private val project: Project) : JPanel(BorderL
                 val saved = m.settings.find { it.id == o.id && it.operation == o.operation }
                 val choices = (if (o.type == "boolean") listOf(Choice("true", "Enabled"), Choice("false", "Disabled")) else o.values.map { Choice(it.value, it.name) }).toMutableList()
                 val rejected = ProfileSettingsPrompt.isInvalid(entry.id, client, m.modelId, o.id, saved?.value)
-                val invalid = saved == null || !ProfileModelDefaults.allowed(o, saved.value) || rejected
-                if (saved != null && (choices.none { it.value == saved.value } || rejected)) {
+                val hasCatalogValues = o.type == "boolean" || o.values.isNotEmpty()
+                val invalid = rejected || (hasCatalogValues && (saved == null || !ProfileModelDefaults.allowed(o, saved.value)))
+                if (saved != null && (rejected || (hasCatalogValues && choices.none { it.value == saved.value }))) {
                     val previous = ProfileModelDefaults.catalog(defaults)?.let { ProfileModelDefaults.options(it, m.modelId) }
                         ?.find { it.id == o.id && it.operation == o.operation }
                     val oldLabel = if (previous?.type == "boolean") when (saved.value) {
@@ -273,6 +287,8 @@ internal class ProfilePresetPanel(private val project: Project) : JPanel(BorderL
                     } else previous?.values?.find { it.value == saved.value }?.name
                     val label = choices.find { it.value == saved.value }?.name ?: oldLabel ?: saved.value
                     choices.removeAll { it.value == saved.value }; choices.add(Choice(saved.value, "$label - Deprecated", true))
+                } else if (saved != null && choices.none { it.value == saved.value }) {
+                    choices.add(Choice(saved.value, saved.value, false))
                 }
                 if (saved == null) choices.add(Choice("", "Select a value", true))
                 val selector = ComboBox(choices.toTypedArray()).apply {
@@ -314,9 +330,9 @@ internal class ProfilePresetPanel(private val project: Project) : JPanel(BorderL
             profileChanged(); selectedModels["${entry.id}:$client"] = value.modelId; render(entry, client)
         }
         val browser = ToolbarDecorator.createDecorator(list)
-            .setAddAction { list.selectedValue?.takeIf { it.modelId in available }?.let { it.enabled = true; profileChanged(); list.repaint(); updateDetails() } }
+            .setAddAction { list.selectedValue?.takeIf { it.modelId in published || published.isEmpty() }?.let { it.enabled = true; profileChanged(); list.repaint(); updateDetails() } }
             .setRemoveAction { list.selectedValue?.takeIf { it.modelId != defaults.defaultModelId }?.let { it.enabled = false; profileChanged(); list.repaint(); updateDetails() } }
-            .setAddActionUpdater { list.selectedValue?.let { !it.enabled && it.modelId in available } == true }
+            .setAddActionUpdater { list.selectedValue?.let { !it.enabled && (published.isEmpty() || it.modelId in published) } == true }
             .setRemoveActionUpdater { list.selectedValue?.let { it.enabled && it.modelId != defaults.defaultModelId } == true }
             .setMoveUpAction { move(-1) }.setMoveDownAction { move(1) }
             .setMoveUpActionUpdater { list.selectedIndex > 0 }
@@ -330,7 +346,7 @@ internal class ProfilePresetPanel(private val project: Project) : JPanel(BorderL
                 if (i < 0 || list.getCellBounds(i, i)?.contains(e.point) != true) return
                 list.selectedIndex = i
                 JPopupMenu().apply { add(JMenuItem("Set as Default").apply {
-                    isEnabled = listModel[i].modelId in available
+                    isEnabled = listModel[i].modelId in published || published.isEmpty()
                     addActionListener { listModel[i].enabled = true; defaults.defaultModelId = listModel[i].modelId; profileChanged(); list.repaint(); updateDetails() }
                 }); show(list, e.x, e.y) }
             }

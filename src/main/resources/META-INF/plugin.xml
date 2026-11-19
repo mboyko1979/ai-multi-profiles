@@ -10,6 +10,7 @@
             <li>Continue the current chat or start a new chat with another profile.</li>
             <li>Hide old or unused models and set your own order, with the model you use most first.</li>
             <li>In Air, see which account the selected profile's agent is using.</li>
+            <li>For Grok, choose Ask, Auto-review, or Always approve beside the model. The standard Grok composer in Air does not include this switch. The choice is saved for the profile and applied to the open chat.</li>
         </ul>
         <p>Requires IntelliJ IDEA 2026.2 build 262.10968 or newer, with AI Assistant or Air, Node.js, and an installed ACP-compatible agent.</p>
         <p>Source and guide: <a href="https://github.com/mboyko1979/ai-multi-profiles">AI Multi Profiles on GitHub</a>.</p>
@@ -20,7 +21,7 @@
          Resolve the Assistant SDK first when both hosts bundle com.agentclientprotocol. -->
     <depends optional="true" config-file="air.xml">com.intellij.air</depends>
     <extensions defaultExtensionNs="com.intellij">
-        <projectConfigurable parentId="tools" instance="dev.boyko.aiagentswitcher.SwitcherConfigurable" id="dev.boyko.aiagentswitcher.settings" displayName="AI Multi Profiles" nonDefaultProject="true" />
+        <projectConfigurable parentId="ai" instance="dev.boyko.aiagentswitcher.SwitcherConfigurable" id="dev.boyko.aiagentswitcher.settings" displayName="AI Multi Profiles" nonDefaultProject="true" />
         <postStartupActivity implementation="dev.boyko.aiagentswitcher.ProjectGuardActivity" />
         <notificationGroup id="AI Agent Project Switcher" displayName="AI Multi" displayType="BALLOON" />
     </extensions>

@@ -5,7 +5,7 @@ const sensitive=id=>/access[_-]?token|refresh[_-]?token|id[_-]?token|auth[_-]?to
 const short=value=>typeof value==='string' && value.length<=4096?value:null;
 function choices(items) {
   return (Array.isArray(items)?items:[]).flatMap(x=>Array.isArray(x?.options)?choices(x.options):
-    short(x?.value)!==null && short(x?.name)!==null?[{value:x.value,name:x.name}]:[]);
+    short(x?.value)!==null?[{value:x.value,name:short(x?.name)||x.value}]:[]);
 }
 function descriptors(result={}) {
   const options=[];
@@ -22,7 +22,7 @@ function descriptors(result={}) {
     id:'model',operation:'model',type:'select',category:'model',name:'Model',description:'',currentValue:result.models.currentModelId,
     options:result.models.availableModels.filter(x=>short(x.modelId)!==null).map(x=>({value:x.modelId,name:short(x.name)||x.modelId}))});
   if(!options.some(x=>x.category==='mode') && Array.isArray(result.modes?.availableModes))options.push({
-    id:'mode',operation:'mode',type:'select',category:'mode',name:'Mode',description:'',currentValue:result.modes.currentModeId,
+    id:'mode',operation:'mode',type:'select',category:'mode',name:short(result.modes.name)||'Mode',description:'',currentValue:result.modes.currentModeId,
     options:result.modes.availableModes.filter(x=>short(x.id)!==null).map(x=>({value:x.id,name:short(x.name)||x.id}))});
   return options;
 }
@@ -130,9 +130,48 @@ async function apply(spec,result,request) {
     if(frozen.has(setting) && option && allowed(option,setting) && warnings.length!==before)
       throw Error('The agent could not apply the saved profile default for '+setting.id+'. Refresh agent defaults in AI Multi Profiles.');
   }
-  return {result:current,warnings};
+  return {result:alignModelSurface(current),warnings};
 }
 function selectedModel(result) {const m=descriptors(result).find(o=>o.category==='model' || o.operation==='model');return m?.currentValue;}
+function modelBase(id) {
+  if(typeof id!=='string' || !id || id.length>256)return null;
+  const match=/^([^[]+?)(?:\[([^\]]+)\])?$/.exec(id);
+  return match?{base:match[1],effort:match[2]||''}:null;
+}
+// Codex publishes a bare config slug and effort-qualified models.currentModelId
+// values such as gpt-6.1-terra[medium]. A bare slug is not a models.modelId.
+function qualifyModelId(result,requested) {
+  if(typeof requested!=='string' || !requested)return requested;
+  const available=(Array.isArray(result?.models?.availableModels)?result.models.availableModels:[]).map(x=>x?.modelId).filter(x=>typeof x==='string');
+  if(!available.length || available.includes(requested))return requested;
+  const parsed=modelBase(requested);
+  if(!parsed || parsed.effort)return requested;
+  const options=Array.isArray(result?.configOptions)?result.configOptions:[];
+  const effort=options.find(o=>(o?.id==='reasoning_effort' || o?.category==='thought_level') && typeof o.currentValue==='string')?.currentValue;
+  const current=modelBase(result?.models?.currentModelId || '');
+  for(const candidate of [effort,current?.effort].filter((value,index,all)=>value && all.indexOf(value)===index)) {
+    const id=parsed.base+'['+candidate+']';
+    if(available.includes(id))return id;
+  }
+  return requested;
+}
+function committedSelection(sessionOptions) {
+  const options=Array.isArray(sessionOptions?.configOptions)?sessionOptions.configOptions:[];
+  const model=options.find(o=>o?.category==='model' && typeof o.currentValue==='string' && o.currentValue && typeof o.id==='string');
+  if(!model)return null;
+  const effort=options.find(o=>typeof o?.currentValue==='string' && o.currentValue && typeof o.id==='string' && (o.category==='thought_level' || o.id==='reasoning_effort'));
+  return {modelId:model.id,model:model.currentValue,effortId:effort?.id || null,effort:effort?.currentValue || null};
+}
+// The config option is the committed model. Point the legacy models surface at
+// the same slug plus the committed effort when that qualified id exists.
+function alignModelSurface(result) {
+  if(!result?.models?.availableModels)return result;
+  const selection=committedSelection(result);
+  if(!selection)return result;
+  const qualified=qualifyModelId(result,selection.model);
+  if(!qualified || qualified===result.models.currentModelId || !result.models.availableModels.some(x=>x.modelId===qualified))return result;
+  return {...result,models:{...result.models,currentModelId:qualified}};
+}
 // One precedence/application policy for every native client. Stores expose exact
 // ACP option IDs/values; missing and obsolete preferences never become defaults.
 async function applyRemembered(spec,result,settings,request) {
@@ -203,7 +242,7 @@ async function applyConcrete(spec,result,request) {
   const invalid=remaining.map(inspect).filter(x=>!x.valid);
   if(invalid.length)throw presetFailure(spec,current,invalid);
   for(const setting of remaining)await set(setting);
-  return {result:current,warnings:[]};
+  return {result:alignModelSurface(current),warnings:[]};
 }
 // Apply only an explicitly configured list policy. Preserve provider fields and group structure.
 function filterModels(spec,result) {
@@ -285,4 +324,4 @@ async function discoverModels(spec,initial,request,diagnose=()=>{}) {
   return models;
 }
 
-module.exports={concrete,selectedModel,filterModels,applyConcrete,applyRemembered,forClient,descriptors,preferences,apply,cache,catalog,instructions,accountIdentity,modelDefaults,discoverModels};
+module.exports={concrete,selectedModel,filterModels,applyConcrete,applyRemembered,forClient,descriptors,preferences,apply,cache,catalog,instructions,accountIdentity,modelDefaults,discoverModels,modelBase,qualifyModelId,committedSelection,alignModelSurface};

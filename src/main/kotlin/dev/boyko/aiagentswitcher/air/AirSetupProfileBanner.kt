@@ -21,7 +21,6 @@ import java.nio.file.Files
 import java.nio.file.LinkOption.NOFOLLOW_LINKS
 import java.nio.file.Path
 import java.security.MessageDigest
-import javax.swing.JPanel
 
 /** Link that opens AI Multi settings from an Air chat that has no project profile. */
 class AirSetupProfileBanner : AgentSessionBannerContributor {
@@ -50,7 +49,7 @@ class AirSetupProfileBanner : AgentSessionBannerContributor {
             object : AgentSessionBannerActivationHandler {
                 override suspend fun activated() = Unit
             },
-            MutableStateFlow(AgentSessionInput(JPanel(), confirmation, true)),
+            MutableStateFlow(AgentSessionInput(null, confirmation, false)),
         )
     }
 

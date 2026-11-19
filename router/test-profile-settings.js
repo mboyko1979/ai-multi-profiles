@@ -208,6 +208,18 @@ const jwt=claims=>'synthetic.'+Buffer.from(JSON.stringify(claims)).toString('bas
   await assert.rejects(()=>settings.apply({...freshSpec,defaultsAgentId:'test'},
     {sessionId:'rejected',configOptions:[option('effort',['low','high'],'high')]},async()=>({error:{code:-1,message:'rejected'}})),/saved profile default/);
   await fresh.close();
+  const catalog=[{modelId:'gpt-6.1-sol[low]'},{modelId:'gpt-6.1-terra[low]'},{modelId:'gpt-6.1-terra[medium]'}];
+  const surfaced={configOptions:[{id:'model',category:'model',type:'select',currentValue:'gpt-6.1-terra',options:[]},{id:'reasoning_effort',category:'thought_level',type:'select',currentValue:'medium',options:[]}],
+    models:{currentModelId:'gpt-6.1-sol[low]',availableModels:catalog}};
+  assert.equal(settings.qualifyModelId(surfaced,'gpt-6.1-terra'),'gpt-6.1-terra[medium]');
+  assert.equal(settings.qualifyModelId(surfaced,'gpt-6.1-terra[medium]'),'gpt-6.1-terra[medium]');
+  assert.equal(settings.qualifyModelId(surfaced,'gpt-6.1-terra[high]'),'gpt-6.1-terra[high]');
+  assert.equal(settings.qualifyModelId({models:{availableModels:[{modelId:'b'}]}},'b'),'b');
+  assert.equal(settings.modelBase('gpt-6.1-terra[medium]').base,'gpt-6.1-terra');
+  assert.equal(settings.modelBase(''),null);
+  assert.equal(settings.committedSelection({configOptions:[{id:'mode',category:'mode',currentValue:'agent'}]}),null);
+  assert.equal(settings.alignModelSurface(surfaced).models.currentModelId,'gpt-6.1-terra[medium]');
+  assert.equal(settings.alignModelSurface({...surfaced,models:{...surfaced.models,currentModelId:'gpt-6.1-terra[medium]'}}).models.currentModelId,'gpt-6.1-terra[medium]');
   assert.deepEqual(fs.readFileSync(path.join(__dirname,'profile-settings.js')),fs.readFileSync(path.join(__dirname,'../src/main/resources/profile-settings.js')));
   assert.deepEqual(fs.readFileSync(path.join(__dirname,'codex-account.js')),fs.readFileSync(path.join(__dirname,'../src/main/resources/codex-account.js')));
   assert.deepEqual(fs.readFileSync(path.join(__dirname,'local-account.js')),fs.readFileSync(path.join(__dirname,'../src/main/resources/local-account.js')));

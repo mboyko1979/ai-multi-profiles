@@ -5,6 +5,7 @@ const clone = value => JSON.parse(JSON.stringify(value));
 const sha = value => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const PREFIX = 'aiaps-chat-';
 const profileSettings = require('./profile-settings');
+const grokPermission = require('./grok-permission-mode');
 const descriptorsForModel=result=>profileSettings.descriptors(result).find(o=>o.category==='model' || o.operation==='model');
 // Persist only this public native-client feature flag, never arbitrary provider metadata.
 const clientMeta = init => ({steering:{supported:init?._meta?.steering?.supported===true}});
@@ -331,9 +332,42 @@ class VirtualSessions {
     this.recoveryChat=null;this.recoveryPlans.delete(s.sessionId);
     return {...live.result,sessionId:s.sessionId};
   }
+  // Write the mode, stop the process that already read the old one, and resume the same id.
+  async applyGrokMode(live, mode) {
+    await this.ensureBackend(live);
+    const spec=this.profile(live.segment.profile);
+    grokPermission.writeMode(spec,mode);
+    let backend=live.backend;
+    const applied=await grokPermission.reapply((method,params)=>this.api.request(backend,method,params),{
+      sessionId:live.segment.sessionId,cwd:live.s.cwd,mcpServers:live.mcpServers || [],
+      cancel:()=>{ try { backend.proc?.stdin.write(JSON.stringify({jsonrpc:'2.0',method:'session/cancel',params:{sessionId:live.segment.sessionId}})+'\n'); } catch(_){} },
+      restart:this.api.stopBackend?async()=>{
+        backend=await this.replaceGrokProcess(backend,live.segment.profile,spec,live.segment.id,live.s,live.segment);
+        backend.virtual.suppress=false;
+        live.backend=backend;
+      }:undefined
+    },mode);
+    backend.grokPermissionMode=mode;
+    live.backend=backend;
+    this.api.record(live.segment.sessionId,backend,live.s.cwd,false);
+    this.acceptOptions(live,grokPermission.advertise({...live.result,...applied},mode));
+    this.save(live.s);
+    this.api.send({jsonrpc:'2.0',method:'session/update',params:{sessionId:live.s.sessionId,
+      update:{sessionUpdate:'current_mode_update',currentModeId:mode}}});
+  }
+  // Grok keeps the permission mode of the process that opened the session.
+  // Stop that process after the config is written, then resume the same id.
+  async replaceGrokProcess(backend, profile, spec, isolationKey, state, segment) {
+    if (backend?.virtualContexts && segment?.sessionId) backend.virtualContexts.delete(segment.sessionId);
+    if (this.api.stopBackend) await this.api.stopBackend(backend, 'permission mode');
+    else backend?.proc?.kill?.();
+    const next = await this.api.backendFor(profile, spec, isolationKey);
+    if (state && segment) next.virtual = {state, segment, suppress: backend?.virtual?.suppress !== false};
+    return next;
+  }
   async createBackend(s,profile,params={}) {
     const spec=this.api.creationSpec?await this.api.creationSpec(profile,this.profile(profile),s.cwd):this.profile(profile);
-    profileSettings.preferences(this.api.settingsSpec?.(spec) || spec);
+    const savedPreferences=profileSettings.preferences(this.api.settingsSpec?.(spec) || spec);
     const segment={id:crypto.randomUUID(),profile,fingerprint:this.api.fingerprint(spec),sessionId:null,
       author:{profileId:profile,name:spec.name || profile,agentId:spec.agentId || '',agentName:spec.agentName || ''}};
     // Only configured values suppress the host's ordinary remembered preferences.
@@ -344,7 +378,16 @@ class VirtualSessions {
     if(this.api.restoreFingerprint)segment.restoreFingerprint=this.api.restoreFingerprint(spec);
     segment.profileInstructions=profileSettings.instructions(spec); // Freeze for this segment, including restoration.
     segment.profileDefaultsApplied=(spec.sessionSettings || []).some(x=>x.agentId===(spec.agentId || ''));
-    const backend=await this.api.backendFor(profile,spec,segment.id);
+    const grokChoice=grokPermission.isGrok(spec)?grokPermission.preferred(spec,savedPreferences.saved):null;
+    const modeWrittenAt=grokChoice?Date.now():0;
+    if(grokChoice)grokPermission.writeMode(spec,grokChoice);
+    let backend=await this.api.backendFor(profile,spec,segment.id);
+    // startedAt is absent in tests that keep one process. A missing stamp must not force a restart.
+    let processReadMode=!!grokChoice && !(typeof backend.startedAt==='number' && backend.startedAt<=modeWrittenAt);
+    if(grokChoice && !processReadMode && this.api.stopBackend) {
+      backend=await this.replaceGrokProcess(backend,profile,spec,segment.id);
+      processReadMode=true;
+    }
     try {
     segment.agentIdentity.agentName ||= backend.initialize.agentInfo?.title || backend.initialize.agentInfo?.name || '';
     segment.agentIdentity.implementationName=backend.initialize.agentInfo?.name || '';
@@ -358,10 +401,27 @@ class VirtualSessions {
     if(r.error)throw Object.assign(Error(r.error.message || 'Could not create target session'),{code:r.error.code,data:r.error.data});
     if(typeof r.result?.sessionId !== 'string')throw Error('Invalid target sessionId');
     segment.sessionId=r.result.sessionId;
+    const initialMode=grokPermission.needsCustom(spec,r.result)?grokChoice:null;
+    if(initialMode) {
+      const applied=await grokPermission.reapply((method,call)=>this.api.request(backend,method,call),{
+        sessionId:segment.sessionId,cwd:s.cwd,mcpServers:s.mcpServers || [],
+        cancel:()=>{ try { backend.proc?.stdin.write(JSON.stringify({jsonrpc:'2.0',method:'session/cancel',params:{sessionId:segment.sessionId}})+'\n'); } catch(_){} },
+        // A process that started before this mode was written still has the old one.
+        // Replace it before resume. A process started afterwards already read the file.
+        restart:!processReadMode && this.api.stopBackend?async()=>{
+          backend=await this.replaceGrokProcess(backend,profile,spec,segment.id,s,segment);
+          processReadMode=true;
+        }:undefined
+      },initialMode);
+      backend.grokPermissionMode=initialMode;
+      r.result=grokPermission.advertise({...r.result,...applied,sessionId:segment.sessionId},initialMode);
+      segment.grokPermission=true;
+    }
     profileSettings.catalog(this.api.directory,profile,spec,r.result);
     const configured=this.api.configureSession?await this.api.configureSession(profile,spec,r.result,backend,s.cwd):
       await profileSettings.apply(this.api.settingsSpec?.(spec) || spec,r.result,(method,params)=>this.api.request(backend,method,params));
     r.result=configured.result;
+    if(initialMode)r.result=grokPermission.advertise(r.result,r.result.modes?.currentModeId || initialMode);
     if(configured.clientDefaults)segment.modelDefaults=clone(configured.clientDefaults);
     segment.profileDefaultsApplied=!!configured.clientDefaults || segment.profileDefaultsApplied;
     if(configured.preferenceIds)segment.nativePreferenceIds=configured.preferenceIds;
@@ -451,6 +511,50 @@ class VirtualSessions {
     }
   }
   options(result) { return Object.fromEntries(['configOptions','modes','models'].filter(k=>result[k]!==undefined).map(k=>[k,clone(result[k])])); }
+  // Codex thread/resume keeps a thread model only when the launch config does
+  // not override it. A restore process passes the committed slug and effort so
+  // the account default does not replace them. The value is a config override,
+  // never a new profile default.
+  committedCodexConfig(profile) {
+    const id=this.api.restoreSession;
+    if(!id)return null;
+    let saved;
+    try { saved=JSON.parse(fs.readFileSync(this.file(id),'utf8')); }
+    catch { return null; }
+    const segment=(saved.segments || []).find(x=>x.id===saved.currentSegment);
+    if(!segment || segment.profile!==profile)return null;
+    const selection=profileSettings.committedSelection(saved.sessionOptions);
+    const model=profileSettings.modelBase(selection?.model)?.base;
+    if(!model || !/^[A-Za-z0-9._-]{1,128}$/.test(model))return null;
+    const config={model};
+    if(selection.effort && /^[A-Za-z0-9_-]{1,32}$/.test(selection.effort))config.model_reasoning_effort=selection.effort;
+    return config;
+  }
+  async reassertCommittedModel(live,committed) {
+    if(!committed || !live.backend)return;
+    const active=()=>profileSettings.committedSelection(live.result);
+    const same=(current,field)=>!committed[field] || current?.[field]===committed[field];
+    if(same(active(),'model') && same(active(),'effort')) {
+      this.alignStoredModel(live);return;
+    }
+    const send=(configId,value)=>this.api.request(live.backend,'session/set_config_option',{sessionId:live.segment.sessionId,configId,value});
+    if(!same(active(),'model')) {
+      const response=await send(committed.modelId,committed.model);
+      if(response.error) { this.api.log?.('Could not restore the committed model: '+response.error.message); return; }
+      if(response.result)this.acceptOptions(live,response.result);
+    }
+    const effort=active();
+    if(committed.effortId && !same(effort,'effort')) {
+      const response=await send(committed.effortId,committed.effort);
+      if(response.error) this.api.log?.('Could not restore the committed reasoning effort: '+response.error.message);
+      else if(response.result)this.acceptOptions(live,response.result);
+    }
+    this.alignStoredModel(live);
+  }
+  alignStoredModel(live) {
+    const aligned=profileSettings.alignModelSurface(live.result);
+    if(aligned!==live.result)this.acceptOptions(live,{models:aligned.models});
+  }
   acceptOptions(live,result) {
     const options=this.options(result);
     if(!Object.keys(options).length)return false;
@@ -478,10 +582,27 @@ class VirtualSessions {
       backend.virtual={state:live.s,segment:live.segment,suppress:false,restoring:true};
       backend.virtualContexts?.set(live.segment.sessionId,backend.virtual);
       live.backend=backend;
-      const r=await this.api.request(backend,method,{...live.restoreParams,cwd:live.s.cwd,sessionId:live.segment.sessionId,mcpServers:live.mcpServers || []});
+      const committed=profileSettings.committedSelection(live.s.sessionOptions);
+      const savedMode=live.segment.grokPermission?grokPermission.savedMode(spec):null;
+      const restoreParams=savedMode?grokPermission.withMode(live.restoreParams,savedMode):live.restoreParams;
+      const r=await this.api.request(backend,method,{...restoreParams,cwd:live.s.cwd,sessionId:live.segment.sessionId,mcpServers:live.mcpServers || []});
       if(r.error)throw Object.assign(Error(r.error.message || 'Backend restoration failed'),{code:r.error.code,data:r.error.data});
       if(r.result?.sessionId && r.result.sessionId!==live.segment.sessionId)throw Error('Backend changed its restored sessionId');
       this.acceptOptions(live,r.result || {});
+      await this.reassertCommittedModel(live,committed);
+      if(grokPermission.needsCustom(spec,r.result || {})) {
+        const mode=grokPermission.savedMode(spec);
+        if(!live.segment.grokPermission && mode!=='ask') {
+          const applied=await grokPermission.reapply((call,params)=>this.api.request(backend,call,params),{
+            sessionId:live.segment.sessionId,cwd:live.s.cwd,mcpServers:live.mcpServers || [],
+            cancel:()=>{ try { backend.proc?.stdin.write(JSON.stringify({jsonrpc:'2.0',method:'session/cancel',params:{sessionId:live.segment.sessionId}})+'\n'); } catch(_){} }
+          },mode);
+          this.acceptOptions(live,applied);
+          await this.reassertCommittedModel(live,committed);
+        }
+        live.segment.grokPermission=true;
+        this.acceptOptions(live,grokPermission.advertise(live.result,mode));
+      } else if(live.segment.grokPermission) live.segment.grokPermission=false;
       live.segment.clientMeta=clientMeta(backend.initialize);
       live.segment.fingerprint=this.api.fingerprint(spec);
       if(this.api.launchFingerprint)live.segment.launchFingerprint=this.api.launchFingerprint(spec);
@@ -490,7 +611,9 @@ class VirtualSessions {
       live.segment.authMethods=auth.methods;live.segment.authBindings=auth.bindings;
       this.save(live.s);
       backend.virtual.restoring=false;
-      return r.result || {};
+      // The resume payload can still name the account default. Return the
+      // committed model after the backup setters have confirmed it.
+      return {...(r.result || {}),...this.options(live.result)};
     }catch(e){live.backend=null;await this.retire(backend,'backend restoration failed');throw e;}
   }
   scrub(s,text) {
@@ -867,6 +990,14 @@ class VirtualSessions {
   }
   async control(msg) {
     const p=msg.params || {}, live=this.active.get(p.sessionId);
+    if(msg.method==='_ai_multi/set_permission_mode') {
+      // Air queues session/set_mode behind the open turn, so the chip waits forever.
+      // This vendor call is not on that queue. It still pauses and restarts the chat.
+      if(!live || !live.segment?.grokPermission)throw Error('Restore the Grok chat before changing its permission mode');
+      const mode=grokPermission.assertMode(p.modeId);
+      await this.applyGrokMode(live,mode);
+      return {modes:live.result.modes};
+    }
     if(msg.method==='_ai_multi/restore_selections') {
       if(!live || live.busy || live.s.exchanges.length || live.s.profile!==p.profile || live.segment.agentIdentity?.agentId!==p.agentId)
         throw Error('Agent update selections do not belong to this unsent conversation');
@@ -1122,12 +1253,22 @@ class VirtualSessions {
         if(live.backend.forkCapture)throw Error('Wait for the previous fork to finish');
         live.backend.forkCapture=[];
       }
+      if(msg.method==='session/set_mode' && live.segment?.grokPermission) {
+        await this.applyGrokMode(live,grokPermission.assertMode(msg.params?.modeId));
+        this.api.send({jsonrpc:'2.0',id:msg.id,result:{modes:live.result.modes}});
+        return true;
+      }
+      const outbound={...msg.params};
+      if(msg.method==='session/set_model' && typeof outbound.modelId==='string') {
+        const qualified=profileSettings.qualifyModelId(live.result,outbound.modelId);
+        if(qualified!==outbound.modelId)outbound.modelId=qualified;
+      }
       const selectionBefore=['session/set_config_option','session/set_model','session/set_mode'].includes(msg.method)?
         profileSettings.descriptors(live.result).find(o=>msg.method==='session/set_config_option'?o.operation==='config'&&o.id===msg.params.configId:
           o.operation===(msg.method==='session/set_model'?'model':'mode'))?.currentValue ??
           (msg.method==='session/set_model'?live.result.models?.currentModelId:msg.method==='session/set_mode'?live.result.modes?.currentModeId:undefined):undefined;
       let r;
-      try {r=await this.api.request(live.backend,msg.method,this.backendParams(live,msg.params));}
+      try {r=await this.api.request(live.backend,msg.method,this.backendParams(live,outbound));}
       catch(e){if(msg.method==='session/fork')delete live.backend.forkCapture;throw e;}
       const forkUpdates=msg.method==='session/fork'?live.backend.forkCapture:[];
       if(msg.method==='session/fork')delete live.backend.forkCapture;
@@ -1159,13 +1300,20 @@ class VirtualSessions {
         this.api.send({...r,id:msg.id});this.api.flushConnectionNotifications?.();return true;
       }
       const modelConfig=descriptorsForModel(live.result);
-      const chosen=msg.method==='session/set_model'?msg.params.modelId:
+      const chosen=msg.method==='session/set_model'?outbound.modelId:
         msg.method==='session/set_config_option' && msg.params.configId===modelConfig?.id?msg.params.value:null;
-      // Native clients reassert the current model before prompts. Only a real
-      // model change applies its defaults; a repeat must preserve manual edits
-      // such as collaboration mode and reasoning effort in this conversation.
-      if(!r.error && chosen && chosen!==selectionBefore && live.segment.modelDefaults?.models.some(x=>x.modelId===chosen && x.enabled)) {
-        const defaults={...clone(live.segment.modelDefaults),defaultModelId:chosen};
+      const chosenBase=profileSettings.modelBase(chosen)?.base || chosen;
+      const previousBase=profileSettings.modelBase(selectionBefore)?.base || selectionBefore;
+      // Native clients reassert the current model before prompts. A bare slug
+      // and its effort-qualified id are the same model. Only a real model
+      // change applies its defaults; a repeat must preserve manual edits such
+      // as collaboration mode and reasoning effort in this conversation.
+      // Saved defaults use the config slug. A qualified models id still matches that slug.
+      const enabledDefault=chosen && chosenBase!==previousBase
+        ? live.segment.modelDefaults?.models.find(x=>x.enabled && (x.modelId===chosen || x.modelId===chosenBase))
+        : null;
+      if(!r.error && enabledDefault) {
+        const defaults={...clone(live.segment.modelDefaults),defaultModelId:enabledDefault.modelId};
         const spec=this.profile(live.segment.profile);
         const selectedState={...live.result,...r.result,...(msg.method==='session/set_model'?{models:{...live.result.models,currentModelId:chosen}}:{})};
         if(this.acceptOptions(live,selectedState))this.save(live.s);
@@ -1186,16 +1334,23 @@ class VirtualSessions {
       if(!r.error && r.result) {
         let accepted=r.result;
         if(msg.method==='session/set_model' && live.result.models)
-          accepted={...accepted,models:{...live.result.models,currentModelId:msg.params.modelId}};
+          accepted={...accepted,models:{...live.result.models,currentModelId:outbound.modelId}};
         if(msg.method==='session/set_mode' && live.result.modes)
           accepted={...accepted,modes:{...live.result.modes,currentModeId:msg.params.modeId}};
-        if(this.acceptOptions(live,accepted))this.save(live.s);
+        let changed=this.acceptOptions(live,accepted);
+        if(msg.method==='session/set_config_option' || msg.method==='session/set_model'){
+          const before=live.result;
+          this.alignStoredModel(live);
+          if(live.result!==before)changed=true;
+          if(r.result)r.result={...r.result,...this.options(live.result)};
+        }
+        if(changed)this.save(live.s);
       }
       if(!r.error && ['session/set_config_option','session/set_model','session/set_mode'].includes(msg.method)) {
         const operation=msg.method==='session/set_config_option'?'config':msg.method==='session/set_model'?'model':'mode';
         const option=profileSettings.descriptors(live.result).find(o=>o.operation===operation &&
           (operation!=='config' || o.id===msg.params.configId));
-        const requested=operation==='config'?msg.params.value:operation==='model'?msg.params.modelId:msg.params.modeId;
+        const requested=operation==='config'?msg.params.value:operation==='model'?outbound.modelId:msg.params.modeId;
         if(option && String(option.currentValue)===String(requested) && String(selectionBefore)!==String(option.currentValue)) {
           try { await this.api.nativePreferences?.('write',live.segment.profile,live.segment.agentIdentity?.agentId,
             live.result,{operation,id:option.id,value:String(option.currentValue)}); }

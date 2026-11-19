@@ -80,7 +80,69 @@ public final class NativeCallCompatibilityChecks {
             check(cause.getMessage().contains("Unsupported Air prompt admission"), cause.getMessage());
             check(cause.getMessage().contains("sendPrompt-short$default"), cause.getMessage());
         }
+        checkAirPayloads();
+        checkAcpContentLoaders();
         System.out.println("native call compatibility checks passed");
+    }
+
+    /** IDEA 2026.3 shape: content modules are not reachable through getModules(). */
+    public static final class AssistantPlugin {
+        public ClassLoader getPluginClassLoader() { return AssistantPlugin.class.getClassLoader(); }
+        public java.util.List<AcpModule> getContentModules() { return java.util.List.of(new AcpModule()); }
+    }
+
+    public static final class AcpModule {
+        static final ClassLoader LOADER = new java.net.URLClassLoader(new java.net.URL[0], null);
+        public ClassLoader getPluginClassLoader() { return LOADER; }
+    }
+
+    public static final class FieldContentPlugin {
+        public FieldContent getContent() { return new FieldContent(); }
+    }
+
+    public static final class FieldContent {
+        public final java.util.List<FieldModuleItem> modules = java.util.List.of(new FieldModuleItem());
+    }
+
+    public static final class FieldModuleItem {
+        public AcpModule getDescriptor() { return new AcpModule(); }
+    }
+
+    private static void checkAcpContentLoaders() throws Exception {
+        Class<?> helper = Class.forName("dev.boyko.aiagentswitcher.compat.InstalledAgentsKt");
+        Method loaders = helper.getDeclaredMethod("acpLoaders", Object.class);
+        loaders.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        java.util.List<ClassLoader> fromModules = (java.util.List<ClassLoader>) loaders.invoke(null, new AssistantPlugin());
+        check(fromModules.contains(AcpModule.LOADER), "content module loader missing: " + fromModules);
+        @SuppressWarnings("unchecked")
+        java.util.List<ClassLoader> fromField = (java.util.List<ClassLoader>) loaders.invoke(null, new FieldContentPlugin());
+        check(fromField.contains(AcpModule.LOADER), "content field loader missing: " + fromField);
+    }
+
+    public static final class LegacyPayload {
+        public String string(String key) { return "agentSessionId".equals(key) ? "saved-session" : null; }
+        public LegacyPayload withString(String key, String value) { return this; }
+    }
+
+    private static void checkAirPayloads() throws Exception {
+        Class<?> helper = Class.forName("dev.boyko.aiagentswitcher.air.AirChatRoutingRepair");
+        Object instance = helper.getField("INSTANCE").get(null);
+        Method read = helper.getDeclaredMethod("string", Object.class, String.class);
+        Method write = helper.getDeclaredMethod("withString", Object.class, String.class, String.class);
+        read.setAccessible(true); write.setAccessible(true);
+        LegacyPayload legacy = new LegacyPayload();
+        check("saved-session".equals(read.invoke(instance, legacy, "agentSessionId")), "Legacy payload read failed");
+        check(write.invoke(instance, legacy, "agentId", "AI Multi") == legacy, "Legacy payload write failed");
+        Class<?> primitives = Class.forName("kotlinx.serialization.json.JsonElementKt");
+        Object sid = primitives.getMethod("JsonPrimitive", String.class).invoke(null, "saved-session");
+        Class<?> json = Class.forName("kotlinx.serialization.json.JsonObject");
+        Object payload = json.getConstructor(java.util.Map.class).newInstance(java.util.Map.of("agentSessionId", sid, "futureField", sid));
+        Object corrected = write.invoke(instance, payload, "agentId", "AI Multi");
+        check("saved-session".equals(read.invoke(instance, corrected, "agentSessionId")), "Session ID changed");
+        check("AI Multi".equals(read.invoke(instance, corrected, "agentId")), "Route was not corrected");
+        check(((java.util.Map<?, ?>) corrected).get("futureField") == sid, "Unknown payload field changed");
+        check(!((java.util.Map<?, ?>) payload).containsKey("agentId"), "Original payload mutated");
     }
 
     private static void invoke(Object target, String name, Object... args) throws Exception {

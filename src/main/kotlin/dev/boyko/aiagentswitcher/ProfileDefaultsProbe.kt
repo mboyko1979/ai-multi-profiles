@@ -19,7 +19,11 @@ import java.util.concurrent.Future
 internal object ProfileDefaultsProbe {
     fun cached(project: Project, draft: AgentProfiles.Entry) = ProfileCatalog.cached(draft)
     fun prepare(project: Project, draft: AgentProfiles.Entry): AgentProfiles.Entry {
-        val resolved = if (draft.agentId.isNotBlank() && !draft.advancedOverrides) InstalledAgents.resolve(project, draft) else draft.snapshot()
+        val resolved = if (draft.agentId.isNotBlank() && !draft.advancedOverrides) {
+            try { InstalledAgents.resolve(project, draft) }
+            catch (missing: ClassNotFoundException) { if (draft.command.isBlank()) throw missing else draft.snapshot() }
+            catch (missing: LinkageError) { if (draft.command.isBlank()) throw ClassNotFoundException("AI Assistant ACP classes are not visible on this IDE build.", missing) else draft.snapshot() }
+        } else draft.snapshot()
         require(resolved.command.isNotBlank()) { "Select an installed agent." }
         if (resolved.profileHome.isBlank()) resolved.profileHome = ProfileHomes.create(resolved.name).toString()
         ProfileHomes.prepare(resolved)
@@ -59,7 +63,7 @@ internal object ProfileDefaultsProbe {
             var started: Process? = null
             try {
                 require(profile.profileHome.isNotBlank()) { "Authorize this profile before loading session options." }
-                for (resource in listOf("cps-router.js", "profile-settings.js", "codex-account.js", "local-account.js")) {
+                for (resource in listOf("cps-router.js", "profile-settings.js", "codex-account.js", "local-account.js", "grok-permission-mode.js")) {
                     val bytes = javaClass.classLoader.getResourceAsStream(resource)?.use { it.readBytes() } ?: error("Missing ACP setup component")
                     Files.write(temporary.resolve(resource), bytes)
                 }

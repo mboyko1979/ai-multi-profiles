@@ -3,7 +3,7 @@
         <applicationService serviceInterface="com.intellij.air.frontend.launch.AgentLaunchTargetPresentationService"
                             serviceImplementation="dev.boyko.aiagentswitcher.air.AirAgentPresentationService" overrides="true"/>
         <air.agentCatalogContributor implementation="dev.boyko.aiagentswitcher.air.AirLegacyProfilePresentation"/>
-        <air.thread.view.sessionBannerContributor implementation="dev.boyko.aiagentswitcher.air.AirSetupProfileBanner"/>
+        <air.thread.view.sessionBannerContributor implementation="dev.boyko.aiagentswitcher.air.AirSetupProfileBanner" order="first"/>
         <fileIconProvider implementation="dev.boyko.aiagentswitcher.air.AirSessionTabIconProvider" order="first"/>
         <postStartupActivity implementation="dev.boyko.aiagentswitcher.air.AirSessionRowIconActivity"/>
     </extensions>
@@ -12,7 +12,11 @@
     </projectListeners>
     <actions>
         <group id="Air.Prompt.Preferences" class="dev.boyko.aiagentswitcher.air.AirProfilePreferencesGroup" overrides="true"/>
+        <group id="Air.Prompt.Launch" class="dev.boyko.aiagentswitcher.air.AirProfilePreferencesGroup" overrides="true"/>
         <action id="dev.boyko.aiagentswitcher.AirProfileSelector" class="dev.boyko.aiagentswitcher.AirProfileSelector" text="AI Multi Profile">
+            <add-to-group group-id="Air.Prompt.Preferences" anchor="last"/>
+        </action>
+        <action id="dev.boyko.aiagentswitcher.AirPermissionMode" class="dev.boyko.aiagentswitcher.air.AirPermissionModeSelector" text="Permission mode">
             <add-to-group group-id="Air.Prompt.Preferences" anchor="last"/>
         </action>
     </actions>

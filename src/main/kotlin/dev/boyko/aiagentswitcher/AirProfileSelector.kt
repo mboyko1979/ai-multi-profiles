@@ -80,7 +80,8 @@ internal object AirProfileBridge {
     fun ready(binding: Binding) = (binding.sessionId.isBlank() || native.call(binding.manager, "isReadyForPrompt", binding.ref) == true) &&
         native.call(binding.manager, "acceptsPrompt", binding.ref) == true
     suspend fun control(binding: Binding, method: String, params: JsonObject = JsonObject()): JsonObject = withContext(Dispatchers.Default) {
-        check(ready(binding)) { "Wait for the Air task to finish before switching profiles" }
+        // Permission changes must run during a turn. The other controls wait until Air is idle.
+        if (method != "_ai_multi/set_permission_mode") check(ready(binding)) { "Wait for the Air task to finish before switching profiles" }
         val owners = native.field(binding.manager, "owners")!!
         val owner = native.call(owners, "get", binding.ref) ?: error("Air session was closed")
         val snapshot = (native.field(owner, "connectionSnapshotState") as StateFlow<*>).value ?: error("Air session is connecting")

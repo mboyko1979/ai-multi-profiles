@@ -109,7 +109,7 @@ $env:JAVA_HOME = '<path-to-JDK-21>'
 .\gradlew.bat buildPlugin -PnodeExecutable='C:\Program Files\nodejs\node.exe'
 ```
 
-Java compilation and the platform-dependent verification suites also require Java 25 from the tested IDE runtime. Register both JDKs in your local Gradle user properties (`org.gradle.java.installations.paths=<JDK-21>,<IDEA-2026.2.3>/jbr`), or use `build-on-windows.ps1 -JavaHome <JDK-21> -IdePath <IDEA-2026.2.3>`. The script registers these paths for that invocation and runs `check buildPlugin`. The distribution is `build/distributions/ai-multi-profiles-0.2.2.zip`.
+Java compilation and the platform-dependent verification suites also require Java 25 from the tested IDE runtime. Register both JDKs in your local Gradle user properties (`org.gradle.java.installations.paths=<JDK-21>,<IDEA-2026.2.3>/jbr`), or use `build-on-windows.ps1 -JavaHome <JDK-21> -IdePath <IDEA-2026.2.3>`. The script registers these paths for that invocation and runs `check buildPlugin`. The distribution is `build/distributions/ai-multi-profiles-0.3.0.zip`.
 
 Gradle resolves both pinned compile dependencies from Marketplace: AI Assistant 262.10968.223 and Air 262.8665.497. Their runtime dependencies remain optional. For offline verification against installed plugins, add `-PaiAssistantPath=<plugins>/ml-llm` and `-PairPluginPath=<plugins>/air-plugin` together with `-PidePath=<IDEA-2026.2.3>`. The PowerShell script accepts the corresponding `-AiAssistantPath` and `-AirPluginPath` arguments. Router regression tests are required by both `check` and `buildPlugin`; run them separately with `node router/test-router.js`.
 
@@ -125,7 +125,7 @@ Do not install overlapping legacy/current plugin identities together. See [deplo
 
 Source: https://github.com/mboyko1979/ai-multi-profiles
 
-Marketplace Plugin ID: `dev.boyko.ai-multi-profiles`. ACP registration remains `acp.ai-multi` (**AI Multi**). Version **0.2.2**, channel **beta**. Existing installations with a different plugin ID are separate installations and must not be enabled together.
+Marketplace Plugin ID: `dev.boyko.ai-multi-profiles`. ACP registration remains `acp.ai-multi` (**AI Multi**). Version **0.3.0**, channel **beta**. Existing installations with a different plugin ID are separate installations and must not be enabled together.
 
 Gradle root project: `ai-multi-profiles`. Persistent state names and user storage paths are compatibility identifiers.
 

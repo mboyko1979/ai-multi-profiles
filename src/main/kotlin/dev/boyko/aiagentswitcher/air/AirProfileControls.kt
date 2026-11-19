@@ -27,11 +27,14 @@ class AirProfilePreferencesGroup : DefaultActionGroup(), DumbAware {
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
         val manager = ActionManager.getInstance()
         val profile = manager.getAction("dev.boyko.aiagentswitcher.AirProfileSelector")
+        val permission = manager.getAction("dev.boyko.aiagentswitcher.AirPermissionMode")
+        // The model chip the user sees is Air.Prompt.Launch. Preferences is the session lane.
+        val includeProfile = manager.getId(this) != "Air.Prompt.Launch"
         // Air supplies dynamic roots from the event's view model. The ActionManager
         // overload reads only static children and discards all native selectors.
         // Let the public update session expand the group with its native context.
-        val children = (expand(native, e) + getChildren(manager)).distinct().filter { it != profile }
-        if (profile == null) return children.toTypedArray()
+        val children = (expand(native, e) + getChildren(manager)).distinct().filter { it != profile && it != permission }
+        if (profile == null && (permission == null || !includeProfile)) return children.toTypedArray()
         val composer = e?.let { AirComposerProfiles.composer(it.dataContext) }
         if (e?.project != null) try {
             AirNewSessionTabIcon.update(e.dataContext, e.project!!, composer != null)
@@ -39,6 +42,15 @@ class AirProfilePreferencesGroup : DefaultActionGroup(), DumbAware {
             // Unsupported Air versions keep their native tab icon.
         }
         var inserted = false
+        var modeInserted = false
+        fun contains(actions: List<AnAction>, id: String): Boolean = actions.any { action ->
+            manager.getId(action) == id || (action is ActionGroup && !action.isPopup && contains(expand(action, e), id))
+        }
+        val modeAnchor = when {
+            contains(children, AirPromptSelectorId.Model.actionId) -> AirPromptSelectorId.Model.actionId
+            contains(children, AirPromptSelectorId.Effort.actionId) -> AirPromptSelectorId.Effort.actionId
+            else -> null
+        }
         fun arrange(actions: List<AnAction>): Array<AnAction> = buildList {
             for (action in actions) {
                 if (action == profile) continue
@@ -64,15 +76,21 @@ class AirProfilePreferencesGroup : DefaultActionGroup(), DumbAware {
                             else -> action
                         })
                 }
-                if (!inserted && manager.getId(action) == AirPromptSelectorId.Agent.actionId) {
+                if (includeProfile && !inserted && profile != null && manager.getId(action) == AirPromptSelectorId.Agent.actionId) {
                     add(profile)
                     inserted = true
+                }
+                if (!modeInserted && permission != null && modeAnchor != null && manager.getId(action) == modeAnchor) {
+                    add(permission)
+                    modeInserted = true
                 }
             }
         }.toTypedArray()
 
-        val arranged = arrange(children)
-        return if (inserted) arranged else arrayOf(profile) + arranged
+        val arranged = arrange(children).toMutableList()
+        if (includeProfile && !inserted && profile != null) arranged.add(0, profile)
+        if (!modeInserted && permission != null) arranged.add(permission)
+        return arranged.toTypedArray()
     }
 
     private fun expand(group: ActionGroup, event: AnActionEvent?): List<AnAction> {

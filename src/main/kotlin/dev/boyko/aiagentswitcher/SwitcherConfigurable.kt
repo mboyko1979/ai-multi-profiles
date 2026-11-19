@@ -1,10 +1,13 @@
 ﻿package dev.boyko.aiagentswitcher
 
 import com.intellij.icons.AllIcons
+import com.intellij.ide.HelpTooltip
+import com.intellij.ide.plugins.PluginManagerConfigurable
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.project.DumbAwareAction
@@ -22,7 +25,10 @@ import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.*
 import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
 import dev.boyko.aiagentswitcher.compat.InstalledAgents
+import dev.boyko.aiagentswitcher.compat.airHostEnabled
+import dev.boyko.aiagentswitcher.compat.assistantHostEnabled
 import java.awt.BorderLayout
 import java.awt.CardLayout
 import java.awt.Dimension
@@ -126,6 +132,8 @@ class SwitcherConfigurable(private val project: Project) : Configurable, Configu
             row { comment("Changes apply to new sessions. Existing sessions retain their original profile.") }
         }
         private val profileTabs = JTabbedPane()
+        private val assistantPluginEnabled = assistantHostEnabled()
+        private val airPluginEnabled = airHostEnabled()
         val root: JComponent
 
         init {
@@ -227,7 +235,11 @@ class SwitcherConfigurable(private val project: Project) : Configurable, Configu
             presets.advanced.border = JBUI.Borders.empty(12)
             profileTabs.addTab("General", page(form))
             profileTabs.addTab("New AI Assistant Chat Defaults", page(presets.clientPage("assistant")))
+            if (!assistantPluginEnabled) disableAssistantDefaultsTab()
             profileTabs.addTab("New Air Session Defaults", page(presets.clientPage("air")))
+            if (!airPluginEnabled) disableDefaultsTab(2, "New Air Session Defaults", "Air is disabled",
+                "New Air session defaults are unavailable until the plugin is enabled. Restart the IDE after enabling it.",
+                "com.intellij.air")
             val advanced = JPanel(BorderLayout()).apply {
                 add(presets.advanced, BorderLayout.NORTH)
                 add(panel {
@@ -240,7 +252,9 @@ class SwitcherConfigurable(private val project: Project) : Configurable, Configu
             }
             profileTabs.addTab("Advanced", page(advanced))
             profileTabs.addChangeListener {
-                when (profileTabs.selectedIndex) { 1 -> presets.selectHost("assistant"); 2 -> presets.selectHost("air") }
+                val index = profileTabs.selectedIndex
+                if ((index == 1 && !assistantPluginEnabled) || (index == 2 && !airPluginEnabled)) profileTabs.selectedIndex = 0
+                else when (index) { 1 -> presets.selectHost("assistant"); 2 -> presets.selectHost("air") }
             }
             cards.add(profileTabs, "editor")
             cards.add(panel {
@@ -282,6 +296,35 @@ class SwitcherConfigurable(private val project: Project) : Configurable, Configu
             refreshAgents(); reset(); refreshStatus()
         }
 
+        private fun disableAssistantDefaultsTab() = disableDefaultsTab(1, "New AI Assistant Chat Defaults",
+            "JetBrains AI Assistant is disabled",
+            "New AI Assistant chat defaults are unavailable until the plugin is enabled. Restart the IDE after enabling it.",
+            "com.intellij.ml.llm")
+        private fun disableDefaultsTab(index: Int, titleText: String, tooltipTitle: String, description: String, pluginId: String) {
+            profileTabs.setEnabledAt(index, false)
+            profileTabs.setForegroundAt(index, UIUtil.getLabelDisabledForeground())
+            val title = JPanel(BorderLayout()).apply {
+                isOpaque = false
+                isFocusable = false
+                add(JBLabel(titleText).apply {
+                    foreground = UIUtil.getLabelDisabledForeground()
+                    isEnabled = false
+                })
+            }
+            profileTabs.setTabComponentAt(index, title)
+            HelpTooltip()
+                .setTitle(tooltipTitle)
+                .setDescription(description)
+                .setLink("Open Plugins") {
+                    PluginManagerConfigurable.showPluginConfigurable(project, listOf(PluginId.getId(pluginId)))
+                }
+                .installOn(title)
+        }
+        private fun selectDefaultsTab(host: String) {
+            if (host == "air" && !airPluginEnabled) return
+            if (host != "air" && !assistantPluginEnabled) return
+            profileTabs.selectedIndex = if (host == "air") 2 else 1
+        }
         private fun entries() = (0 until model.size()).map { model[it].snapshot() }
         private fun newProfile() = AgentProfiles.newEntry().apply {
             name = uniqueName("New Profile")
@@ -326,7 +369,7 @@ class SwitcherConfigurable(private val project: Project) : Configurable, Configu
             entry?.let {
                 val attention = ProfileSettingsPrompt.peek()?.takeIf { request -> request.profileId == it.id }?.message
                 presets.show(it, attention)
-                if (attention != null) profileTabs.selectedIndex = if (presets.selectedHost == "air") 2 else 1
+                if (attention != null) selectDefaultsTab(presets.selectedHost)
             }
             checkSelectedAgent()
         }
@@ -490,7 +533,7 @@ class SwitcherConfigurable(private val project: Project) : Configurable, Configu
                         }.map { it.reason }
                     if (problems.isNotEmpty()) {
                         profiles.selectedIndex = (0 until model.size()).first { model[it].id == entry.id }
-                        profileTabs.selectedIndex = if (host == "air") 2 else 1
+                        selectDefaultsTab(host)
                         throw ConfigurationException("${entry.name} / ${if (host == "air") "Air" else "AI Assistant"}: ${problems.distinct().joinToString("; ")}")
                     }
                 }
@@ -583,3 +626,5 @@ class SwitcherConfigurable(private val project: Project) : Configurable, Configu
         }
     }
 }
+
+

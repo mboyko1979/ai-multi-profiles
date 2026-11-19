@@ -15,6 +15,7 @@ import dev.boyko.aiagentswitcher.NativeSdkBinding
 import dev.boyko.aiagentswitcher.NativeRecoveryContinuation
 import dev.boyko.aiagentswitcher.ProfileConfiguration
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -33,6 +34,20 @@ internal object AirChatRoutingRepair {
     private val native get() = NativeRecoveryContinuation
     private val locks = java.util.WeakHashMap<Any, Mutex>()
 
+    // Air 263 exposes the JSON payload directly; older hosts expose a payload wrapper.
+    private fun string(payload: Any, key: String): String? =
+        if (payload is Map<*, *>) JsonParser.parseString(payload.toString()).asJsonObject.get(key)
+            ?.takeUnless { it.isJsonNull }?.asString
+        else native.call(payload, "string", key) as? String
+
+    private fun withString(payload: Any, key: String, value: String): Any {
+        if (payload !is Map<*, *>) return native.call(payload, "withString", key, value)!!
+        val values = payload.entries.associate { it.key as String to it.value }.toMutableMap()
+        val primitive = payload.javaClass.classLoader.loadClass("kotlinx.serialization.json.JsonElementKt")
+        values[key] = native.call(primitive, "JsonPrimitive", value)
+        return payload.javaClass.getConstructor(Map::class.java).newInstance(values)
+    }
+
     suspend fun commit(path: String, thread: String) {
         val payload = owned(log(path), thread) ?: return
         fun identityType(name: String) = native.type("com.intellij.air.shared.core.identity.$name", "com.intellij.air")!!
@@ -41,7 +56,7 @@ internal object AirChatRoutingRepair {
         val namespace = identityType("AgentSessionNamespaceId").getConstructor(String::class.java)
             .newInstance(acpCatalogAgentId("acp.ai-multi")!!.value)
         val sid = identityType("AgentSessionId").getConstructor(String::class.java)
-            .newInstance(native.call(payload, "string", "agentSessionId"))
+            .newInstance(string(payload, "agentSessionId"))
         val agent = identityType("AgentSessionIdentity").constructors.single { it.parameterCount == 3 }.newInstance(path, namespace, sid)
         val registryType = native.type("com.intellij.air.backend.session.api.SessionIdentityRegistryService", "com.intellij.air")!!
         val registry = native.call(registryType.getField("Companion").get(null), "getInstance")!!
@@ -71,7 +86,7 @@ internal object AirChatRoutingRepair {
                     state.javaClass.fields.singleOrNull { it.name == key }?.get(state) == true }) return@withLock false
             if (native.call(runtime, "getEntry") is RestoringEntry) return@withLock false
             commit(path, thread)
-            reconnect(manager, ref, runtime, native.call(payload, "string", "agentSessionId").toString())
+            reconnect(manager, ref, runtime, string(payload, "agentSessionId").toString())
         }
     }
 
@@ -80,7 +95,7 @@ internal object AirChatRoutingRepair {
         val current = (native.call(manager, "presentationState", ref) as StateFlow<*>).value!!
         check(current.javaClass.getField("isConnected").get(current) != true) { "Wait for the current Air connection before reconnecting" }
         val payload = owned(log(native.call(ref, "getPathKey-").toString()), native.call(runtime, "getThreadId-").toString())
-        check(payload != null && native.call(payload, "string", "agentSessionId") == sid) { "Air conversation changed before restoration" }
+        check(payload != null && string(payload, "agentSessionId") == sid) { "Air conversation changed before restoration" }
         val catalog = AcpAgentsCatalog.getInstance()
         val ordinary = com.intellij.air.acp.AcpSessionRuntimeAdapter::class.java.getConstructor().newInstance()
         @Suppress("UNCHECKED_CAST")
@@ -117,20 +132,22 @@ internal object AirChatRoutingRepair {
 
     private fun owned(log: Any, thread: String): Any? {
         @Suppress("UNCHECKED_CAST")
-        val events = native.call(log, "readEvents-", thread) as List<Any>
+        val events = if (log.javaClass.methods.any { it.name.startsWith("readEvents-") && it.parameterCount == 1 })
+            native.call(log, "readEvents-", thread) as List<Any>
+        else native.call(log, "read-", thread, 0L) as List<Any>
         // Later binding events take precedence, including a previous repair.
         val payload = events.asReversed().firstOrNull {
             native.call(it, "getType").toString() in setOf("SessionCreated", "SessionStarted", "RuntimeSessionBound") &&
-                native.call(native.call(it, "getPayload")!!, "string", "agentSessionId") != null
+                string(native.call(it, "getPayload")!!, "agentSessionId") != null
         }?.let { native.call(it, "getPayload") } ?: return null
-        val sid = native.call(payload, "string", "agentSessionId") as? String ?: return null
-        if (!sid.startsWith("aiaps-chat-") || native.call(payload, "string", "runtimeKind") != "Acp") return null
+        val sid = string(payload, "agentSessionId") as? String ?: return null
+        if (!sid.startsWith("aiaps-chat-") || string(payload, "runtimeKind") != "Acp") return null
         val file = ProfileConfiguration.directory.resolve("conversations")
             .resolve(ProfileConfiguration.digest(Gson().toJson(sid)) + ".json")
         if (!Files.isRegularFile(file)) return null
         val record = JsonParser.parseString(Files.readString(file)).asJsonObject
         if (record.get("sessionId")?.asString != sid) return null
-        val cwd = native.call(payload, "string", "cwd") as? String ?: return null
+        val cwd = string(payload, "cwd") as? String ?: return null
         if (Path.of(record.get("cwd").asString).toAbsolutePath().normalize() != Path.of(cwd).toAbsolutePath().normalize()) return null
         return payload
     }
@@ -139,15 +156,15 @@ internal object AirChatRoutingRepair {
     fun repair(path: String, thread: String): Boolean {
         val log = log(path)
         val payload = owned(log, thread) ?: return false
-        if (native.call(payload, "string", "launchTargetId") == acpAgentLaunchTargetId("acp.ai-multi").value &&
-            native.call(payload, "string", "agentId") == acpCatalogAgentId("acp.ai-multi")!!.value) return false
-        val target = native.call(payload, "withString", "launchTargetId", acpAgentLaunchTargetId("acp.ai-multi").value)!!
-        val corrected = native.call(target, "withString", "agentId", acpCatalogAgentId("acp.ai-multi")!!.value)!!
+        if (string(payload, "launchTargetId") == acpAgentLaunchTargetId("acp.ai-multi").value &&
+            string(payload, "agentId") == acpCatalogAgentId("acp.ai-multi")!!.value) return false
+        val target = withString(payload, "launchTargetId", acpAgentLaunchTargetId("acp.ai-multi").value)!!
+        val corrected = withString(target, "agentId", acpCatalogAgentId("acp.ai-multi")!!.value)!!
         fun eventType(name: String) = (native.type("com.intellij.air.shared.session.events.$name", "com.intellij.air")
             ?: native.type("com.intellij.air.backend.session.log.models.$name", "com.intellij.air"))!!
         val draft = eventType("SessionEventDraft").constructors.single { it.parameterCount == 7 }.newInstance(
             eventType("EventSource").getField("Ide").get(null), eventType("SessionEventType").getField("RuntimeSessionBound").get(null),
-            native.call(corrected, "jsonObject"), eventType("EventVisibility").getField("AuditOnly").get(null), null, null, null)
+            if (corrected is Map<*, *>) corrected else native.call(corrected, "jsonObject"), eventType("EventVisibility").getField("AuditOnly").get(null), null, null, null)
         native.call(log, "append-", thread, listOf(draft))
         return true
     }
@@ -157,20 +174,40 @@ internal object AirChatRoutingRepair {
         val thread = context.sessionAddress.sessionId
         if (owned(log(path), thread) == null) return null
         val text = JBLabel("<html>This chat could not reconnect to its saved profile.</html>")
-        val input = MutableStateFlow(AgentSessionInput(JPanel(), null, true))
+        // Air 263 hides the native composer when this flag is true and the turn is idle.
+        // A healthy owned chat, including one just started, must keep that composer.
+        // Exactly one of the component and the confirmation is legal.
+        val input = MutableStateFlow(composerInput())
         suspend fun restore(retry: Boolean = false) {
             val managerType = native.type("com.intellij.air.acp.AcpSessionManager", "com.intellij.air")!!
             val manager = native.call(managerType.getField("Companion").get(null), "getInstance")!!
             @Suppress("UNCHECKED_CAST")
             val sessions = native.call(manager, "getOpenSessions") as StateFlow<Map<Any, Any>>
+            if (sessions.value.values.none { native.call(it, "getThreadId-") == thread }) {
+                val idType = native.type("com.intellij.air.shared.core.identity.LocalSessionId", "com.intellij.air")!!
+                val refType = native.type("com.intellij.air.backend.session.api.SessionRef", "com.intellij.air")!!
+                val id = idType.getConstructor(String::class.java).newInstance(thread)
+                val ref = refType.constructors.single { it.parameterCount == 3 && it.parameterTypes[1] == idType }
+                    .newInstance(path, id, null)
+                val adapter = com.intellij.air.acp.AcpSessionRuntimeAdapter::class.java.getConstructor().newInstance()
+                native.call(adapter, "connectOnRestore", ref)
+            }
             val entry = sessions.first { map -> map.values.any { native.call(it, "getThreadId-") == thread } }
                 .entries.single { native.call(it.value, "getThreadId-") == thread }
-            withContext(Dispatchers.IO) {
-                if (retry) {
-                    val payload = owned(log(path), thread) ?: error("Air conversation changed before restoration")
-                    commit(path, thread)
-                    reconnect(manager, entry.key, entry.value, native.call(payload, "string", "agentSessionId").toString())
-                } else restoreWhenFailed(manager, entry.key, entry.value)
+            try {
+                withContext(Dispatchers.IO) {
+                    if (retry) {
+                        val payload = owned(log(path), thread) ?: error("Air conversation changed before restoration")
+                        commit(path, thread)
+                        reconnect(manager, entry.key, entry.value, string(payload, "agentSessionId").toString())
+                    } else restoreWhenFailed(manager, entry.key, entry.value)
+                }
+            } catch (error: Exception) {
+                if (error is java.util.concurrent.CancellationException) throw error
+                // Air can finish its own rehydrate while this repair is still failing.
+                // A connected chat must not grow a Reconnect panel.
+                if (error.message == "The chat is already connected" || becomesReady(manager, entry.key)) return
+                throw error
             }
         }
         val confirmation = AgentSessionConfirmation("ai-multi-routing-repair", "Reconnect AI Multi chat", text,
@@ -179,7 +216,7 @@ internal object AirChatRoutingRepair {
                 context.scope.launch {
                     try {
                         restore(true)
-                        withContext(Dispatchers.EDT) { input.value = AgentSessionInput(JPanel(), null, true) }
+                        withContext(Dispatchers.EDT) { input.value = composerInput() }
                     } catch (error: Exception) {
                         if (error is java.util.concurrent.CancellationException) throw error
                         com.intellij.openapi.diagnostic.Logger.getInstance(AirChatRoutingRepair::class.java).warn("AI Multi routing repair failed", error)
@@ -199,11 +236,21 @@ internal object AirChatRoutingRepair {
                         catch (error: Exception) {
                             if (error is java.util.concurrent.CancellationException) throw error
                             com.intellij.openapi.diagnostic.Logger.getInstance(AirChatRoutingRepair::class.java).warn("AI Multi profile restoration failed", error)
-                            withContext(Dispatchers.EDT) { input.value = AgentSessionInput(JPanel(), confirmation, true) }
+                            withContext(Dispatchers.EDT) { input.value = AgentSessionInput(null, confirmation, false) }
                         }
                     }
                 }
             }, input,
         )
     }
+
+    private suspend fun becomesReady(manager: Any, ref: Any): Boolean {
+        repeat(40) {
+            if (native.call(manager, "isReadyForPrompt", ref) == true) return true
+            delay(50)
+        }
+        return false
+    }
+
+    private fun composerInput() = AgentSessionInput(JPanel().apply { isOpaque = false }, null, false)
 }

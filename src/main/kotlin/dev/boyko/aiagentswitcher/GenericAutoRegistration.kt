@@ -229,7 +229,7 @@ internal object GenericAutoRegistration {
             throw IllegalStateException("AI Multi registration was modified or conflicts with another entry. Use Repair Registration in Settings to review replacement.")
         }
         // Publish dependencies before the entry point so a concurrent host connection cannot load a missing module.
-        for (resource in listOf("codex-account.js", "local-account.js", "profile-settings.js", "agent-recovery.js", "virtual-sessions.js", "cps-router.js")) {
+        for (resource in listOf("codex-account.js", "local-account.js", "profile-settings.js", "agent-recovery.js", "grok-permission-mode.js", "virtual-sessions.js", "cps-router.js")) {
             val bytes = javaClass.classLoader.getResourceAsStream(resource)?.use { it.readBytes() }
                 ?: error("Bundled ACP component is missing: $resource")
             writeIfChanged(dir.resolve(if (resource == "cps-router.js") "router.js" else resource), bytes)
